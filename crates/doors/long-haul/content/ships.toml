@@ -216,3 +216,252 @@ grade = 1
 price = 3600
 power = 5
 reach = "close"
+
+[[module]]
+id = "scrap1"
+name = "Patched Ion Drive"
+slot = "drive"
+grade = 1
+price = 1800
+speed = 16
+burn = 28
+
+[[module]]
+id = "haul1"
+name = "Tramp Steady Drive"
+slot = "drive"
+grade = 1
+price = 4800
+speed = 18
+burn = 22
+
+[[module]]
+id = "ion2r"
+name = "Ion Drive Mk2-R"
+slot = "drive"
+grade = 2
+price = 6200
+speed = 26
+burn = 38
+
+[[module]]
+id = "sprint1"
+name = "Sprint Coil Drive"
+slot = "drive"
+grade = 2
+price = 9500
+speed = 34
+burn = 52
+
+[[module]]
+id = "long2"
+name = "Longhaul Mk2 Drive"
+slot = "drive"
+grade = 3
+price = 16500
+speed = 24
+burn = 20
+
+[[module]]
+id = "sprint2"
+name = "Redline Torch Drive"
+slot = "drive"
+grade = 3
+price = 24000
+speed = 44
+burn = 70
+
+[[module]]
+id = "pod0"
+name = "Salvage Pod"
+slot = "cargo"
+grade = 1
+price = 900
+cargo = 6
+
+[[module]]
+id = "rack1"
+name = "Flatbed Rack"
+slot = "cargo"
+grade = 1
+price = 2900
+cargo = 12
+
+[[module]]
+id = "cold1"
+name = "Cold Hold"
+slot = "cargo"
+grade = 2
+price = 5800
+cargo = 22
+
+[[module]]
+id = "pod3"
+name = "Mega Pod"
+slot = "cargo"
+grade = 3
+price = 9000
+cargo = 28
+
+[[module]]
+id = "tank0"
+name = "Jerry Cans"
+slot = "tank"
+grade = 1
+price = 500
+fuel = 15
+
+[[module]]
+id = "tank1s"
+name = "Slim Tank"
+slot = "tank"
+grade = 1
+price = 1800
+fuel = 40
+
+[[module]]
+id = "tank2r"
+name = "Reserve Cell"
+slot = "tank"
+grade = 2
+price = 4000
+fuel = 75
+
+[[module]]
+id = "tank3"
+name = "Cryo Tank"
+slot = "tank"
+grade = 3
+price = 6800
+fuel = 100
+
+[[module]]
+id = "scan0"
+name = "Hand Scanner"
+slot = "scanner"
+grade = 1
+price = 1300
+scan = 1
+
+[[module]]
+id = "scan2s"
+name = "Prospector's Sweep"
+slot = "scanner"
+grade = 2
+price = 5600
+scan = 2
+
+[[module]]
+id = "weld0"
+name = "Welder Beam"
+slot = "weapon"
+grade = 1
+price = 1400
+power = 2
+
+[[module]]
+id = "needle1"
+name = "Needle Gun"
+slot = "weapon"
+grade = 1
+price = 2600
+power = 3
+reach = "far"
+
+[[module]]
+id = "flak2"
+name = "Flak Array"
+slot = "weapon"
+grade = 2
+price = 7800
+power = 8
+reach = "close"
+
+[[module]]
+id = "plasma3"
+name = "Plasma Lance"
+slot = "weapon"
+grade = 3
+price = 14000
+power = 11
+
+[[module]]
+id = "rail3"
+name = "Long Rail"
+slot = "weapon"
+grade = 3
+price = 15500
+power = 9
+reach = "far"
+
+[[module]]
+id = "plate0"
+name = "Scrap Plating"
+slot = "shield"
+grade = 1
+price = 1300
+shield = 12
+
+[[module]]
+id = "plate2"
+name = "Layered Plate"
+slot = "shield"
+grade = 2
+price = 5800
+shield = 35
+
+[[module]]
+id = "bastion3"
+name = "Bastion Field"
+slot = "shield"
+grade = 3
+price = 17500
+shield = 65
+
+[[module]]
+id = "bunk0"
+name = "Bunk Rack"
+slot = "cabin"
+grade = 1
+price = 700
+berths = 1
+
+[[module]]
+id = "suite2"
+name = "Officers' Suite"
+slot = "cabin"
+grade = 2
+price = 3800
+berths = 3
+
+[[module]]
+id = "skim0"
+name = "Bucket Skimmer"
+slot = "refinery"
+grade = 1
+price = 2200
+refine_pm = 280
+
+[[module]]
+id = "skim2"
+name = "Deep Skimmer"
+slot = "refinery"
+grade = 2
+price = 9000
+refine_pm = 900
+
+[[module]]
+id = "bench0"
+name = "Bench Kit"
+slot = "lab"
+grade = 1
+price = 2200
+lab_pm = 120
+
+[[module]]
+id = "field2"
+name = "Field Lab"
+slot = "lab"
+grade = 2
+price = 12000
+lab_pm = 500

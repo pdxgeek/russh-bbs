@@ -201,3 +201,87 @@ effects = [
   { good = "dreamsilt", target_pm = 400, only = [] },
   { good = "stripped_cores", target_pm = 400, only = [] },
 ]
+
+[[event]]
+id = "raid"
+kind = "Convoy raid"
+headline = "Raiders strip convoys out of {station}; stolen cores flood in, spares go short."
+origin = ["haven"]
+radius = 2
+duration = 6
+weight = 2
+inspection_pm = 200
+effects = [
+  { good = "stripped_cores", target_pm = 2200, only = [] },
+  { good = "parts", target_pm = 350, only = [] },
+]
+
+[[event]]
+id = "flare"
+kind = "Solar flare"
+headline = "Flare fries relays near {station}; circuits and sensor glass are short."
+origin = []
+radius = 3
+duration = 4
+weight = 2
+inspection_pm = 0
+effects = [
+  { good = "circuits", target_pm = 300, only = [] },
+  { good = "sensor_glass", target_pm = 400, only = [] },
+]
+
+[[event]]
+id = "relics"
+kind = "Relic cache"
+headline = "Survey crew opens a relic cache near {station}; relics and curios are cheap."
+origin = ["research", "mining"]
+radius = 2
+duration = 6
+weight = 2
+inspection_pm = 0
+effects = [
+  { good = "gate_relics", target_pm = 2500, only = [] },
+  { good = "curios", target_pm = 1800, only = [] },
+]
+
+[[event]]
+id = "amnesty"
+kind = "Amnesty"
+headline = "Amnesty declared at {station}; ghostwire and dreamsilt go cheap."
+origin = ["haven"]
+radius = 1
+duration = 5
+weight = 2
+inspection_pm = 0
+effects = [
+  { good = "ghostwire", target_pm = 2200, only = [] },
+  { good = "dreamsilt", target_pm = 2000, only = [] },
+]
+
+[[event]]
+id = "skim"
+kind = "Gas glut"
+headline = "Skimmers overfill the tanks at {station}; gas and polymers are cheap."
+origin = ["mining"]
+radius = 2
+duration = 6
+weight = 2
+inspection_pm = 0
+effects = [
+  { good = "volatiles", target_pm = 2300, only = [] },
+  { good = "polymers", target_pm = 1700, only = [] },
+]
+
+[[event]]
+id = "frost"
+kind = "Cold snap"
+headline = "Hard frost grips {station}; textiles and biogel are in demand."
+origin = []
+radius = 2
+duration = 5
+weight = 2
+inspection_pm = 0
+effects = [
+  { good = "textiles", target_pm = 300, only = [] },
+  { good = "biogel", target_pm = 450, only = [] },
+]

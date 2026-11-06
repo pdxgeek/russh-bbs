@@ -14,6 +14,7 @@
     clippy::manual_assert_eq
 )]
 
+mod balance;
 mod board;
 mod branches;
 mod combat;
@@ -26,6 +27,7 @@ mod hero;
 mod legacy;
 mod projects;
 mod saves;
+mod social;
 mod support;
 mod town;
 mod world;

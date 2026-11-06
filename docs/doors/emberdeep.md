@@ -1,6 +1,6 @@
 # Emberdeep: a fantasy delving door (design)
 
-Status: **Engine implemented (M4-E1, D101); town and crafting implemented (M4-E2, D110); the full UI implemented (M4-E3, D115)**; social play and the content pass are still **Proposed**. The design below is the target; [Implementation notes (M4-E1)](#implementation-notes-m4-e1) and [Implementation notes (M4-E2)](#implementation-notes-m4-e2) and [Implementation notes (M4-E3)](#implementation-notes-m4-e3) say what exists, how it behaves and what was not built. Shared platform rules are in [README.md](README.md). This is the "small daily-turn RPG" that M4 plans as a first game, and the smallest engine of the set.
+Status: **Engine implemented (M4-E1, D101); town and crafting implemented (M4-E2, D110); the full UI implemented (M4-E3, D115); social play, content and balance implemented (M4-E4, D137, in review)**. The design below is the target; the implementation notes ([E1](#implementation-notes-m4-e1), [E2](#implementation-notes-m4-e2), [E3](#implementation-notes-m4-e3), [E4](#implementation-notes-m4-e4)) say what exists, how it behaves and what was not built. Shared platform rules are in [README.md](README.md). This is the "small daily-turn RPG" that M4 plans as a first game, and the smallest engine of the set.
 
 ## Pitch
 
@@ -268,3 +268,107 @@ The core tension: **how deep do you go today?** Each level down is richer and mo
 - **A stored colour cap** (UI-2) changes nothing here: the ramps already degrade at every depth the board composites.
 - **Social (E4).** The hall already has a tab for the dead and for the world; parties and duels add rows to the same list-and-detail widget (`sheet::list_detail`).
 
+## Implementation notes (M4-E4)
+
+**Status.** Parties, rescues with a reward from the rescued, the opt-in duel ring, shared town projects with a hall of donors, the story tables (100+ dungeon events, three questlines of 10 steps), the Cold Furnace's verdict and six collective endings with eight epilogues, and a content pass are built in the same crate (D137). **Verified:** by unit tests of every rule (`src/tests/social.rs`, `balance.rs`), a two-account test of a company, a rescue by a stranger and by a companion, and an unfound hero's epitaph through the framework's store and nightly tick (`tests/social.rs`), a replay of a social branch, the migrations (a real E1 hero and world walk 1 to 2 to 3 through the host), pinned screen snapshots of every new screen in both icon tiers and all sizes, the framework's sandbox audit, and the 18-hero season simulation. **Not verified:** see "What was not exercised" at the end of this section.
+
+### What is built, and where
+
+| Part | Module | Notes |
+|---|---|---|
+| The commons (roster, companies, invitations, notes, the ring's ladder, epitaphs, chronicle, verdict) | `social.rs` | world format 3; every change idempotent and capped; also the duel resolver |
+| The hero's half (invite, accept, leave, opt in and out, call out, collect notes, epitaph) | `company.rs` | checked against the world as the hero last saw it |
+| Questlines, goals, choices and the verdict | `story.rs`, `content_story.rs`, `content/quests.toml` | goals read the hero's own tallies; a choice sets a flag for good |
+| Endings and epilogues | `endings.rs` | six collective endings, eight epilogues |
+| Dungeon events | `dungeon.rs` (`lay_events`), `content/events.toml` | an overlay on ordinary rooms; options are room options |
+| Screens | `session/circle.rs`, `session/ui/places.rs`, `session/ui/hall.rs` | the Company, the Duel ring, the Journal and the Furnace's question are places; the hall has four new tabs (Companies, The ring, Donors, Chronicle) |
+| Formats | `save.rs`, `world.rs` | save 3 = save 2 + story and social section; world 3 = world 2 + commons; `Door::migrate` 2 to 3 appends an empty one |
+
+### Rules as built
+
+**No player's save is written by another player's session.** Anything owed *to* a hero is a **note** in the world, collected (once, guarded by the ids the hero's own save keeps) the next time that hero opens the door. A rescue is thanked by a note out of the rescued hero's own purse; a bruise from the ring arrives the same way.
+
+**Companies (parties).** Up to three heroes. Only an invitation brings a hero in (the world refuses a join without one); an invitation stands three days; a hero may have two outstanding; a hero who has closed the door to invitations (the opt-out, on by default) is not listed. The shared state: **a pack any companion dealt with today is dealt with for every companion today** (the world holds the list for the day; each companion's own save still says what *they* did). A companion who walks into the den takes **two thirds of the spoils** (xp, coin, salvage; once a day), so riding together is not poorer than riding alone. The company's deepest level and the companions it carried home are on the hall. The sharing is asynchronous by design: a hero sees what their company did before they opened the door (see Differences).
+
+**Rescues.** The 3-day window and the carry from E1 stand. New: the rescuer's count of heroes carried home (a questline goal); the rescued hero, waking, sends **a fifth of their purse, at most 10 + 3 per level of the fall**, to the rescuer as a note. A **companion** carries a fallen companion for 2 turns instead of 3, the companion wakes with three quarters of their health and no wound, owes no thanks, and the carry counts for the company.
+
+**The duel ring.** Opt-in (off by default, and a hero who steps out can no longer be called out). A hero calls out a ring member within 4 levels who is not in their company, for a stake of 0, 5, 20 or 50 coin. It costs a turn; each hero may call twice a day, never the same foe twice in a day, and a foe may be called out three times a day. The fight is the **foe's last shown strength**, fought with ring rules (hit points and armour from level alone, damage pulled halfway to the level's norm; what remains to tell heroes apart is crit, evasion and the blow), at most 12 rounds. A win returns the stake and half again, adds ladder points and gives a two-day boon; a loss gives the stake to the town works (the night's tick pledges it as "the Ring" to the first open project) and a day's bruise; the foe earns points for a defence and, if the challenger won, a bruise note. **There is no player killing.** The ladder keeps 20.
+
+**Shared projects.** The works, the pledges roll and what a finished project changes are as in E2. New: the **hall of donors** tab (largest givers, and the largest gift to each finished project), a **12th project** (a third drill a day), ring stakes feeding the works, and the Furnace's ending reading how many are finished.
+
+**Questlines (the ember-priests' chain).** Three lines of ten steps (30 steps): the Low Flame (from hero level 1), the Smiths' Debt (3), the Quiet Watch (5). Goals: reach a level, slay N of a monster, enter N new rooms of a kind, slay a guardian, turn in contracts, give coin to the works, reach a hero level, carry heroes home, win duels. Each line has a choice mid-way and a last choice that sets a flag; flags open and close room options and events (17 event options read one) and decide which verdicts the slayer may give.
+
+**The Furnace's verdict and the endings.** The hero who fells the Cold Furnace's guardian is asked at once: *quench* (always open), *bank* (needs `keeps-the-flame`), *claim the heart* (needs `keeps-the-key`) or *open the gate* (needs `opens-the-gate`). That night's tick turns the verdict and what the whole town did into one of six endings, written in the chronicle before the dungeon collapses into its next epoch: **The Hearth Rekindled** (bank, at least 8 projects finished), **Embers Banked** (bank, fewer), **The Ember Crown** (claim), **The Open Gate** (open, at least 6 ways down), **The Long Table** (a quenched or opened fire, at least 5 heroes carried home and a company that carried one of its own), **The Cold Furnace** (otherwise). Each hero also has an **epilogue** from their own deeds and choices (furnace-bearer, ring champion, hearth-bearer, patron, flame-keeper, deep delver, scarred, or a hand in the dark).
+
+**Epitaphs.** The only free text one player shows another. A hero may write one line (80 characters) in the Journal; it goes through `Ctx::player_text` (sanitized, one line, 6 a minute) and is printed in the hall only if the hero is not found (otherwise the hall prints "Lost on level N."). Everything else (an invitation, a challenge, a thanks) is a fixed template: no words pass between players.
+
+**Dungeon events.** 40% of corridors, vaults, forges, flooded halls and shrines carry an event on a given level (a pure function of the season, epoch and level, so everyone sees the same ones), chosen from the events of that band and kind. Their options are room options, so two builds see different choices.
+
+### Content shipped now, against the launch budget
+
+| | Shipped (E1+E2) | Shipped (E4) | Launch budget | Met |
+|---|---|---|---|---|
+| Room templates | 34 | 70 | 60 | yes |
+| Monsters (ordinary / guardians) | 15 / 5 | 40 / 5 | 40 / 5 | yes |
+| Traps | 10 | 30 | 30 | yes |
+| Callings / skill nodes | 6 / 90 | 6 / 90 | 6 / 90 | yes |
+| Item bases | 46 | 120 | 120 | yes |
+| Affixes / ember-cores | 25 / 10 | 60 / 22 | 50 / 20 | yes |
+| Dungeon events | 0 | 101 | 100 | yes |
+| Tavern contracts | 16 | 45 | 40 | yes |
+| Questlines (steps) | 0 | 3 (30) | 3 (about 30) | yes |
+| Town projects | 11 | 12 | 12 | yes |
+| Depth bands / levels | 5 / 25 | 5 / 25 | 5 | yes |
+
+Skill nodes stay at the design's 90 (15 per calling). Content test `tests/balance.rs` pins these numbers.
+
+### Balance
+
+Harness: `cargo test -p russh-bbs-door-emberdeep --test sim -- --nocapture` (env `EMBERDEEP_SEED`, and `EMBERDEEP_SIM_LEGACY=1` for the E3 shape of 12 bots over 30 days). It plays **18 bots for a 42-day season** through the real screens: each of the six callings as a *careful*, a *greedy* and a *reckless* player, who also join companies, step into the ring (wardens, cutthroats and duelists), take questline choices and answer the Furnace. It prints survival and deaths by calling and by style, depth and level curves, the economy, project completion, rescues, the ring's ladder, quest progress, the endings and gear. The pull request carries the numbers before and after.
+
+### What was changed to balance it, and why
+
+- **The ring was owned by one calling.** With the hero's real hit points and armour, three wardens won 205, 193 and 176 duels against 4, 15 and 33 losses while cutthroats won two of 201. The ring now uses ring rules (above). After: the best warden is 151-57, the worst cutthroat 16-194, duelists remain the strongest in the ring (about 85% wins; they are the calling that is meant to win by timing), and no calling is shut out of the ladder.
+- **Wanderer and cutthroat hit points** 32 to 36 and 30 to 33: they were the two callings with deaths and the lowest level in a season (wanderer level 6.7, cutthroat 8.3 over three seeds); the cutthroat now averages 9.3 to 11.7. The wanderer still lags (5.3 to 7.3 against 10 to 12 for the best). It is viable (alive, level 5 or more, depth 5 or more in a season) but it is the weakest calling and is recorded as open for the content pass that follows.
+- **Dungeon events and the descent.** More options per room cost the careful bots more turns; the harness now lets a bot skip cheap options on the way down. (A harness bug found on the way: a bot read the word "sealed" in a room's text as "the door is sealed" and quit; events made that common. Fixed in the bot.)
+- **Companions' spoils.** Sharing cleared packs alone made a company poorer than riding alone (one fight pays three heroes' worth of nothing but the fighter). A companion now takes two thirds of the spoils of a den a companion cleared.
+
+### Balance numbers
+
+Seed 4242 unless stated; `cargo test -p russh-bbs-door-emberdeep --test sim -- --nocapture`.
+
+| Run | Before (E3 `main`, 12 bots, 30 days) | After, same shape, no social chores (`EMBERDEEP_SIM_LEGACY=1 EMBERDEEP_SIM_NO_SOCIAL=1`) |
+|---|---|---|
+| Mean hero level, day 30 | 5.9 | 5.8 |
+| Projects finished | 10 of 11 | 9 of 12 |
+| Coin / salvage given to the works | 4095 / 1271 | 3295 / 1100 |
+| Deepest level | 7 | 3 (the lifts to 6 and 11 were not finished in time) |
+| Deaths | 4 | 1 |
+
+The content pass (more rooms, 40 monsters, events) is nearly neutral on levels and slightly slower on the works.
+
+| 18 bots, 42 days (the season shape) | Day 6 | Day 12 | Day 24 | Day 42 |
+|---|---|---|---|---|
+| Mean hero level | 3.4 | 4.5 | 6.3 | 9.8 |
+| Projects finished (of 12) | 1 | 4 | 10 | 11 |
+| Coin / salvage given | 625 / 290 | 1535 / 564 | 3545 / 1400 | 4780 / 1553 |
+| Mean blow / armour | 10.7 / 2.6 | 11.4 / 3.0 | 12.3 / 3.4 | 17.4 / 6.3 |
+
+By calling (three heroes each, careful / greedy / reckless, mean over the season; level, deepest level, heroes who died at least once): warden 11.0, 8.3, 0/3; cutthroat 10.0, 7.3, 0/3; ember-priest 11.7, 7.3, 0/3; runesmith 8.0, 7.0, 0/3; wanderer 6.7, 6.7, 1/3; duelist 11.7, 8.3, 0/3. Over three seeds the wanderer is the lowest (5.3 to 7.3) and the ember-priest, duelist and warden the highest (10 to 12); every calling is alive, past level 5 and below level 6 in a season. By style: careful level 7.3, depth 3.7; greedy 11.2, 6.8; reckless 11.0, 12.0 (the only deaths). Before the ring and hit-point changes the season had 3 deaths (a cutthroat, a runesmith, a wanderer); after, 0 to 1 per seed: **deaths are rare**, so rescues are rare in a bot season (0 to 3) and the rescue rates are measured by the two-account tests, not the harness. The ring: before ring rules a warden went 205-4 and a cutthroat 2-199; after, wardens are between 148-60 and 65-145, duelists about 80-5, cutthroats 20-190 (the cutthroat is still weak in the ring: it relies on tricks the duel does not model).
+
+**An open finding.** With the bots joining companies (the 12-bot, 30-day shape with the Company chore) the works finish 3 to 4 of 12 against 9 of 12 without; in the 18-bot, 42-day season they finish 11 of 12. The wanderer and the duelist, in a company, fight about a fifth as often (kills 85 to 9, 93 to 16), so the company is leaving loot on the table in the harness: a hero whose companion cleared the den takes two thirds of its spoils (raising it from a third did not change the 12-bot number), so the cause is not isolated. It is recorded for the next balance pass, not fixed.
+
+### Differences from the design above
+
+- **Parties are asynchronous only.** The framework gives a door no read of the *current* stored world (FW-1 is a separate slice): a session sees its company as of when it opened the door, and its own changes at once. A companion who clears a pack after you opened the door is seen next time you open it. When FW-1 lands, `Game::world` can be refreshed on each key.
+- **No shared party chat, and no free text between players except the epitaph.**
+- **"Skills growing by use" and a 6-week automatic season** are unchanged from E1 (staff end a season).
+- **Questline goals are cumulative tallies** (kills, rooms, contracts), not counted from the moment a step opens, so a hero who has done the work already catches up in one go.
+- **Shortcuts for the whole company**, a shared party stash and a party chat are not built.
+
+### What was not exercised
+
+- The Postgres store suites (this slice touches no store code).
+- A player who actually reaches and fells the Cold Furnace: no bot gets there in a season. The verdict, the six endings, the collapse and the chronicle are covered by unit tests of the rules and by a Monte Carlo over random seasons (every ending shows), not by a played run.
+- A rescue or a death in the bot season is rare (0 to 3 deaths in 18 heroes): the rescue rates come from the two-account tests, not from the harness.
+- Telnet, and the ASCII tier and colour off over ssh (the snapshot tests cover them in the tiers).

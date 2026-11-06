@@ -1,4 +1,4 @@
-//! The SFTP subsystem (M4-F2, D-TBD): file areas over `sftp`, on the SSH transport only.
+//! The SFTP subsystem (M4-F2, D141): file areas over `sftp`, on the SSH transport only.
 //!
 //! The subsystem serves a **virtual file system addressed by id** (`russh_bbs_core::files::path`
 //! is the one parser): `/<area>/<file>`, `/<area>/pending/<file>` and `/downloads/<file>`, with

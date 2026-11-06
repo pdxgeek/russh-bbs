@@ -10,10 +10,10 @@
 |Umber Rea~>Bellis V~    51    14     3  50% |+--------------------------+
 |Bellis Ve~>Wren Run     45    13     3  50% |+ LIKELY EVENTS -----------+
 |Wren Run>signal ! ?     54    15     3  64% ||goal  Fastest  Thriftiest |
-+--------------------------------------------+|distress   1.0 expected   |
-+ COST --------------------------------------+|pirate     0.7 expected   |
-|FUEL   #################| 138/120 (tank 120)||drive      0.7 expected   |
-|DAYS   #################| 29 (10 left today)||signal     0.5 expected   |
++--------------------------------------------+|arc        0.9 expected   |
++ COST --------------------------------------+|distress   0.7 expected   |
+|FUEL   #################| 138/120 (tank 120)||pirate     0.5 expected   |
+|DAYS   #################| 29 (10 left today)||drive      0.4 expected   |
 |RISK   ############### 99% to meet something||                          |
 +--------------------------------------------++--------------------------+
 [Enter] fly next leg  [g] change goal  [Esc] back to chart

@@ -1,0 +1,2816 @@
+# Dungeon events: short scenes that overlay an ordinary room (corridor, vault, forge, flooded hall
+# or shrine) on some days. Options are room options (needs, rolls, gains), added to the room's own.
+
+[[event]]
+id = "warm-handprint"
+name = "A Warm Handprint"
+bands = [1, 2]
+kinds = ["corridor"]
+text = "A hand-shaped place on the wall is warm, as if someone had only just left it."
+[[event.option]]
+id = "match"
+label = "Set your own hand in it"
+cost = 1
+check = { attr = "spirit", dc = 10 }
+ok = [{ kind = "xp", amount = 10 }]
+ok_text = "The wall hums, and for a moment you know the way back by heart."
+fail = [{ kind = "fatigue", amount = 4 }]
+fail_text = "The warmth drains out through your palm."
+
+[[event]]
+id = "chalk-tally"
+name = "Chalk Tally"
+bands = [1]
+kinds = ["corridor"]
+text = "Chalk tally marks climb the wall in fives, stop, and begin again in a fresher hand."
+[[event.option]]
+id = "read"
+label = "Read the tallies as a shift roster"
+need = [{ kind = "tag", tag = "lore" }]
+cost = 1
+ok = [{ kind = "coin", amount = 18 }, { kind = "xp", amount = 6 }]
+ok_text = "The tallies are shifts, and whoever kept them hid a pay-pouch behind the last stone."
+[[event.option]]
+id = "count"
+label = "Count them for yourself"
+cost = 1
+check = { attr = "wits", dc = 10 }
+ok = [{ kind = "xp", amount = 8 }]
+ok_text = "The fresh marks stop at today's date. You feel watched, and learn a little from it."
+fail = [{ kind = "fatigue", amount = 4 }]
+fail_text = "You lose count, then your place, then your patience."
+
+[[event]]
+id = "sagging-lintel"
+name = "Sagging Lintel"
+bands = [1]
+kinds = ["corridor"]
+text = "A lintel sags over the way, held up by one prop that looks newer than anything else here."
+[[event.option]]
+id = "hold"
+label = "Take the weight and pull the prop"
+need = [{ kind = "tag", tag = "brawn" }]
+cost = 1
+ok = [{ kind = "salvage", amount = 7 }, { kind = "xp", amount = 6 }]
+ok_text = "You shoulder the beam while the prop's iron fittings come away in your hand."
+[[event.option]]
+id = "tinker"
+label = "Re-seat the prop properly"
+need = [{ kind = "tag", tag = "tinker" }]
+cost = 1
+ok = [{ kind = "salvage", amount = 5 }, { kind = "xp", amount = 8 }]
+ok_text = "A wedge, a half turn, and the whole passage stops groaning. The old fittings are yours."
+[[event.option]]
+id = "duck"
+label = "Slip underneath without touching it"
+cost = 1
+check = { attr = "finesse", dc = 11 }
+ok = [{ kind = "xp", amount = 6 }]
+ok_text = "You pass beneath with your breath held, and the stone does not notice."
+fail = [{ kind = "hurt", amount = 4 }]
+fail_text = "Your pack catches the prop and the lintel drops a hand's breadth onto your shoulders."
+
+[[event]]
+id = "cold-draught"
+name = "A Cold Draught"
+bands = [1]
+kinds = ["corridor"]
+text = "A draught runs along the floor, cold in a place built to be warm, and the dust leans away from it."
+[[event.option]]
+id = "follow"
+label = "Follow it to its source"
+cost = 1
+check = { attr = "spirit", dc = 11 }
+ok = [{ kind = "reveal" }]
+ok_text = "The draught comes from a crack that opens on the level's other side. Your map fills in as you go."
+fail = [{ kind = "fatigue", amount = 6 }]
+fail_text = "It turns you around twice, and you come back where you started, tired."
+[[event.option]]
+id = "warm"
+label = "Stand in it and let your blood answer"
+need = [{ kind = "trait", id = "fire-blooded" }]
+cost = 0
+ok = [{ kind = "xp", amount = 8 }, { kind = "fatigue", amount = -6 }]
+ok_text = "The cold finds nothing in you to bite. You walk it off feeling a little taller."
+
+[[event]]
+id = "singing-pipe"
+name = "The Singing Pipe"
+bands = [1]
+kinds = ["corridor"]
+text = "A pipe along the ceiling hums one note. When you stop walking, it keeps humming."
+[[event.option]]
+id = "tune"
+label = "Tune it with a maker's mark"
+need = [{ kind = "tag", tag = "runecraft" }]
+cost = 1
+ok = [{ kind = "xp", amount = 10 }, { kind = "salvage", amount = 4 }]
+ok_text = "A half-turn of the valve and the note resolves into a chord. A little scrap drops from the flange."
+[[event.option]]
+id = "listen"
+label = "Follow the note by ear"
+cost = 1
+check = { attr = "wits", dc = 11 }
+ok = [{ kind = "torch", amount = 2 }]
+ok_text = "The pipe leads to a lamp-oil seep. You top up from it."
+fail = [{ kind = "fatigue", amount = 4 }]
+fail_text = "The note goes everywhere at once. You give up with a headache."
+
+[[event]]
+id = "overturned-cart"
+name = "Overturned Cart"
+bands = [1]
+kinds = ["vault"]
+text = "A mining cart lies on its side, its load half spilled across the floor."
+[[event.option]]
+id = "grab"
+label = "Gather what spilled"
+cost = 1
+check = { attr = "finesse", dc = 10 }
+ok = [{ kind = "coin", amount = 16 }, { kind = "salvage", amount = 5 }]
+ok_text = "Ore, a few stamped tokens, and a pair of good rivets."
+fail = [{ kind = "hurt", amount = 3 }]
+fail_text = "A loose wheel spins and takes the skin off your shin."
+[[event.option]]
+id = "sell"
+label = "Count the stamped tokens and estimate their worth"
+need = [{ kind = "tag", tag = "appraise" }]
+cost = 1
+ok = [{ kind = "coin", amount = 28 }]
+ok_text = "The tokens are guild scrip with a long memory. A fence would give a fair price."
+[[event.option]]
+id = "right"
+label = "Right the cart and shake out what is wedged"
+need = [{ kind = "tag", tag = "brawn" }]
+cost = 1
+ok = [{ kind = "salvage", amount = 10 }, { kind = "xp", amount = 6 }]
+ok_text = "The cart rolls upright with a groan, and its false bottom spills out."
+
+[[event]]
+id = "dead-clerk"
+name = "The Clerk's Desk"
+bands = [1]
+kinds = ["vault"]
+text = "A clerk's desk, a clerk's chair, and what is left of the clerk. The ink in the well has not dried."
+[[event.option]]
+id = "read"
+label = "Read the open ledger"
+need = [{ kind = "tag", tag = "lore" }]
+cost = 1
+ok = [{ kind = "xp", amount = 10 }, { kind = "coin", amount = 12 }]
+ok_text = "A running account of the level, in a neat hand. One line says where the petty cash went."
+[[event.option]]
+id = "drawer"
+label = "Pick the drawer lock"
+need = [{ kind = "tag", tag = "lockpick" }]
+cost = 1
+ok = [{ kind = "coin", amount = 24 }]
+ok_text = "The drawer slides out on grease that smells of tallow. Coins, and a tin whistle."
+[[event.option]]
+id = "rummage"
+label = "Search the desk by hand"
+cost = 1
+check = { attr = "wits", dc = 10 }
+ok = [{ kind = "coin", amount = 14 }]
+ok_text = "Behind the blotter, a small stack of coin."
+fail = [{ kind = "wound", id = "soot-lung" }]
+fail_text = "A puff of old paper-dust goes down the wrong way, and you wheeze for an hour."
+
+[[event]]
+id = "sealed-crock"
+name = "The Sealed Crock"
+bands = [1]
+kinds = ["vault"]
+text = "A clay crock stands on a shelf, sealed with wax and stamped with a flame."
+[[event.option]]
+id = "open"
+label = "Break the seal and drink"
+cost = 1
+check = { attr = "spirit", dc = 10 }
+ok = [{ kind = "heal", amount = 10 }, { kind = "fatigue", amount = -8 }]
+ok_text = "A smiths' pear brandy, harsh and gold. It burns the tiredness out of you."
+fail = [{ kind = "wound", id = "hangover" }]
+fail_text = "It is stronger than it smells. You will remember it tomorrow."
+[[event.option]]
+id = "sell"
+label = "Sell it sealed to a fence"
+need = [{ kind = "tag", tag = "appraise" }]
+cost = 1
+ok = [{ kind = "coin", amount = 24 }]
+ok_text = "The seal is worth more than the contents. You carry it carefully."
+
+[[event]]
+id = "tinkers-roll"
+name = "A Tool Roll"
+bands = [1]
+kinds = ["vault"]
+text = "A canvas tool roll lies on a ledge, every pocket buttoned and the knot pulled tight."
+[[event.option]]
+id = "sort"
+label = "Sort the good tools from the worn"
+need = [{ kind = "tag", tag = "tinker" }]
+cost = 1
+ok = [{ kind = "salvage", amount = 9 }, { kind = "xp", amount = 8 }]
+ok_text = "A craftsman's kit. You take what you can use and leave what is worn out."
+[[event.option]]
+id = "fence"
+label = "Take it to the fence in your head"
+need = [{ kind = "tag", tag = "fence" }]
+cost = 1
+ok = [{ kind = "coin", amount = 22 }]
+ok_text = "A decent roll fetches a decent price. You know exactly who will pay it."
+[[event.option]]
+id = "pocket"
+label = "Pocket the loose bits"
+cost = 0
+ok = [{ kind = "salvage", amount = 4 }]
+ok_text = "A few bolts and a screw-key. Not much, but yours."
+
+[[event]]
+id = "cold-bellows"
+name = "The Slack Bellows"
+bands = [1]
+kinds = ["forge"]
+text = "A great bellows lies slack against a dead hearth, its leather split along one seam."
+[[event.option]]
+id = "mend"
+label = "Stitch the seam"
+need = [{ kind = "tag", tag = "tinker" }]
+cost = 1
+ok = [{ kind = "xp", amount = 10 }, { kind = "salvage", amount = 5 }, { kind = "fatigue", amount = -8 }]
+ok_text = "A few good stitches and the bellows breathes. The warm gust takes the ache out of your legs."
+[[event.option]]
+id = "pump"
+label = "Work the handle by sheer muscle"
+cost = 1
+check = { attr = "might", dc = 11 }
+ok = [{ kind = "fatigue", amount = -10 }]
+ok_text = "The hearth ticks and glows for a while. You sit beside it."
+fail = [{ kind = "fatigue", amount = 6 }]
+fail_text = "The bellows leaks worse than you pump. All you get is a sore back."
+
+[[event]]
+id = "anvil-horn"
+name = "The Warm Hammer"
+bands = [1]
+kinds = ["forge"]
+text = "An anvil with a horn worn bright by hands. A hammer hangs on a hook beside it, and the iron is warm."
+[[event.option]]
+id = "ring"
+label = "Strike the anvil as the old smiths did"
+need = [{ kind = "tag", tag = "runecraft" }]
+cost = 1
+ok = [{ kind = "xp", amount = 12 }]
+ok_text = "The note is clean and long, and the forge answers with a whisper of warmth."
+[[event.option]]
+id = "work"
+label = "Work a bar on it"
+cost = 1
+check = { attr = "might", dc = 11 }
+ok = [{ kind = "xp", amount = 8 }, { kind = "coin", amount = 10 }]
+ok_text = "A rough horseshoe nail, a worthless pot-hook, and a few honest coins from the fence."
+fail = [{ kind = "hurt", amount = 4 }]
+fail_text = "The hammer rings through your forearm and leaves it numb."
+
+[[event]]
+id = "quench-trough"
+name = "The Quench Trough"
+bands = [1]
+kinds = ["forge"]
+text = "A trough of black water sits beside a dead forge. Something glints at the bottom."
+[[event.option]]
+id = "reach"
+label = "Reach in for it"
+cost = 1
+check = { attr = "finesse", dc = 10 }
+ok = [{ kind = "coin", amount = 20 }]
+ok_text = "Coins, blackened by years in the water."
+fail = [{ kind = "wound", id = "scalded" }]
+fail_text = "The water is hot, and you were not told."
+[[event.option]]
+id = "steady"
+label = "Plunge your arm in without flinching"
+need = [{ kind = "trait", id = "fire-blooded" }]
+cost = 0
+ok = [{ kind = "coin", amount = 20 }, { kind = "xp", amount = 6 }]
+ok_text = "The water is hot, but heat is a friend to you. The coins come up warm."
+
+[[event]]
+id = "slag-mold"
+name = "The Unpoured Mold"
+bands = [1]
+kinds = ["forge"]
+text = "A sand-and-clay mold still holds the shape of something half-poured and abandoned."
+[[event.option]]
+id = "study"
+label = "Read the shape of it"
+need = [{ kind = "tag", tag = "lore" }]
+cost = 1
+ok = [{ kind = "xp", amount = 10 }]
+ok_text = "A hinge, a hasp, and a part you cannot name. The pattern teaches you a trick of balance."
+[[event.option]]
+id = "break"
+label = "Break the mold for the slag inside"
+need = [{ kind = "tag", tag = "tinker" }]
+cost = 1
+ok = [{ kind = "salvage", amount = 11 }]
+ok_text = "The clay cracks open on a lump of good slag."
+
+[[event]]
+id = "drowned-lantern"
+name = "The Drowned Lantern"
+bands = [1]
+kinds = ["flooded"]
+text = "A lantern burns under the water, tiny and steady, hung on a hook."
+[[event.option]]
+id = "wade"
+label = "Wade out for the lantern"
+cost = 1
+check = { attr = "finesse", dc = 10 }
+ok = [{ kind = "torch", amount = 3 }]
+ok_text = "A dry wick and a full reservoir. You pour half of it into your own."
+fail = [{ kind = "fatigue", amount = 6 }]
+fail_text = "The floor drops away and you swim back, shivering."
+[[event.option]]
+id = "read"
+label = "Read its flame"
+need = [{ kind = "tag", tag = "lantern" }]
+cost = 1
+ok = [{ kind = "reveal" }]
+ok_text = "The flame leans toward what you could not see. Your map blooms."
+
+[[event]]
+id = "eel-rack"
+name = "The Eel Rack"
+bands = [1]
+kinds = ["flooded"]
+text = "A rack of smoked eels hangs over the water, someone's winter store."
+[[event.option]]
+id = "eat"
+label = "Eat what you recognise"
+need = [{ kind = "tag", tag = "forage" }]
+cost = 1
+ok = [{ kind = "fatigue", amount = -6 }, { kind = "heal", amount = 6 }]
+ok_text = "Tough, smoky, and exactly what you needed."
+[[event.option]]
+id = "sell"
+label = "Take a few to sell"
+cost = 0
+ok = [{ kind = "coin", amount = 14 }]
+ok_text = "Dried eel travels. The inn will buy it."
+
+[[event]]
+id = "stepping-stones"
+name = "Numbered Stones"
+bands = [1]
+kinds = ["flooded"]
+text = "Flat stones cross the pool, each carved with a number. Some numbers are missing."
+[[event.option]]
+id = "solve"
+label = "Work out the sequence"
+cost = 1
+check = { attr = "wits", dc = 11 }
+ok = [{ kind = "coin", amount = 22 }]
+ok_text = "The right stones lead to a ledge with a small cache."
+fail = [{ kind = "hurt", amount = 4 }, { kind = "fatigue", amount = 4 }]
+fail_text = "You step on a missing number. The water is deeper than it looks."
+[[event.option]]
+id = "path"
+label = "Read the way through"
+need = [{ kind = "tag", tag = "pathfind" }]
+cost = 0
+ok = [{ kind = "coin", amount = 22 }, { kind = "xp", amount = 6 }]
+ok_text = "You see the safe way at once, without needing the numbers."
+
+[[event]]
+id = "tide-bell"
+name = "The Tide Bell"
+bands = [1]
+kinds = ["flooded"]
+text = "A bell on a float rings when the water rises, though the water has not moved."
+[[event.option]]
+id = "pray"
+label = "Pray to the bell"
+need = [{ kind = "tag", tag = "bless" }]
+cost = 1
+ok = [{ kind = "heal", amount = 10 }]
+ok_text = "The ring fills your chest, and the cuts there close a little."
+[[event.option]]
+id = "still"
+label = "Lay a hand on it and still it"
+cost = 1
+check = { attr = "spirit", dc = 11 }
+ok = [{ kind = "xp", amount = 10 }]
+ok_text = "It goes quiet under your palm, and you feel the water think about leaving."
+fail = [{ kind = "fatigue", amount = 6 }]
+fail_text = "The note rattles your teeth and drains you."
+
+[[event]]
+id = "offering-bowl"
+name = "The Offering Bowl"
+bands = [1]
+kinds = ["shrine"]
+text = "A bowl of cold coin sits in a wall niche, under a tin sign: leave one, take one."
+[[event.option]]
+id = "blessed"
+label = "Take one coin with a blessing"
+need = [{ kind = "tag", tag = "bless" }]
+cost = 1
+ok = [{ kind = "coin", amount = 15 }, { kind = "xp", amount = 6 }]
+ok_text = "You leave a pinch of ash and take a coin. The sign is satisfied."
+[[event.option]]
+id = "honest"
+label = "Take what the sign allows"
+cost = 1
+check = { attr = "spirit", dc = 11 }
+ok = [{ kind = "coin", amount = 12 }]
+ok_text = "One coin, as lettered."
+fail = [{ kind = "hurt", amount = 3 }]
+fail_text = "You lose your nerve and your fingers meet a spring-trap."
+[[event.option]]
+id = "empty"
+label = "Empty the bowl"
+cost = 1
+check = { attr = "finesse", dc = 11 }
+ok = [{ kind = "coin", amount = 28 }]
+ok_text = "A fistful of coin, and a feeling of being counted."
+fail = [{ kind = "wound", id = "hollow-ache" }]
+fail_text = "The bowl was keeping count. A cold weight settles in your chest."
+
+[[event]]
+id = "lamp-niches"
+name = "Nine Lamp Niches"
+bands = [1]
+kinds = ["shrine"]
+text = "Nine lamp niches, eight of them dark. The ninth holds a wick someone trimmed this morning."
+[[event.option]]
+id = "light"
+label = "Light the eight dark lamps"
+need = [{ kind = "calling", id = "ember-priest" }]
+cost = 1
+ok = [{ kind = "xp", amount = 10 }, { kind = "wound", id = "ember-blessing" }]
+ok_text = "The lamps burn blue one by one, and the ninth burns white. Warmth settles on you like a hand."
+[[event.option]]
+id = "trim"
+label = "Trim your own lamp by the ninth"
+cost = 0
+ok = [{ kind = "torch", amount = 2 }]
+ok_text = "You borrow a drop of oil from the ninth lamp, and leave it your thanks."
+
+[[event]]
+id = "cairn-of-names"
+name = "The Cairn of Names"
+bands = [1]
+kinds = ["shrine"]
+text = "A cairn of small stones, each scratched with one name. Most are worn smooth."
+[[event.option]]
+id = "read"
+label = "Read the names"
+need = [{ kind = "tag", tag = "lore" }]
+cost = 1
+ok = [{ kind = "xp", amount = 10 }]
+ok_text = "A hundred names of the people who walked down. A few of the rest are your guild's founders."
+[[event.option]]
+id = "add"
+label = "Add a stone of your own"
+cost = 1
+check = { attr = "spirit", dc = 10 }
+ok = [{ kind = "fatigue", amount = -10 }]
+ok_text = "You scratch a name on a flat stone, set it on top, and rest."
+fail = [{ kind = "fatigue", amount = 3 }]
+fail_text = "You cannot choose the name. You leave your stone blank and heavy."
+
+[[event]]
+id = "kneeling-ash"
+name = "The Kneeling Ash"
+bands = [1]
+kinds = ["shrine"]
+text = "Ash in the shape of kneeling figures sits in a row, facing a dead hearth."
+[[event.option]]
+id = "kneel"
+label = "Kneel in the empty place"
+cost = 1
+check = { attr = "spirit", dc = 11 }
+ok = [{ kind = "heal", amount = 8 }, { kind = "xp", amount = 6 }]
+ok_text = "You bow, and the ash stirs, and a little warmth passes from it to you."
+fail = [{ kind = "fatigue", amount = 5 }]
+fail_text = "The ash does not move. You feel foolish, and weighed down."
+[[event.option]]
+id = "sift"
+label = "Sift the ash"
+need = [{ kind = "trait", id = "fire-blooded" }]
+cost = 1
+ok = [{ kind = "salvage", amount = 6 }, { kind = "coin", amount = 12 }]
+ok_text = "Charred buckles, a thumb-ring, a scrap of gold leaf."
+
+[[event]]
+id = "slag-weeping"
+name = "Weeping Slag"
+bands = [2]
+kinds = ["corridor"]
+text = "Slag seeps from a seam in the wall and cools in long, glowing tears on the floor."
+[[event.option]]
+id = "gather"
+label = "Gather the cooled tears"
+cost = 1
+check = { attr = "finesse", dc = 12 }
+ok = [{ kind = "salvage", amount = 10 }, { kind = "coin", amount = 18 }]
+ok_text = "They crack off cleanly. Each is a small jewel of waste metal."
+fail = [{ kind = "wound", id = "burn" }]
+fail_text = "One tear is not cool. It sticks to your glove and your skin."
+[[event.option]]
+id = "seal"
+label = "Seal the seam with a warding mark"
+need = [{ kind = "tag", tag = "warding" }]
+cost = 1
+ok = [{ kind = "xp", amount = 14 }, { kind = "salvage", amount = 6 }]
+ok_text = "The seam closes, the weeping stops, and the wall is quiet."
+[[event.option]]
+id = "walk"
+label = "Walk through the glow"
+need = [{ kind = "trait", id = "fire-blooded" }]
+cost = 0
+ok = [{ kind = "xp", amount = 10 }]
+ok_text = "The heat is only heat to you. You pass through humming."
+
+[[event]]
+id = "foremans-whistle"
+name = "The Foreman's Whistle"
+bands = [2]
+kinds = ["corridor"]
+text = "A brass whistle hangs on a chain from a ceiling hook, just out of reach."
+[[event.option]]
+id = "blow"
+label = "Blow it"
+cost = 1
+check = { attr = "spirit", dc = 12 }
+ok = [{ kind = "coin", amount = 30 }, { kind = "xp", amount = 8 }]
+ok_text = "A thin note, and then the clatter of old thralls downing tools and leaving their pay behind."
+fail = [{ kind = "hurt", amount = 6 }]
+fail_text = "The note is the wrong one. Something drops from the ceiling."
+[[event.option]]
+id = "climb"
+label = "Climb up and take the whistle"
+need = [{ kind = "tag", tag = "climb" }]
+cost = 1
+ok = [{ kind = "coin", amount = 26 }]
+ok_text = "Brass is brass. You get a fair price."
+[[event.option]]
+id = "listen"
+label = "Listen to the echo"
+need = [{ kind = "tag", tag = "lore" }]
+cost = 0
+ok = [{ kind = "xp", amount = 12 }]
+ok_text = "The echo teaches you the corridor's length, and where its end is."
+
+[[event]]
+id = "ledger-wall"
+name = "The Ledger Wall"
+bands = [2]
+kinds = ["corridor"]
+text = "A whole wall is scratched with figures, columns of debt in several hands."
+[[event.option]]
+id = "read"
+label = "Read the debts"
+need = [{ kind = "flag", id = "reads-the-ledger" }]
+cost = 1
+ok = [{ kind = "xp", amount = 14 }, { kind = "coin", amount = 24 }]
+ok_text = "The oldest column belongs to the smiths themselves, and it is long."
+[[event.option]]
+id = "scorch"
+label = "Scorch the wall clean"
+need = [{ kind = "flag", id = "burns-the-ledger" }]
+cost = 1
+ok = [{ kind = "xp", amount = 10 }, { kind = "salvage", amount = 8 }]
+ok_text = "The figures blacken and fall away as ash. Something underneath is relieved."
+[[event.option]]
+id = "copy"
+label = "Copy a column in your journal"
+cost = 1
+check = { attr = "wits", dc = 12 }
+ok = [{ kind = "xp", amount = 10 }]
+ok_text = "Not every figure is a debt. Some are payments."
+fail = [{ kind = "fatigue", amount = 6 }]
+fail_text = "You mistake a debt for a payment and stare at the page for an hour."
+
+[[event]]
+id = "listening-wall"
+name = "The Listening Wall"
+bands = [2]
+kinds = ["corridor"]
+text = "A section of wall is smoother than the rest, polished by foreheads. It is warm."
+[[event.option]]
+id = "press"
+label = "Press your ear to it"
+need = [{ kind = "flag", id = "hears-the-flame" }]
+cost = 1
+ok = [{ kind = "xp", amount = 16 }, { kind = "wound", id = "ember-blessing" }]
+ok_text = "A voice, not unkind, and not addressed to you. It stays with you."
+[[event.option]]
+id = "shun"
+label = "Plug your ears and walk by"
+need = [{ kind = "flag", id = "stops-your-ears" }]
+cost = 0
+ok = [{ kind = "fatigue", amount = -8 }]
+ok_text = "The warmth follows for a few steps, then gives up."
+[[event.option]]
+id = "knock"
+label = "Knock three times"
+cost = 1
+check = { attr = "spirit", dc = 12 }
+ok = [{ kind = "xp", amount = 10 }]
+ok_text = "Three knocks answer. You step back, unharmed."
+fail = [{ kind = "hurt", amount = 5 }]
+fail_text = "Something knocks back, hard, from the other side."
+
+[[event]]
+id = "smiths-strongbox"
+name = "The Smith's Strongbox"
+bands = [2]
+kinds = ["vault"]
+text = "A strongbox under a dust-sheet, banded in black iron and marked with a struck key."
+[[event.option]]
+id = "pick"
+label = "Work the lock"
+need = [{ kind = "tag", tag = "lockpick" }]
+cost = 1
+check = { attr = "finesse", dc = 12 }
+ok = [{ kind = "coin", amount = 50 }, { kind = "xp", amount = 8 }]
+ok_text = "The tumblers are as old as the key. The strongbox opens on rolled coin."
+fail = [{ kind = "hurt", amount = 5 }]
+fail_text = "A needle in the lock bites you."
+[[event.option]]
+id = "mark"
+label = "Match the struck-key mark"
+need = [{ kind = "tag", tag = "runecraft" }]
+cost = 1
+ok = [{ kind = "recipe", id = "found-slag-mail" }, { kind = "xp", amount = 10 }]
+ok_text = "The mark is a pattern-word, and the box opens on a smith's plate pattern, copied out."
+[[event.option]]
+id = "smash"
+label = "Break the hinges"
+cost = 1
+check = { attr = "might", dc = 13 }
+ok = [{ kind = "coin", amount = 24 }, { kind = "salvage", amount = 8 }]
+ok_text = "The box shatters and half the contents run into the cracks."
+fail = [{ kind = "hurt", amount = 6 }, { kind = "fatigue", amount = 4 }]
+fail_text = "The iron wins. You have a swollen wrist and a very quiet box."
+
+[[event]]
+id = "pawn-shelf"
+name = "The Pawn Shelf"
+bands = [2]
+kinds = ["vault"]
+text = "A shelf of pawned goods behind a counter, every item tagged with a name and a sum owed."
+[[event.option]]
+id = "appraise"
+label = "Appraise the unredeemed"
+need = [{ kind = "tag", tag = "appraise" }]
+cost = 1
+ok = [{ kind = "coin", amount = 55 }]
+ok_text = "Three items are worth far more than the tags. You take them and go."
+[[event.option]]
+id = "fence"
+label = "Move the tags around"
+need = [{ kind = "tag", tag = "fence" }]
+cost = 1
+ok = [{ kind = "coin", amount = 38 }]
+ok_text = "You swap the tags, then buy and sell between them. A tidy profit."
+[[event.option]]
+id = "grab"
+label = "Grab a handful and run"
+cost = 1
+check = { attr = "finesse", dc = 12 }
+ok = [{ kind = "coin", amount = 26 }]
+ok_text = "You take what shines."
+fail = [{ kind = "hurt", amount = 6 }]
+fail_text = "The counter has a bell. The bell has a crossbow."
+
+[[event]]
+id = "sacks-of-ore"
+name = "Sacks of Ore"
+bands = [2]
+kinds = ["vault"]
+text = "A stack of ore sacks, tied and stamped with a smith's mark, each heavier than it looks."
+[[event.option]]
+id = "haul"
+label = "Haul one out"
+need = [{ kind = "tag", tag = "brawn" }]
+cost = 1
+ok = [{ kind = "salvage", amount = 14 }]
+ok_text = "You drag it to the light. Good iron."
+[[event.option]]
+id = "assay"
+label = "Assay a sack's mark"
+cost = 1
+check = { attr = "wits", dc = 12 }
+ok = [{ kind = "salvage", amount = 8 }, { kind = "xp", amount = 12 }]
+ok_text = "The mark says high grade, which is true. You take the best of it."
+fail = [{ kind = "fatigue", amount = 5 }]
+fail_text = "You pick the wrong sack and waste a very long hour."
+[[event.option]]
+id = "buy"
+label = "Offer the ledger-keeper's price"
+need = [{ kind = "tag", tag = "appraise" }]
+cost = 0
+ok = [{ kind = "coin", amount = 40 }]
+ok_text = "No keeper left to protest. You sell the lot to a passing scrap-man in your head."
+
+[[event]]
+id = "burnt-archive"
+name = "The Burnt Archive"
+bands = [2]
+kinds = ["vault"]
+text = "Shelves of scrolls burned black. A few rolls near the floor survived under a fallen shelf."
+[[event.option]]
+id = "read"
+label = "Piece the scraps together"
+need = [{ kind = "tag", tag = "lore" }]
+cost = 1
+check = { attr = "wits", dc = 12 }
+ok = [{ kind = "xp", amount = 16 }, { kind = "recipe", id = "found-forge-axe" }]
+ok_text = "A pattern for a heavy axe, with notes in the margin. You copy it in full."
+fail = [{ kind = "fatigue", amount = 6 }]
+fail_text = "The scraps do not fit, and you breathe a lot of soot."
+[[event.option]]
+id = "lift"
+label = "Lift the shelf"
+need = [{ kind = "tag", tag = "brawn" }]
+cost = 1
+ok = [{ kind = "salvage", amount = 10 }, { kind = "xp", amount = 8 }]
+ok_text = "Under it, the unburnt rolls, and a drawer of brass labels."
+
+[[event]]
+id = "hammer-song"
+name = "The Hammer Song"
+bands = [2]
+kinds = ["forge"]
+text = "A hammer rises and falls on an empty anvil, driven by a chain no one is pulling."
+[[event.option]]
+id = "time"
+label = "Time your hands to it"
+cost = 1
+check = { attr = "finesse", dc = 12 }
+ok = [{ kind = "xp", amount = 14 }]
+ok_text = "Rise, fall, rise. You learn the old rhythm, and it is a good one."
+fail = [{ kind = "hurt", amount = 6 }]
+fail_text = "You are a half-beat late. The hammer takes some of your hand."
+[[event.option]]
+id = "stop"
+label = "Stop the chain"
+need = [{ kind = "tag", tag = "tinker" }]
+cost = 1
+ok = [{ kind = "salvage", amount = 12 }, { kind = "xp", amount = 8 }]
+ok_text = "The chain parts and the hammer hangs still. A good steel hammer-head is yours."
+[[event.option]]
+id = "rebind"
+label = "Rebind the chain with a ward"
+need = [{ kind = "tag", tag = "warding" }]
+cost = 1
+ok = [{ kind = "xp", amount = 16 }, { kind = "coin", amount = 24 }]
+ok_text = "The chain goes quiet and does its work only when asked. The smith's coin purse is on the anvil."
+
+[[event]]
+id = "broken-crucible"
+name = "The Cracked Crucible"
+bands = [2]
+kinds = ["forge"]
+text = "A crucible the height of a child, cracked from rim to foot and still faintly orange."
+[[event.option]]
+id = "pour"
+label = "Pour out the remaining melt"
+cost = 1
+check = { attr = "might", dc = 12 }
+ok = [{ kind = "salvage", amount = 12 }, { kind = "coin", amount = 14 }]
+ok_text = "A last ladle of metal, cooled in a bucket of sand."
+fail = [{ kind = "wound", id = "burn" }]
+fail_text = "The crucible shifts and splashes your sleeve."
+[[event.option]]
+id = "mend"
+label = "Mend the crack with a glyph"
+need = [{ kind = "tag", tag = "runecraft" }]
+cost = 1
+ok = [{ kind = "xp", amount = 16 }, { kind = "recipe", id = "core-anvil" }]
+ok_text = "The crack closes. The anvil-core pattern is scratched on the underside, and you copy it."
+
+[[event]]
+id = "smiths-ledger-rack"
+name = "The Ledger Rack"
+bands = [2]
+kinds = ["forge"]
+text = "A rack of dusty ledgers sits beside the slag-door, each spine marked with a year."
+[[event.option]]
+id = "open"
+label = "Open the oldest ledger"
+need = [{ kind = "flag", id = "reads-the-ledger" }]
+cost = 1
+ok = [{ kind = "xp", amount = 18 }, { kind = "coin", amount = 30 }]
+ok_text = "The first entry reads: Borrowed, one fire. Terms to follow."
+[[event.option]]
+id = "burn"
+label = "Feed the rack to the forge"
+need = [{ kind = "flag", id = "burns-the-ledger" }]
+cost = 1
+ok = [{ kind = "salvage", amount = 10 }, { kind = "xp", amount = 10 }, { kind = "wound", id = "flame-marked" }]
+ok_text = "The pages burn in a hurry, as if glad. A warmth settles on you."
+[[event.option]]
+id = "skim"
+label = "Skim the spines for anything useful"
+cost = 1
+check = { attr = "wits", dc = 11 }
+ok = [{ kind = "coin", amount = 16 }]
+ok_text = "One page is a bill of sale. It is worth a few coins."
+fail = [{ kind = "fatigue", amount = 4 }]
+fail_text = "Dust, and nothing you can use."
+
+[[event]]
+id = "slack-quench"
+name = "The Quenching Stair"
+bands = [2]
+kinds = ["forge"]
+text = "A short stair leads down into a pool of oil-slick water, where blades were once quenched."
+[[event.option]]
+id = "dive"
+label = "Dive for what the smiths dropped"
+cost = 1
+check = { attr = "might", dc = 12 }
+ok = [{ kind = "coin", amount = 36 }, { kind = "salvage", amount = 6 }]
+ok_text = "A rusting knife-bundle, some lost tongs, and a clutch of coin."
+fail = [{ kind = "hurt", amount = 5 }, { kind = "fatigue", amount = 6 }]
+fail_text = "The oil takes your grip and your breath."
+[[event.option]]
+id = "temper"
+label = "Temper your own blade in it"
+need = [{ kind = "tag", tag = "smithcraft" }]
+cost = 1
+ok = [{ kind = "xp", amount = 14 }]
+ok_text = "You lower your weapon and the water sings. It comes up sharper, and so do you."
+
+[[event]]
+id = "sunken-crane"
+name = "The Sunken Crane"
+bands = [2]
+kinds = ["flooded"]
+text = "A crane arm rises from the water, still carrying a crate on its hook."
+[[event.option]]
+id = "lower"
+label = "Lower the crate by hand"
+need = [{ kind = "tag", tag = "liftwright" }]
+cost = 1
+ok = [{ kind = "coin", amount = 32 }, { kind = "salvage", amount = 8 }]
+ok_text = "The arm swings it neatly into your hands."
+[[event.option]]
+id = "climb"
+label = "Climb the arm and cut the crate loose"
+need = [{ kind = "tag", tag = "climb" }]
+cost = 1
+check = { attr = "finesse", dc = 12 }
+ok = [{ kind = "coin", amount = 28 }]
+ok_text = "You cut the line and ride the crate to the bank."
+fail = [{ kind = "hurt", amount = 6 }]
+fail_text = "The arm drops a foot and you with it."
+[[event.option]]
+id = "wade"
+label = "Wade out and haul"
+cost = 1
+check = { attr = "might", dc = 12 }
+ok = [{ kind = "coin", amount = 20 }]
+ok_text = "You manage some of it."
+fail = [{ kind = "fatigue", amount = 8 }]
+fail_text = "You are out of your depth, in more ways than one."
+
+[[event]]
+id = "the-slow-wheel"
+name = "The Slow Wheel"
+bands = [2]
+kinds = ["flooded"]
+text = "A water-wheel turns in the black flow, slowly, driving nothing you can see."
+[[event.option]]
+id = "ride"
+label = "Ride the wheel up"
+need = [{ kind = "tag", tag = "climb" }]
+cost = 1
+check = { attr = "finesse", dc = 12 }
+ok = [{ kind = "xp", amount = 14 }, { kind = "reveal" }]
+ok_text = "At the top you see the level spread out like a table."
+fail = [{ kind = "hurt", amount = 5 }]
+fail_text = "You are thrown at the top."
+[[event.option]]
+id = "jam"
+label = "Jam the wheel with a wedge"
+cost = 1
+check = { attr = "might", dc = 12 }
+ok = [{ kind = "salvage", amount = 10 }]
+ok_text = "The wheel stops, and the flow behind it backs up to leave dry stone."
+fail = [{ kind = "fatigue", amount = 6 }]
+fail_text = "The wheel snaps your wedge."
+
+[[event]]
+id = "pale-fish"
+name = "Pale Fish"
+bands = [2]
+kinds = ["flooded"]
+text = "Pale, eyeless fish circle in the water below. They gather where the light falls."
+[[event.option]]
+id = "catch"
+label = "Catch a few"
+need = [{ kind = "tag", tag = "forage" }]
+cost = 1
+ok = [{ kind = "fatigue", amount = -8 }, { kind = "heal", amount = 8 }]
+ok_text = "A good, plain meal."
+[[event.option]]
+id = "feed"
+label = "Feed them a coal"
+need = [{ kind = "calling", id = "ember-priest" }]
+cost = 1
+ok = [{ kind = "xp", amount = 12 }]
+ok_text = "The fish crowd and sing. You learn which way the current runs."
+[[event.option]]
+id = "watch"
+label = "Watch where they swim"
+cost = 1
+check = { attr = "wits", dc = 12 }
+ok = [{ kind = "xp", amount = 10 }]
+ok_text = "The shoal swims in a spiral. You note the centre and find a drowned strongbox."
+fail = [{ kind = "fatigue", amount = 5 }]
+fail_text = "You stare so long your eyes ache."
+
+[[event]]
+id = "overflow-gate"
+name = "The Overflow Gate"
+bands = [2]
+kinds = ["flooded"]
+text = "A sluice gate holds back a deep pool. A wheel at its side is wedged with rust."
+[[event.option]]
+id = "open"
+label = "Open the gate"
+cost = 1
+check = { attr = "might", dc = 13 }
+ok = [{ kind = "coin", amount = 32 }, { kind = "salvage", amount = 10 }]
+ok_text = "The pool drains to a floor strewn with lost things."
+fail = [{ kind = "hurt", amount = 6 }]
+fail_text = "The wheel slips and hits you."
+[[event.option]]
+id = "pick"
+label = "Pick the lock on the wheel"
+need = [{ kind = "tag", tag = "lockpick" }]
+cost = 1
+ok = [{ kind = "coin", amount = 32 }, { kind = "salvage", amount = 8 }]
+ok_text = "The wheel was locked, not rusted. It spins freely."
+
+[[event]]
+id = "slag-shrine-wick"
+name = "The Dry Wick"
+bands = [2]
+kinds = ["shrine"]
+text = "A shrine lamp, bone dry, its wick curled back on itself like a sleeping animal."
+[[event.option]]
+id = "oil"
+label = "Fill it with your own oil"
+need = [{ kind = "tag", tag = "bless" }]
+cost = 1
+ok = [{ kind = "xp", amount = 14 }, { kind = "fatigue", amount = -10 }]
+ok_text = "The wick catches and burns blue. The shrine remembers you."
+[[event.option]]
+id = "listen"
+label = "Listen for what it needs"
+need = [{ kind = "flag", id = "hears-the-flame" }]
+cost = 1
+ok = [{ kind = "xp", amount = 16 }, { kind = "heal", amount = 8 }]
+ok_text = "A small voice says: not oil. A story. You tell it one, and it lights."
+[[event.option]]
+id = "trim"
+label = "Trim it neat"
+cost = 1
+check = { attr = "finesse", dc = 11 }
+ok = [{ kind = "xp", amount = 8 }]
+ok_text = "A kindness, and a small one."
+fail = [{ kind = "fatigue", amount = 4 }]
+fail_text = "You snuff the last ember and feel responsible."
+
+[[event]]
+id = "vigil-stools"
+name = "The Vigil Stools"
+bands = [2]
+kinds = ["shrine"]
+text = "Three low stools face a dark hearth. A candle-end sits on each, burned to a stub."
+[[event.option]]
+id = "sit"
+label = "Keep a short vigil"
+cost = 1
+check = { attr = "spirit", dc = 12 }
+ok = [{ kind = "heal", amount = 12 }, { kind = "fatigue", amount = -12 }]
+ok_text = "The dark is patient. When you rise, you are lighter."
+fail = [{ kind = "fatigue", amount = 5 }]
+fail_text = "The dark is patient, but you are not. You rise tired."
+[[event.option]]
+id = "pray"
+label = "Pray as a priest does"
+need = [{ kind = "calling", id = "ember-priest" }]
+cost = 1
+ok = [{ kind = "heal", amount = 14 }, { kind = "xp", amount = 8 }, { kind = "wound", id = "ember-blessing" }]
+ok_text = "The three candle-ends flare together, and the dark hearth takes your word for it."
+
+[[event]]
+id = "coal-collection"
+name = "The Coal Collection"
+bands = [2]
+kinds = ["shrine"]
+text = "A rack of small coal-chunks sits in a case, each labelled with a place and a year."
+[[event.option]]
+id = "study"
+label = "Study the labels"
+need = [{ kind = "tag", tag = "lore" }]
+cost = 1
+ok = [{ kind = "xp", amount = 14 }]
+ok_text = "The chunks go back to the first fires. Each label lists who tended it, and what they fed it."
+[[event.option]]
+id = "take"
+label = "Take the youngest"
+cost = 1
+check = { attr = "finesse", dc = 12 }
+ok = [{ kind = "salvage", amount = 10 }, { kind = "coin", amount = 14 }]
+ok_text = "Cold coal, but good for a hearth."
+fail = [{ kind = "wound", id = "hollow-ache" }]
+fail_text = "A cold stone sits where a coal should be, and now sits in your chest."
+
+[[event]]
+id = "tin-saint"
+name = "The Tin Saint"
+bands = [2]
+kinds = ["shrine"]
+text = "A tin saint with a dented face and a bowl at its feet. Coin, buttons, a single dull ring."
+[[event.option]]
+id = "ring"
+label = "Take the ring"
+cost = 1
+check = { attr = "finesse", dc = 11 }
+ok = [{ kind = "coin", amount = 30 }, { kind = "xp", amount = 6 }]
+ok_text = "The ring is brass. The saint does not seem to mind."
+fail = [{ kind = "hurt", amount = 5 }]
+fail_text = "The saint's tin hand bangs your knuckles."
+[[event.option]]
+id = "leave"
+label = "Leave something in the bowl"
+need = [{ kind = "tag", tag = "bless" }]
+cost = 0
+ok = [{ kind = "heal", amount = 10 }]
+ok_text = "A button, a few thanks. A small warmth runs through you."
+
+[[event]]
+id = "hall-of-faces"
+name = "The Hall of Faces"
+bands = [3]
+kinds = ["corridor"]
+text = "Mirrors line both walls, and in each one you are looking elsewhere."
+[[event.option]]
+id = "meet"
+label = "Meet your own gaze"
+cost = 1
+check = { attr = "spirit", dc = 13 }
+ok = [{ kind = "xp", amount = 20 }]
+ok_text = "All the faces turn to you. One of them smiles, and the smile stays with you."
+fail = [{ kind = "hurt", amount = 8 }, { kind = "fatigue", amount = 6 }]
+fail_text = "The faces are not you. They are what you will look like when this is over."
+[[event.option]]
+id = "hide"
+label = "Walk with your eyes on the floor"
+need = [{ kind = "tag", tag = "sneak" }]
+cost = 0
+ok = [{ kind = "xp", amount = 12 }]
+ok_text = "You count tiles all the way down the hall."
+[[event.option]]
+id = "break"
+label = "Break the nearest mirror"
+cost = 1
+check = { attr = "might", dc = 13 }
+ok = [{ kind = "salvage", amount = 12 }]
+ok_text = "The glass bursts outward and its backing is good silver. You keep your face turned away."
+fail = [{ kind = "wound", id = "glass-sliver" }]
+fail_text = "Glass rains down, and a sliver finds you."
+
+[[event]]
+id = "lamplighters-mark"
+name = "The Lamplighters' Mark"
+bands = [3]
+kinds = ["corridor"]
+text = "A small copper plate is set into the wall at hip height: a lamp, and under it, a name scratched out."
+[[event.option]]
+id = "trust"
+label = "Trace the name's absence with your thumb"
+need = [{ kind = "flag", id = "trusts-the-lamplighter" }]
+cost = 1
+ok = [{ kind = "xp", amount = 18 }, { kind = "coin", amount = 40 }]
+ok_text = "The plate unlatches. Behind it, a small cache, left for whoever followed the watch."
+[[event.option]]
+id = "doubt"
+label = "Prise the plate off and check behind it"
+need = [{ kind = "flag", id = "doubts-the-lamplighter" }]
+cost = 1
+ok = [{ kind = "salvage", amount = 12 }, { kind = "coin", amount = 30 }]
+ok_text = "There is a cache. There is also a note saying you should not have looked."
+[[event.option]]
+id = "pass"
+label = "Read the plate and pass on"
+need = [{ kind = "no_flag", id = "trusts-the-lamplighter" }, { kind = "no_flag", id = "doubts-the-lamplighter" }]
+cost = 0
+ok = [{ kind = "xp", amount = 12 }]
+ok_text = "A watch-mark, and you are not on the watch."
+
+[[event]]
+id = "echo-stair"
+name = "The Echo Stair"
+bands = [3]
+kinds = ["corridor"]
+text = "A flight of stairs that goes up, then down, then up. Your footsteps arrive before you do."
+[[event.option]]
+id = "step"
+label = "Step between your echoes"
+cost = 1
+check = { attr = "finesse", dc = 13 }
+ok = [{ kind = "xp", amount = 18 }, { kind = "reveal" }]
+ok_text = "By dodging yourself you find the real stair."
+fail = [{ kind = "hurt", amount = 8 }]
+fail_text = "You trip over a step that was only an echo."
+[[event.option]]
+id = "map"
+label = "Map the echoes"
+need = [{ kind = "tag", tag = "deepmap" }]
+cost = 0
+ok = [{ kind = "reveal" }, { kind = "xp", amount = 12 }]
+ok_text = "Your deep notes show the stair is a loop. You skip it."
+
+[[event]]
+id = "glassy-silence"
+name = "The Glassy Silence"
+bands = [3]
+kinds = ["corridor"]
+text = "The air is perfectly still and perfectly clear. Your own breath makes no sound."
+[[event.option]]
+id = "hush"
+label = "Walk through it with your lamp shuttered"
+need = [{ kind = "tag", tag = "sneak" }]
+cost = 1
+check = { attr = "finesse", dc = 13 }
+ok = [{ kind = "xp", amount = 18 }]
+ok_text = "Nothing hears you. Something nearby is relieved."
+fail = [{ kind = "fatigue", amount = 8 }]
+fail_text = "You feel watched from every direction, and tire from flinching."
+[[event.option]]
+id = "sing"
+label = "Sing one note"
+need = [{ kind = "trait", id = "sharp-tongued" }]
+cost = 1
+ok = [{ kind = "xp", amount = 16 }, { kind = "coin", amount = 34 }]
+ok_text = "The silence breaks into a thousand small chimes, and a hidden panel opens."
+[[event.option]]
+id = "wait"
+label = "Wait it out"
+cost = 2
+ok = [{ kind = "fatigue", amount = -8 }]
+ok_text = "It passes. You breathe again."
+
+[[event]]
+id = "mirror-bank"
+name = "The Mirror Bank"
+bands = [3]
+kinds = ["vault"]
+text = "A bank vault faced with polished glass. Every door is a mirror, and every lock a reflection of the last."
+[[event.option]]
+id = "crack"
+label = "Crack the true lock"
+need = [{ kind = "tag", tag = "safecrack" }]
+cost = 1
+ok = [{ kind = "coin", amount = 80 }, { kind = "relic" }]
+ok_text = "Among the reflections, one lock is real. It gives up a coin-tray and a relic."
+[[event.option]]
+id = "pick"
+label = "Pick the lock you think is true"
+need = [{ kind = "tag", tag = "lockpick" }]
+cost = 1
+check = { attr = "wits", dc = 14 }
+ok = [{ kind = "coin", amount = 55 }]
+ok_text = "Three tries, and the third is true."
+fail = [{ kind = "hurt", amount = 8 }]
+fail_text = "You picked the reflection and the real door pinched your fingers."
+[[event.option]]
+id = "grab"
+label = "Grab from the open trays"
+cost = 1
+check = { attr = "finesse", dc = 13 }
+ok = [{ kind = "coin", amount = 34 }, { kind = "salvage", amount = 8 }]
+ok_text = "The open trays are bait. They are also not empty."
+fail = [{ kind = "hurt", amount = 9 }]
+fail_text = "A cut-glass blade drops from a tray rail."
+
+[[event]]
+id = "glassmakers-stock"
+name = "The Glassmaker's Stock"
+bands = [3]
+kinds = ["vault"]
+text = "Crates of unworked glass, each packed in straw and labelled with a strange colour."
+[[event.option]]
+id = "sort"
+label = "Sort the pure from the flawed"
+need = [{ kind = "tag", tag = "appraise" }]
+cost = 1
+ok = [{ kind = "coin", amount = 50 }, { kind = "xp", amount = 14 }]
+ok_text = "One crate is pure. A guild would pay well for it."
+[[event.option]]
+id = "tinker"
+label = "Cut a lens from a flawed pane"
+need = [{ kind = "tag", tag = "tinker" }]
+cost = 1
+ok = [{ kind = "xp", amount = 18 }, { kind = "recipe", id = "found-glass-scale" }]
+ok_text = "The offcut leaves a pattern in the straw: layered glass plate. You copy it."
+[[event.option]]
+id = "haul"
+label = "Haul out a crate"
+cost = 1
+check = { attr = "might", dc = 13 }
+ok = [{ kind = "salvage", amount = 14 }, { kind = "coin", amount = 20 }]
+ok_text = "Heavy, fragile, and worth the trouble."
+fail = [{ kind = "hurt", amount = 8 }]
+fail_text = "The crate slips and the glass takes bites out of you."
+
+[[event]]
+id = "sealed-reliquary"
+name = "The Sealed Reliquary"
+bands = [3]
+kinds = ["vault"]
+text = "A reliquary with a seal of red wax in the shape of a flame. The wax is warm."
+[[event.option]]
+id = "open"
+label = "Open it with a prayer"
+need = [{ kind = "calling", id = "ember-priest" }]
+cost = 1
+ok = [{ kind = "relic" }, { kind = "xp", amount = 14 }]
+ok_text = "The wax softens for you. Inside, a relic wrapped in a priest's stole."
+[[event.option]]
+id = "break"
+label = "Break the seal"
+cost = 1
+check = { attr = "might", dc = 13 }
+ok = [{ kind = "coin", amount = 54 }]
+ok_text = "The wax cracks, and the coin inside is cold and ordinary."
+fail = [{ kind = "wound", id = "hollow-ache" }]
+fail_text = "The wax bleeds heat into your hand. Something takes a piece of you."
+[[event.option]]
+id = "listen"
+label = "Press your ear to the casket"
+need = [{ kind = "flag", id = "hears-the-flame" }]
+cost = 0
+ok = [{ kind = "xp", amount = 20 }]
+ok_text = "A faint voice, and a shape you will remember."
+
+[[event]]
+id = "loose-ledgers"
+name = "The Loose Ledgers"
+bands = [3]
+kinds = ["vault"]
+text = "Ledgers lie open on a long table, held down by glass paperweights. Each has a different hand."
+[[event.option]]
+id = "compare"
+label = "Compare the hands"
+need = [{ kind = "flag", id = "reads-the-ledger" }]
+cost = 1
+ok = [{ kind = "xp", amount = 20 }, { kind = "coin", amount = 40 }]
+ok_text = "Two hands match. They are the smiths' and the lamplighters', and they are not on opposite sides."
+[[event.option]]
+id = "burn"
+label = "Light them with a paperweight lens"
+need = [{ kind = "flag", id = "burns-the-ledger" }]
+cost = 1
+ok = [{ kind = "salvage", amount = 10 }, { kind = "xp", amount = 12 }]
+ok_text = "The sun does not come this deep. The lens finds a way."
+[[event.option]]
+id = "steal"
+label = "Pocket the paperweights"
+cost = 1
+check = { attr = "finesse", dc = 13 }
+ok = [{ kind = "coin", amount = 46 }]
+ok_text = "Fine glass, and a few good lenses."
+fail = [{ kind = "hurt", amount = 7 }]
+fail_text = "A cut from the sharp edge of a paperweight."
+
+[[event]]
+id = "glassblowers-furnace"
+name = "The Glassblower's Furnace"
+bands = [3]
+kinds = ["forge"]
+text = "A glassblower's furnace still glows, a half-formed vessel hanging on the end of its pipe."
+[[event.option]]
+id = "finish"
+label = "Finish the vessel"
+cost = 1
+check = { attr = "finesse", dc = 13 }
+ok = [{ kind = "coin", amount = 48 }, { kind = "xp", amount = 14 }]
+ok_text = "A rough but honest bottle. A buyer in town will pay."
+fail = [{ kind = "wound", id = "burn" }]
+fail_text = "The glass sags and spits."
+[[event.option]]
+id = "blow"
+label = "Breathe through the pipe like a priest"
+need = [{ kind = "calling", id = "ember-priest" }]
+cost = 1
+ok = [{ kind = "xp", amount = 20 }, { kind = "wound", id = "ember-blessing" }]
+ok_text = "The vessel blooms into a lantern, and the glow leaves a gift."
+[[event.option]]
+id = "read"
+label = "Read the maker's glaze mark"
+need = [{ kind = "tag", tag = "runecraft" }]
+cost = 1
+ok = [{ kind = "recipe", id = "found-hearth-core" }, { kind = "xp", amount = 14 }]
+ok_text = "A pattern to bank an ember so it mends instead of burns."
+
+[[event]]
+id = "prism-lathe"
+name = "The Prism Lathe"
+bands = [3]
+kinds = ["forge"]
+text = "A lathe with a prism instead of a bit. It throws a rainbow across the wall."
+[[event.option]]
+id = "tune"
+label = "Tune the lathe"
+need = [{ kind = "tag", tag = "tinker" }]
+cost = 1
+ok = [{ kind = "xp", amount = 20 }, { kind = "salvage", amount = 10 }]
+ok_text = "The rainbow narrows to a single white line. A faceted shard falls out."
+[[event.option]]
+id = "hold"
+label = "Hold the prism steady with your bare hands"
+cost = 1
+check = { attr = "might", dc = 13 }
+ok = [{ kind = "xp", amount = 16 }]
+ok_text = "The light is warm, then hot. You do not drop it."
+fail = [{ kind = "wound", id = "burn" }]
+fail_text = "The prism burns a bright stripe across your palm."
+
+[[event]]
+id = "cooled-ingot"
+name = "A Cooled Ingot"
+bands = [3]
+kinds = ["forge"]
+text = "A great ingot sits on a trolley, long cooled, a smith's mark struck deep on one end."
+[[event.option]]
+id = "drag"
+label = "Drag it to the surface lift"
+need = [{ kind = "tag", tag = "brawn" }]
+cost = 1
+ok = [{ kind = "salvage", amount = 16 }, { kind = "coin", amount = 34 }]
+ok_text = "It takes most of an hour, but a smith's ingot is worth the trouble."
+[[event.option]]
+id = "read"
+label = "Read the mark"
+need = [{ kind = "tag", tag = "lore" }]
+cost = 1
+ok = [{ kind = "xp", amount = 18 }]
+ok_text = "A name, a year, and the single word: owed."
+[[event.option]]
+id = "chip"
+label = "Chip a corner off"
+cost = 1
+check = { attr = "might", dc = 12 }
+ok = [{ kind = "salvage", amount = 8 }]
+ok_text = "A palm-sized piece comes away."
+fail = [{ kind = "hurt", amount = 7 }]
+fail_text = "The chisel skids and the hammer lands on you."
+
+[[event]]
+id = "kiln-door"
+name = "The Kiln Door"
+bands = [3]
+kinds = ["forge"]
+text = "A kiln door is shut, and breath of cold heat leaks around its edges."
+[[event.option]]
+id = "open"
+label = "Throw it open"
+cost = 1
+check = { attr = "might", dc = 14 }
+ok = [{ kind = "coin", amount = 60 }, { kind = "xp", amount = 10 }]
+ok_text = "The kiln is full of beautiful glass, none of it broken."
+fail = [{ kind = "wound", id = "burn" }]
+fail_text = "The heat is not cold. It is the other thing."
+[[event.option]]
+id = "seal"
+label = "Ward the seam and then open it"
+need = [{ kind = "tag", tag = "warding" }]
+cost = 1
+ok = [{ kind = "coin", amount = 60 }, { kind = "xp", amount = 14 }, { kind = "relic" }]
+ok_text = "The ward holds the heat down. Inside, one piece looks more like a relic than a pot."
+
+[[event]]
+id = "glass-lake"
+name = "The Glass Lake"
+bands = [3]
+kinds = ["flooded"]
+text = "A flooded hall under a skin of ice-clear glass. Dark shapes drift beneath."
+[[event.option]]
+id = "walk"
+label = "Walk across, light of foot"
+need = [{ kind = "tag", tag = "nimble" }]
+cost = 1
+check = { attr = "finesse", dc = 13 }
+ok = [{ kind = "coin", amount = 54 }, { kind = "xp", amount = 12 }]
+ok_text = "The glass holds. On the far side, a sunken chest is frozen into the floor."
+fail = [{ kind = "hurt", amount = 8 }]
+fail_text = "A crack runs from your heel."
+[[event.option]]
+id = "rope"
+label = "Rope across"
+need = [{ kind = "tag", tag = "ropework" }]
+cost = 1
+ok = [{ kind = "coin", amount = 40 }]
+ok_text = "A safe line, and a small chest at the end of it."
+[[event.option]]
+id = "dive"
+label = "Cut a hole and dive"
+cost = 1
+check = { attr = "might", dc = 13 }
+ok = [{ kind = "coin", amount = 48 }, { kind = "salvage", amount = 8 }]
+ok_text = "The water is cold and clear. You find the chest and take what you can carry."
+fail = [{ kind = "wound", id = "cold-touch" }]
+fail_text = "The cold gets into you."
+
+[[event]]
+id = "rainbow-spray"
+name = "The Rainbow Spray"
+bands = [3]
+kinds = ["flooded"]
+text = "A leak sprays through a cracked pane and throws a rainbow across the pool."
+[[event.option]]
+id = "follow"
+label = "Follow the rainbow to its end"
+cost = 1
+check = { attr = "wits", dc = 13 }
+ok = [{ kind = "coin", amount = 48 }, { kind = "xp", amount = 10 }]
+ok_text = "At the end of it, a drowned vault door, half-open."
+fail = [{ kind = "fatigue", amount = 8 }]
+fail_text = "You chase it round the pool and into a wall."
+[[event.option]]
+id = "drink"
+label = "Drink where the rainbow lands"
+need = [{ kind = "tag", tag = "bless" }]
+cost = 1
+ok = [{ kind = "heal", amount = 14 }, { kind = "fatigue", amount = -12 }]
+ok_text = "The water tastes of light."
+
+[[event]]
+id = "the-flooded-gallery"
+name = "The Flooded Gallery"
+bands = [3]
+kinds = ["flooded"]
+text = "A long gallery of glass statues, waist-deep in water. Each statue holds out something."
+[[event.option]]
+id = "read"
+label = "Read the statues' offerings"
+need = [{ kind = "tag", tag = "lore" }]
+cost = 1
+ok = [{ kind = "xp", amount = 20 }]
+ok_text = "Each statue holds something from a different craft. Together they spell a lesson."
+[[event.option]]
+id = "take"
+label = "Take what they hold out"
+cost = 1
+check = { attr = "finesse", dc = 13 }
+ok = [{ kind = "coin", amount = 30 }, { kind = "salvage", amount = 8 }]
+ok_text = "A few of the offerings are real, and you take them."
+fail = [{ kind = "wound", id = "glass-sliver" }]
+fail_text = "A statue's finger snaps off in your boot."
+[[event.option]]
+id = "swim"
+label = "Swim the length of it"
+need = [{ kind = "tag", tag = "pathfind" }]
+cost = 1
+ok = [{ kind = "xp", amount = 14 }, { kind = "reveal" }]
+ok_text = "At the far end, a window into the next hall."
+
+[[event]]
+id = "bell-of-the-deep"
+name = "The Bell of the Deep"
+bands = [3]
+kinds = ["flooded"]
+text = "A great glass bell, mounted at the pool's centre, hums when the water stirs."
+[[event.option]]
+id = "ring"
+label = "Ring it gently"
+cost = 1
+check = { attr = "spirit", dc = 13 }
+ok = [{ kind = "xp", amount = 18 }, { kind = "reveal" }]
+ok_text = "A single clear tone, and the level lights up in your memory."
+fail = [{ kind = "fatigue", amount = 8 }]
+fail_text = "The bell rings back at you, and does not stop."
+[[event.option]]
+id = "silence"
+label = "Silence it with a ward"
+need = [{ kind = "tag", tag = "warding" }]
+cost = 1
+ok = [{ kind = "xp", amount = 14 }, { kind = "salvage", amount = 10 }]
+ok_text = "A glass tongue falls out of the bell, whole."
+
+[[event]]
+id = "shrine-of-glass-saints"
+name = "The Glass Saints"
+bands = [3]
+kinds = ["shrine"]
+text = "A row of glass saints, each lit from within. One is dark."
+[[event.option]]
+id = "light"
+label = "Light the dark saint"
+need = [{ kind = "calling", id = "ember-priest" }]
+cost = 1
+ok = [{ kind = "xp", amount = 18 }, { kind = "wound", id = "ember-blessing" }]
+ok_text = "The dark saint warms and glows. Warmth settles on you like a cloak."
+[[event.option]]
+id = "pray"
+label = "Pray before the row"
+need = [{ kind = "tag", tag = "bless" }]
+cost = 1
+ok = [{ kind = "heal", amount = 14 }, { kind = "fatigue", amount = -12 }]
+ok_text = "The saints bear it."
+[[event.option]]
+id = "smash"
+label = "Take the dark saint's eye"
+cost = 1
+check = { attr = "finesse", dc = 14 }
+ok = [{ kind = "coin", amount = 58 }]
+ok_text = "Glass, but expensive glass."
+fail = [{ kind = "wound", id = "hollow-ache" }]
+fail_text = "The saint's eye does not like being taken. You feel it go behind your own."
+
+[[event]]
+id = "the-quiet-niche"
+name = "The Quiet Niche"
+bands = [3]
+kinds = ["shrine"]
+text = "A small niche cut into the wall, with a lamp in it, burning low. A lamplighter's stool stands in front."
+[[event.option]]
+id = "sit"
+label = "Sit in the lamplighter's seat"
+need = [{ kind = "flag", id = "trusts-the-lamplighter" }]
+cost = 1
+ok = [{ kind = "heal", amount = 14 }, { kind = "xp", amount = 14 }]
+ok_text = "You keep watch for a while. The lamp keeps watch for you."
+[[event.option]]
+id = "snuff"
+label = "Pinch out the lamp"
+need = [{ kind = "flag", id = "doubts-the-lamplighter" }]
+cost = 1
+ok = [{ kind = "xp", amount = 10 }, { kind = "salvage", amount = 8 }]
+ok_text = "The lamp goes out. The niche is only a niche."
+[[event.option]]
+id = "trim"
+label = "Trim the wick"
+cost = 0
+ok = [{ kind = "torch", amount = 3 }]
+ok_text = "A small kindness, and a drop of oil in return."
+
+[[event]]
+id = "hymn-on-glass"
+name = "A Hymn on Glass"
+bands = [3]
+kinds = ["shrine"]
+text = "A hymn is etched into a pane of glass, backwards, so the reader must see it from the wrong side."
+[[event.option]]
+id = "read"
+label = "Read it in a mirror"
+need = [{ kind = "tag", tag = "lore" }]
+cost = 1
+ok = [{ kind = "xp", amount = 22 }]
+ok_text = "The hymn is a question. You learn the answer, and keep it."
+[[event.option]]
+id = "sing"
+label = "Sing it aloud"
+cost = 1
+check = { attr = "spirit", dc = 13 }
+ok = [{ kind = "heal", amount = 14 }, { kind = "xp", amount = 12 }]
+ok_text = "The pane rings. It sounds like agreement."
+fail = [{ kind = "fatigue", amount = 8 }]
+fail_text = "The glass takes the wrong note and gives it back, louder."
+
+[[event]]
+id = "the-pilgrims-stair"
+name = "The Pilgrim's Stair"
+bands = [3]
+kinds = ["shrine"]
+text = "A small stair descends to a shrine no one tends. The treads are worn into dips by feet."
+[[event.option]]
+id = "climb"
+label = "Climb the worn steps in the old way"
+need = [{ kind = "node", id = "ep-pilgrim" }]
+cost = 1
+ok = [{ kind = "xp", amount = 18 }, { kind = "heal", amount = 10 }]
+ok_text = "The old way is slower. You arrive tired and cleansed."
+[[event.option]]
+id = "sweep"
+label = "Sweep the shrine"
+cost = 1
+ok = [{ kind = "coin", amount = 30 }, { kind = "xp", amount = 8 }]
+ok_text = "A kindness. A coin or two turns up under the dust."
+[[event.option]]
+id = "rest"
+label = "Rest"
+cost = 2
+ok = [{ kind = "fatigue", amount = -10 }]
+ok_text = "No one comes for you."
+
+[[event]]
+id = "processional"
+name = "The Processional"
+bands = [4]
+kinds = ["corridor"]
+text = "A wide hall of burned banners. Ash lies in the shape of footsteps, all heading the same way."
+[[event.option]]
+id = "join"
+label = "Fall into step with the ash"
+need = [{ kind = "node", id = "ep-pilgrim" }]
+cost = 1
+ok = [{ kind = "xp", amount = 26 }, { kind = "heal", amount = 12 }]
+ok_text = "You walk the hall as the king's court did. At its end, the air is cooler and clean."
+[[event.option]]
+id = "read"
+label = "Read the banners' devices"
+need = [{ kind = "tag", tag = "lore" }]
+cost = 1
+ok = [{ kind = "xp", amount = 24 }, { kind = "coin", amount = 62 }]
+ok_text = "The devices name every house that sat at the king's table. A hidden purse remains under the last banner."
+[[event.option]]
+id = "sweep"
+label = "Sweep through quickly"
+cost = 1
+check = { attr = "finesse", dc = 14 }
+ok = [{ kind = "xp", amount = 18 }]
+ok_text = "You are through before the heat can find you."
+fail = [{ kind = "wound", id = "burn" }]
+fail_text = "A banner collapses in cinders on your shoulder."
+
+[[event]]
+id = "wyrm-trail"
+name = "The Wyrm Trail"
+bands = [4]
+kinds = ["corridor"]
+text = "A slick, glassy track runs along the floor, wide as a barrel, and warm to the touch."
+[[event.option]]
+id = "track"
+label = "Follow it in"
+need = [{ kind = "tag", tag = "forage" }]
+cost = 1
+check = { attr = "wits", dc = 14 }
+ok = [{ kind = "xp", amount = 24 }, { kind = "reveal" }]
+ok_text = "It leads to a nest, long empty. You learn the shape of the level from where it turned."
+fail = [{ kind = "hurt", amount = 11 }]
+fail_text = "You follow it too eagerly into something with scales."
+[[event.option]]
+id = "scrape"
+label = "Scrape the glaze"
+cost = 1
+check = { attr = "might", dc = 14 }
+ok = [{ kind = "salvage", amount = 16 }, { kind = "coin", amount = 40 }]
+ok_text = "Wyrm-glaze is a dealer's favourite."
+fail = [{ kind = "wound", id = "scalded" }]
+fail_text = "The track is hotter than it looked."
+[[event.option]]
+id = "ward"
+label = "Ward the track and leave it"
+need = [{ kind = "tag", tag = "warding" }]
+cost = 1
+ok = [{ kind = "xp", amount = 20 }]
+ok_text = "The track cools, and the warm air goes with it. You feel you have done a small kindness."
+
+[[event]]
+id = "royal-lamps"
+name = "The Royal Lamps"
+bands = [4]
+kinds = ["corridor"]
+text = "Lamps on tall stands burn along the walk, each with a gilded shade. They lean to you as you pass."
+[[event.option]]
+id = "bow"
+label = "Bow to the lamps"
+need = [{ kind = "flag", id = "keeps-the-flame" }]
+cost = 1
+ok = [{ kind = "xp", amount = 24 }, { kind = "wound", id = "lamplight-grace" }]
+ok_text = "They straighten, then dim politely. A little of their light follows."
+[[event.option]]
+id = "snuff"
+label = "Snuff them one by one"
+need = [{ kind = "flag", id = "lets-it-fall" }]
+cost = 1
+ok = [{ kind = "coin", amount = 70 }, { kind = "xp", amount = 16 }]
+ok_text = "The shades are real gold leaf. The lamps do not forgive, but they cannot follow."
+[[event.option]]
+id = "pass"
+label = "Walk between the lamps"
+cost = 1
+check = { attr = "spirit", dc = 14 }
+ok = [{ kind = "xp", amount = 20 }]
+ok_text = "Their light touches you and moves on."
+fail = [{ kind = "fatigue", amount = 10 }, { kind = "hurt", amount = 10 }]
+fail_text = "The lamps take a share of your warmth."
+
+[[event]]
+id = "sentinel-line"
+name = "The Sentinel Line"
+bands = [4]
+kinds = ["corridor"]
+text = "A line of ash-sentinels stands at attention, so still you suspect they are asleep."
+[[event.option]]
+id = "sneak"
+label = "Slip down the line"
+need = [{ kind = "tag", tag = "sneak" }]
+cost = 1
+check = { attr = "finesse", dc = 14 }
+ok = [{ kind = "coin", amount = 60 }, { kind = "xp", amount = 22 }]
+ok_text = "They sleep, or pretend to. At the end, a guardroom purse."
+fail = [{ kind = "hurt", amount = 12 }]
+fail_text = "One of them was awake after all."
+[[event.option]]
+id = "salute"
+label = "Salute the line"
+need = [{ kind = "calling", id = "warden" }]
+cost = 1
+ok = [{ kind = "xp", amount = 26 }]
+ok_text = "They do not move. They see you as a thing they used to be."
+[[event.option]]
+id = "read"
+label = "Read the sentinels' tarnished badges"
+need = [{ kind = "tag", tag = "appraise" }]
+cost = 1
+ok = [{ kind = "xp", amount = 22 }, { kind = "coin", amount = 40 }]
+ok_text = "A badge with a name, a rank, and the date of the last watch."
+
+[[event]]
+id = "kings-treasury"
+name = "The King's Small Treasury"
+bands = [4]
+kinds = ["vault"]
+text = "A small treasury behind a grille of gilded bars. The lock is the size of a loaf."
+[[event.option]]
+id = "pick"
+label = "Open the lock"
+need = [{ kind = "tag", tag = "safecrack" }]
+cost = 1
+ok = [{ kind = "coin", amount = 100 }, { kind = "relic" }]
+ok_text = "The lock gives way with the smoothness of a courtier. Inside, a relic and a small tray of coin."
+[[event.option]]
+id = "force"
+label = "Force the grille"
+need = [{ kind = "tag", tag = "brawn" }]
+cost = 1
+check = { attr = "might", dc = 15 }
+ok = [{ kind = "coin", amount = 55 }, { kind = "salvage", amount = 14 }]
+ok_text = "The gilt peels, the iron bends, and the room is yours."
+fail = [{ kind = "hurt", amount = 14 }]
+fail_text = "The grille swings back and takes you across the ribs."
+[[event.option]]
+id = "squeeze"
+label = "Squeeze through the bars"
+need = [{ kind = "tag", tag = "nimble" }]
+cost = 1
+check = { attr = "finesse", dc = 14 }
+ok = [{ kind = "coin", amount = 60 }]
+ok_text = "Thin enough, and lucky."
+fail = [{ kind = "hurt", amount = 10 }]
+fail_text = "You stick, and are freed only by a great effort."
+
+[[event]]
+id = "heralds-trunk"
+name = "The Herald's Trunk"
+bands = [4]
+kinds = ["vault"]
+text = "A trunk of tabards and trumpets, with a sealed message-tube at the bottom."
+[[event.option]]
+id = "read"
+label = "Read the message"
+need = [{ kind = "tag", tag = "lore" }]
+cost = 1
+ok = [{ kind = "xp", amount = 28 }, { kind = "coin", amount = 60 }]
+ok_text = "The king asked for the fire to stay lit. The reply, never sent, is in the tube too."
+[[event.option]]
+id = "sell"
+label = "Sell the trumpets"
+need = [{ kind = "tag", tag = "appraise" }]
+cost = 1
+ok = [{ kind = "coin", amount = 75 }]
+ok_text = "Real silver, and the town will pay."
+[[event.option]]
+id = "sound"
+label = "Sound a trumpet"
+cost = 1
+check = { attr = "spirit", dc = 14 }
+ok = [{ kind = "xp", amount = 20 }]
+ok_text = "A clear call. A pause. Somewhere far below, an answer."
+fail = [{ kind = "fatigue", amount = 10 }]
+fail_text = "You sound a call of alarm and are afraid of your own voice."
+
+[[event]]
+id = "gaoler-keys"
+name = "The Gaoler's Keys"
+bands = [4]
+kinds = ["vault"]
+text = "A ring of black keys hangs from a peg. Every cell in this wing has a number, and the numbers are in the wrong order."
+[[event.option]]
+id = "sort"
+label = "Match keys to cells"
+cost = 1
+check = { attr = "wits", dc = 14 }
+ok = [{ kind = "coin", amount = 65 }, { kind = "relic" }]
+ok_text = "Cell nine holds a prisoner's last possessions, and one of them is worth carrying."
+fail = [{ kind = "fatigue", amount = 8 }]
+fail_text = "You try every key in every cell, and all of them are wrong."
+[[event.option]]
+id = "pick"
+label = "Skip the keys and pick the lock"
+need = [{ kind = "tag", tag = "lockpick" }]
+cost = 1
+ok = [{ kind = "coin", amount = 80 }]
+ok_text = "The old locks give in to a good pick."
+
+[[event]]
+id = "table-of-state"
+name = "The Table of State"
+bands = [4]
+kinds = ["vault"]
+text = "A long table of ash, where something was once spread out. A cold fireplace sits behind it."
+[[event.option]]
+id = "read"
+label = "Read the grain of the ash"
+need = [{ kind = "tag", tag = "runecraft" }]
+cost = 1
+ok = [{ kind = "xp", amount = 26 }, { kind = "recipe", id = "found-cinder-core" }]
+ok_text = "The ash holds the shape of a map and a recipe: how to throw a spark."
+[[event.option]]
+id = "sift"
+label = "Sift it"
+cost = 1
+check = { attr = "wits", dc = 13 }
+ok = [{ kind = "coin", amount = 55 }, { kind = "salvage", amount = 10 }]
+ok_text = "A few melted coins and a ring."
+fail = [{ kind = "wound", id = "soot-lung" }]
+fail_text = "The ash hangs in the air, and you breathe it."
+
+[[event]]
+id = "kings-anvil"
+name = "The King's Anvil"
+bands = [4]
+kinds = ["forge"]
+text = "An anvil of black-gold iron, set in the middle of a ring of cold braziers. The ring has a gap."
+[[event.option]]
+id = "strike"
+label = "Strike it in the gap"
+need = [{ kind = "tag", tag = "smithcraft" }]
+cost = 1
+ok = [{ kind = "xp", amount = 28 }, { kind = "wound", id = "smiths-favour" }]
+ok_text = "The note is a king's note. The forge hears it, and approves."
+[[event.option]]
+id = "light"
+label = "Light the braziers"
+need = [{ kind = "calling", id = "ember-priest" }]
+cost = 1
+ok = [{ kind = "xp", amount = 24 }, { kind = "heal", amount = 14 }]
+ok_text = "They burn clean and slow. You warm yourself at them."
+[[event.option]]
+id = "pry"
+label = "Pry the gold from the base"
+cost = 1
+check = { attr = "might", dc = 15 }
+ok = [{ kind = "coin", amount = 80 }, { kind = "salvage", amount = 12 }]
+ok_text = "The anvil does not mind. The braziers do."
+fail = [{ kind = "wound", id = "burn" }]
+fail_text = "A brazier pours coals across the floor."
+
+[[event]]
+id = "molten-gate"
+name = "The Molten Gate"
+bands = [4]
+kinds = ["forge"]
+text = "A gate of iron, its bars glowing a dull orange. Beyond it, a forge that never closed."
+[[event.option]]
+id = "wait"
+label = "Wait for it to cool"
+cost = 2
+ok = [{ kind = "xp", amount = 22 }, { kind = "salvage", amount = 14 }]
+ok_text = "After an hour the bars dim, and the forge is yours to loot."
+[[event.option]]
+id = "brave"
+label = "Walk through the bars as if they were not hot"
+need = [{ kind = "trait", id = "fire-blooded" }]
+cost = 1
+ok = [{ kind = "coin", amount = 90 }, { kind = "xp", amount = 24 }]
+ok_text = "The heat is a courtesy to you. The forge beyond is stocked."
+[[event.option]]
+id = "bend"
+label = "Bend two bars apart"
+need = [{ kind = "tag", tag = "brawn" }]
+cost = 1
+check = { attr = "might", dc = 15 }
+ok = [{ kind = "coin", amount = 60 }, { kind = "salvage", amount = 10 }]
+ok_text = "A gap, and a long breath after."
+fail = [{ kind = "wound", id = "burn" }]
+fail_text = "The bars bend, and burn you."
+
+[[event]]
+id = "temper-hall"
+name = "The Temper Hall"
+bands = [4]
+kinds = ["forge"]
+text = "A long row of quench-barrels, each holding a different liquid and a different blade."
+[[event.option]]
+id = "pick"
+label = "Pick a blade"
+cost = 1
+check = { attr = "finesse", dc = 14 }
+ok = [{ kind = "coin", amount = 76 }, { kind = "xp", amount = 20 }]
+ok_text = "The blade is fine steel, and the barrel's liquid cools the ache of the climb."
+fail = [{ kind = "hurt", amount = 11 }]
+fail_text = "You pick the wrong barrel and the blade bites back."
+[[event.option]]
+id = "drink"
+label = "Drink from the clean barrel"
+need = [{ kind = "tag", tag = "forage" }]
+cost = 1
+ok = [{ kind = "heal", amount = 16 }, { kind = "fatigue", amount = -12 }]
+ok_text = "Cold, sharp, honest water."
+[[event.option]]
+id = "read"
+label = "Read the barrels' recipes"
+need = [{ kind = "tag", tag = "smithcraft" }]
+cost = 1
+ok = [{ kind = "xp", amount = 26 }]
+ok_text = "Each liquid is a different heat treatment. You know why the old blades lasted."
+
+[[event]]
+id = "royal-hearth"
+name = "The Royal Hearth"
+bands = [4]
+kinds = ["forge"]
+text = "A hearth the width of a room. A single log still glows in it, and has for a hundred years."
+[[event.option]]
+id = "feed"
+label = "Feed it a coal of your own"
+need = [{ kind = "flag", id = "keeps-the-flame" }]
+cost = 1
+ok = [{ kind = "heal", amount = 18 }, { kind = "xp", amount = 20 }, { kind = "wound", id = "ember-blessing" }]
+ok_text = "The hearth takes the coal and returns the favour."
+[[event.option]]
+id = "steal"
+label = "Steal the log's coal"
+need = [{ kind = "tag", tag = "runecraft" }]
+cost = 1
+check = { attr = "finesse", dc = 15 }
+ok = [{ kind = "core", id = "hearth-core" }]
+ok_text = "A coal of the king's hearth, still warm. It rides in a cloth bag."
+fail = [{ kind = "wound", id = "burn" }, { kind = "hurt", amount = 10 }]
+fail_text = "The hearth objects, with its whole mouth."
+[[event.option]]
+id = "sit"
+label = "Sit and warm yourself"
+cost = 2
+ok = [{ kind = "heal", amount = 12 }, { kind = "fatigue", amount = -10 }]
+ok_text = "The hearth is warm, and so is the quiet."
+
+[[event]]
+id = "moat-walk"
+name = "The Moat Walk"
+bands = [4]
+kinds = ["flooded"]
+text = "A stone walk crosses a flooded moat, slick with soot. Skulls lie in the shallows."
+[[event.option]]
+id = "cross"
+label = "Cross with a steady foot"
+cost = 1
+check = { attr = "finesse", dc = 14 }
+ok = [{ kind = "xp", amount = 24 }, { kind = "coin", amount = 60 }]
+ok_text = "A cache at the far end, left by the last to make it."
+fail = [{ kind = "hurt", amount = 12 }]
+fail_text = "You slip, and the skulls do not cushion you."
+[[event.option]]
+id = "rope"
+label = "Rope across"
+need = [{ kind = "tag", tag = "ropework" }]
+cost = 1
+ok = [{ kind = "xp", amount = 20 }, { kind = "coin", amount = 50 }]
+ok_text = "A safe line."
+[[event.option]]
+id = "dive"
+label = "Dive for the king's lost ring"
+need = [{ kind = "tag", tag = "brawn" }]
+cost = 1
+check = { attr = "might", dc = 15 }
+ok = [{ kind = "coin", amount = 95 }]
+ok_text = "Gold, and a long breath afterwards."
+fail = [{ kind = "wound", id = "cold-touch" }, { kind = "fatigue", amount = 10 }]
+fail_text = "The moat is colder than any water has a right to be."
+
+[[event]]
+id = "sluice-organ"
+name = "The Sluice Organ"
+bands = [4]
+kinds = ["flooded"]
+text = "Pipes and valves rise from the water, a great organ played by the flow."
+[[event.option]]
+id = "play"
+label = "Play a chord"
+cost = 1
+check = { attr = "finesse", dc = 14 }
+ok = [{ kind = "xp", amount = 26 }]
+ok_text = "The organ answers, deep and slow, and a hidden door in the wall groans open."
+fail = [{ kind = "fatigue", amount = 10 }]
+fail_text = "You hit a bad note and the organ makes it worse."
+[[event.option]]
+id = "tune"
+label = "Tune it to a ward"
+need = [{ kind = "tag", tag = "warding" }]
+cost = 1
+ok = [{ kind = "xp", amount = 24 }, { kind = "salvage", amount = 14 }]
+ok_text = "The pipes sing a cold, calm tone. A copper reed falls out."
+[[event.option]]
+id = "listen"
+label = "Listen for the hidden melody"
+need = [{ kind = "tag", tag = "foresee" }]
+cost = 1
+ok = [{ kind = "xp", amount = 22 }, { kind = "reveal" }]
+ok_text = "A tune you almost recognise."
+
+[[event]]
+id = "drowned-court"
+name = "The Drowned Court"
+bands = [4]
+kinds = ["flooded"]
+text = "The king's court sits at a long table under a foot of water. They are not alive. They are not quite dead."
+[[event.option]]
+id = "bow"
+label = "Bow, and ask leave"
+need = [{ kind = "flag", id = "opens-the-gate" }]
+cost = 1
+ok = [{ kind = "xp", amount = 26 }, { kind = "relic" }]
+ok_text = "The nearest court-lady inclines her head. A relic slides across the table to you."
+[[event.option]]
+id = "steal"
+label = "Take the cups"
+cost = 1
+check = { attr = "finesse", dc = 14 }
+ok = [{ kind = "coin", amount = 80 }]
+ok_text = "Silver, and the court does not stir. It will remember."
+fail = [{ kind = "wound", id = "cold-touch" }, { kind = "hurt", amount = 10 }]
+fail_text = "The court stirs. A cold hand takes your wrist."
+[[event.option]]
+id = "sit"
+label = "Sit down at the foot of the table"
+need = [{ kind = "calling", id = "duelist" }]
+cost = 1
+ok = [{ kind = "xp", amount = 24 }, { kind = "fatigue", amount = -10 }]
+ok_text = "No one speaks. It is the most restful hour you have spent below."
+
+[[event]]
+id = "waterfall-hearth"
+name = "The Waterfall Hearth"
+bands = [4]
+kinds = ["flooded"]
+text = "A hearth stands behind a curtain of falling water, and the fire in it does not go out."
+[[event.option]]
+id = "pass"
+label = "Pass through the curtain"
+cost = 1
+check = { attr = "finesse", dc = 14 }
+ok = [{ kind = "heal", amount = 16 }, { kind = "xp", amount = 20 }]
+ok_text = "The fire behind it is real. You steam dry in front of it."
+fail = [{ kind = "fatigue", amount = 10 }, { kind = "hurt", amount = 8 }]
+fail_text = "The curtain is heavier than it seems."
+[[event.option]]
+id = "dim"
+label = "Smother the fire"
+need = [{ kind = "flag", id = "lets-it-fall" }]
+cost = 1
+ok = [{ kind = "salvage", amount = 12 }, { kind = "xp", amount = 14 }]
+ok_text = "It hisses and goes. The flames were guarding something small."
+[[event.option]]
+id = "feed"
+label = "Feed it"
+need = [{ kind = "flag", id = "shares-the-flame" }]
+cost = 1
+ok = [{ kind = "xp", amount = 22 }, { kind = "wound", id = "lamplight-grace" }]
+ok_text = "The fire accepts, and the water stills."
+
+[[event]]
+id = "throne-shrine"
+name = "The Throne Shrine"
+bands = [4]
+kinds = ["shrine"]
+text = "A throne in a niche, wreathed in cold coals, a bowl in its lap. It smells of old oil."
+[[event.option]]
+id = "kneel"
+label = "Kneel at its feet"
+need = [{ kind = "tag", tag = "bless" }]
+cost = 1
+ok = [{ kind = "xp", amount = 26 }, { kind = "heal", amount = 16 }]
+ok_text = "The throne is empty, but not unattended."
+[[event.option]]
+id = "sit"
+label = "Sit on the throne"
+need = [{ kind = "flag", id = "keeps-the-key" }]
+cost = 1
+ok = [{ kind = "xp", amount = 28 }, { kind = "wound", id = "hollow-ache" }]
+ok_text = "You feel crowned, then hollowed. The ache will pass, but the memory will not."
+[[event.option]]
+id = "loot"
+label = "Take the bowl"
+cost = 1
+check = { attr = "finesse", dc = 14 }
+ok = [{ kind = "coin", amount = 85 }]
+ok_text = "Gold, pressed thin."
+fail = [{ kind = "hurt", amount = 12 }]
+fail_text = "The throne has a say in this."
+
+[[event]]
+id = "grate-of-prayers"
+name = "The Grate of Prayers"
+bands = [4]
+kinds = ["shrine"]
+text = "A bronze grate in the floor, its bars scratched with prayers in a hundred hands. Warm air rises from it."
+[[event.option]]
+id = "add"
+label = "Scratch your own"
+cost = 1
+check = { attr = "spirit", dc = 14 }
+ok = [{ kind = "xp", amount = 24 }, { kind = "fatigue", amount = -10 }]
+ok_text = "Your prayer joins the rest, small and sure."
+fail = [{ kind = "fatigue", amount = 6 }]
+fail_text = "You can't think of a prayer. Your hand shakes."
+[[event.option]]
+id = "read"
+label = "Read the oldest prayers"
+need = [{ kind = "tag", tag = "lore" }]
+cost = 1
+ok = [{ kind = "xp", amount = 26 }]
+ok_text = "They are not prayers. They are instructions."
+[[event.option]]
+id = "pry"
+label = "Prise out the loose bars"
+cost = 1
+check = { attr = "might", dc = 14 }
+ok = [{ kind = "salvage", amount = 16 }, { kind = "coin", amount = 36 }]
+ok_text = "Bronze, and a few coins."
+fail = [{ kind = "wound", id = "scalded" }]
+fail_text = "The warm air is hotter than it was."
+
+[[event]]
+id = "quiet-chapel"
+name = "The Quiet Chapel"
+bands = [4]
+kinds = ["shrine"]
+text = "A small chapel, benches in rows, all facing a blank wall. A lamplighter's badge hangs from a nail."
+[[event.option]]
+id = "sit"
+label = "Sit and watch the wall"
+need = [{ kind = "flag", id = "trusts-the-lamplighter" }]
+cost = 1
+ok = [{ kind = "xp", amount = 26 }, { kind = "heal", amount = 14 }]
+ok_text = "The wall is blank. After a while it is not."
+[[event.option]]
+id = "search"
+label = "Search the benches"
+need = [{ kind = "flag", id = "doubts-the-lamplighter" }]
+cost = 1
+ok = [{ kind = "coin", amount = 66 }, { kind = "salvage", amount = 10 }]
+ok_text = "Under every bench is a small cache of the watch."
+[[event.option]]
+id = "pray"
+label = "Pray in the lamplighters' way"
+cost = 1
+ok = [{ kind = "heal", amount = 12 }]
+ok_text = "Short, plain, and addressed to nobody."
+
+[[event]]
+id = "ember-chorus"
+name = "The Ember Chorus"
+bands = [4]
+kinds = ["shrine"]
+text = "Embers on a long stone rail glow in turn, one after another, as if singing."
+[[event.option]]
+id = "join"
+label = "Add your voice"
+need = [{ kind = "calling", id = "ember-priest" }]
+cost = 1
+check = { attr = "spirit", dc = 14 }
+ok = [{ kind = "xp", amount = 26 }, { kind = "heal", amount = 14 }, { kind = "wound", id = "ember-blessing" }]
+ok_text = "Your voice finds the embers' pitch. They hold the note for you."
+fail = [{ kind = "fatigue", amount = 8 }]
+fail_text = "Your voice breaks. The embers wait, and then go on without you."
+[[event.option]]
+id = "hum"
+label = "Hum along softly"
+need = [{ kind = "no_tag", tag = "bless" }]
+cost = 0
+ok = [{ kind = "xp", amount = 18 }]
+ok_text = "The embers do not mind."
+[[event.option]]
+id = "quench"
+label = "Smother one"
+need = [{ kind = "flag", id = "lets-it-fall" }]
+cost = 1
+ok = [{ kind = "salvage", amount = 12 }, { kind = "coin", amount = 40 }]
+ok_text = "One coal goes out. The rest sing a little lower."
+
+[[event]]
+id = "rime-walk"
+name = "The Rime Walk"
+bands = [5]
+kinds = ["corridor"]
+text = "Frost grows on the walls in ferns. The air is so cold that it hurts to breathe in."
+[[event.option]]
+id = "press"
+label = "Press on, breathing through cloth"
+cost = 1
+check = { attr = "might", dc = 15 }
+ok = [{ kind = "xp", amount = 34 }]
+ok_text = "You come out the far end with ice in your beard."
+fail = [{ kind = "wound", id = "cold-touch" }, { kind = "hurt", amount = 16 }]
+fail_text = "The cold is a hand around your throat."
+[[event.option]]
+id = "warm"
+label = "Walk it with your blood up"
+need = [{ kind = "trait", id = "fire-blooded" }]
+cost = 1
+ok = [{ kind = "xp", amount = 30 }, { kind = "coin", amount = 80 }]
+ok_text = "Heat is in you. The frost parts, and a frozen purse waits at its end."
+[[event.option]]
+id = "ward"
+label = "Ward a path through"
+need = [{ kind = "tag", tag = "warding" }]
+cost = 1
+ok = [{ kind = "xp", amount = 36 }, { kind = "salvage", amount = 18 }]
+ok_text = "A line of warm air follows you down the walk."
+
+[[event]]
+id = "anvils-echo"
+name = "The Anvil's Echo"
+bands = [5]
+kinds = ["corridor"]
+text = "Somewhere ahead, a hammer rings on empty air. The echo comes back, a beat late, every time."
+[[event.option]]
+id = "follow"
+label = "Follow the ring"
+cost = 1
+check = { attr = "wits", dc = 15 }
+ok = [{ kind = "xp", amount = 34 }, { kind = "reveal" }]
+ok_text = "The echo leads to a room of dead forges, and your map blooms."
+fail = [{ kind = "fatigue", amount = 12 }]
+fail_text = "You walk in circles under the sound."
+[[event.option]]
+id = "answer"
+label = "Answer with your own hammer"
+need = [{ kind = "tag", tag = "smithcraft" }]
+cost = 1
+ok = [{ kind = "xp", amount = 38 }]
+ok_text = "The sound steadies. It was waiting to be answered."
+[[event.option]]
+id = "block"
+label = "Block your ears"
+need = [{ kind = "flag", id = "stops-your-ears" }]
+cost = 0
+ok = [{ kind = "xp", amount = 26 }]
+ok_text = "You walk through the silence, mostly unharmed."
+
+[[event]]
+id = "last-lamplighter"
+name = "The Last Lamplighter"
+bands = [5]
+kinds = ["corridor"]
+text = "A figure sits against the wall in a lamplighter's coat, a taper still in hand. It does not look up."
+[[event.option]]
+id = "take"
+label = "Take the taper"
+need = [{ kind = "flag", id = "trusts-the-lamplighter" }]
+cost = 1
+ok = [{ kind = "xp", amount = 36 }, { kind = "wound", id = "lamplight-grace" }]
+ok_text = "The taper lights as you take it. You are, for the rest of the day, on the watch."
+[[event.option]]
+id = "search"
+label = "Search the coat"
+need = [{ kind = "flag", id = "doubts-the-lamplighter" }]
+cost = 1
+ok = [{ kind = "coin", amount = 110 }, { kind = "salvage", amount = 16 }]
+ok_text = "Pockets full of the watch's spare coin. You are not forgiven."
+[[event.option]]
+id = "sit"
+label = "Sit beside it"
+cost = 2
+ok = [{ kind = "heal", amount = 16 }, { kind = "fatigue", amount = -14 }]
+ok_text = "Neither of you speaks. It is a kind of company."
+
+[[event]]
+id = "the-long-stair"
+name = "The Long Stair"
+bands = [5]
+kinds = ["corridor"]
+text = "A staircase falls away in front of you, endless and white with frost."
+[[event.option]]
+id = "descend"
+label = "Descend with a rope"
+need = [{ kind = "tag", tag = "ropework" }]
+cost = 1
+ok = [{ kind = "xp", amount = 32 }, { kind = "coin", amount = 76 }]
+ok_text = "The rope holds. At the bottom, a cache wrapped in frozen cloth."
+[[event.option]]
+id = "slide"
+label = "Slide down on your pack"
+cost = 1
+check = { attr = "finesse", dc = 15 }
+ok = [{ kind = "xp", amount = 30 }]
+ok_text = "You arrive at the bottom in a heap, and alive."
+fail = [{ kind = "hurt", amount = 18 }]
+fail_text = "You hit every step."
+[[event.option]]
+id = "count"
+label = "Count the steps"
+need = [{ kind = "tag", tag = "deepmap" }]
+cost = 0
+ok = [{ kind = "xp", amount = 28 }, { kind = "reveal" }]
+ok_text = "Seven hundred and sixty. You know where you are."
+
+[[event]]
+id = "smiths-last-purse"
+name = "The Smiths' Last Purse"
+bands = [5]
+kinds = ["vault"]
+text = "A purse on a frozen anvil, tied in leather that has hardened like bone."
+[[event.option]]
+id = "cut"
+label = "Cut the strings"
+cost = 1
+check = { attr = "finesse", dc = 15 }
+ok = [{ kind = "coin", amount = 120 }]
+ok_text = "Gold from before the town had a name."
+fail = [{ kind = "wound", id = "cold-touch" }]
+fail_text = "The leather snaps and the cold comes out of it."
+[[event.option]]
+id = "return"
+label = "Open it with the struck key"
+need = [{ kind = "flag", id = "keeps-the-key" }]
+cost = 1
+ok = [{ kind = "coin", amount = 110 }, { kind = "relic" }, { kind = "xp", amount = 30 }]
+ok_text = "It was waiting for the key. Inside, coin and a relic of the smiths' own hands."
+[[event.option]]
+id = "leave"
+label = "Leave it for the apprentices"
+need = [{ kind = "flag", id = "gave-the-key" }]
+cost = 0
+ok = [{ kind = "xp", amount = 36 }, { kind = "wound", id = "smiths-favour" }]
+ok_text = "You mark the anvil with a chalk key. A little of their luck follows you."
+
+[[event]]
+id = "cold-strongroom"
+name = "The Cold Strongroom"
+bands = [5]
+kinds = ["vault"]
+text = "A strongroom with a door of frosted steel. The lock is a wheel of nine iron teeth."
+[[event.option]]
+id = "crack"
+label = "Crack the wheel"
+need = [{ kind = "tag", tag = "safecrack" }]
+cost = 1
+ok = [{ kind = "coin", amount = 130 }, { kind = "relic" }]
+ok_text = "Nine teeth, nine numbers, and a vault of cold, dry coin."
+[[event.option]]
+id = "burn"
+label = "Burn the frost from the lock"
+need = [{ kind = "trait", id = "fire-blooded" }]
+cost = 1
+ok = [{ kind = "coin", amount = 90 }, { kind = "xp", amount = 30 }]
+ok_text = "A coal held to the wheel until it turns."
+[[event.option]]
+id = "force"
+label = "Break the door"
+cost = 1
+check = { attr = "might", dc = 16 }
+ok = [{ kind = "coin", amount = 70 }, { kind = "salvage", amount = 16 }]
+ok_text = "The steel is brittle with cold. It shatters."
+fail = [{ kind = "hurt", amount = 18 }]
+fail_text = "It does not shatter. You do."
+
+[[event]]
+id = "frozen-library"
+name = "The Frozen Library"
+bands = [5]
+kinds = ["vault"]
+text = "Books frozen into their shelves like fish in ice. A few titles show through."
+[[event.option]]
+id = "read"
+label = "Read the titles through the ice"
+need = [{ kind = "tag", tag = "lore" }]
+cost = 1
+ok = [{ kind = "xp", amount = 40 }, { kind = "recipe", id = "lib-tinder" }]
+ok_text = "A handbook on lanterns, frozen shut. The pattern is on the spine."
+[[event.option]]
+id = "thaw"
+label = "Thaw a shelf with a coal"
+need = [{ kind = "calling", id = "ember-priest" }]
+cost = 1
+ok = [{ kind = "xp", amount = 34 }, { kind = "coin", amount = 70 }]
+ok_text = "The books come free, brittle but readable. One is a bank-book."
+[[event.option]]
+id = "chip"
+label = "Chip out a book"
+cost = 1
+check = { attr = "might", dc = 15 }
+ok = [{ kind = "coin", amount = 60 }]
+ok_text = "A thin purse falls from the pages."
+fail = [{ kind = "hurt", amount = 14 }]
+fail_text = "The ice splinters in your face."
+
+[[event]]
+id = "rimed-ledgers"
+name = "The Rimed Ledgers"
+bands = [5]
+kinds = ["vault"]
+text = "A clerk's room sealed behind frost. The ledgers are all of one account: ours, theirs, and a third column."
+[[event.option]]
+id = "sum"
+label = "Total the third column"
+need = [{ kind = "flag", id = "reads-the-ledger" }]
+cost = 1
+ok = [{ kind = "xp", amount = 40 }, { kind = "coin", amount = 90 }]
+ok_text = "The third column is the fire's. It is small, and it is growing."
+[[event.option]]
+id = "burn"
+label = "Burn the whole room"
+need = [{ kind = "flag", id = "burns-the-ledger" }]
+cost = 1
+ok = [{ kind = "salvage", amount = 18 }, { kind = "xp", amount = 30 }]
+ok_text = "A good, bright, ugly fire. Something far off hisses."
+[[event.option]]
+id = "skim"
+label = "Skim for coin"
+cost = 1
+check = { attr = "wits", dc = 14 }
+ok = [{ kind = "coin", amount = 70 }]
+ok_text = "A page is clipped to a small cache."
+fail = [{ kind = "fatigue", amount = 10 }]
+fail_text = "You skim in vain. The cold has made your fingers stupid."
+
+[[event]]
+id = "dead-smith"
+name = "The Dead Smith"
+bands = [5]
+kinds = ["forge"]
+text = "A smith stands at an anvil with a hammer raised. He is frozen mid-swing, and there is nothing on the anvil."
+[[event.option]]
+id = "finish"
+label = "Finish his blow"
+need = [{ kind = "tag", tag = "smithcraft" }]
+cost = 1
+ok = [{ kind = "xp", amount = 40 }, { kind = "wound", id = "smiths-favour" }]
+ok_text = "You bring the hammer down. The smith sighs, and thaws into frost-dust."
+[[event.option]]
+id = "pray"
+label = "Say a prayer for his fire"
+need = [{ kind = "calling", id = "ember-priest" }]
+cost = 1
+ok = [{ kind = "xp", amount = 36 }, { kind = "heal", amount = 16 }]
+ok_text = "The frost on his shoulders melts to a tear and falls."
+[[event.option]]
+id = "take"
+label = "Take the hammer"
+need = [{ kind = "tag", tag = "brawn" }]
+cost = 1
+check = { attr = "might", dc = 15 }
+ok = [{ kind = "coin", amount = 100 }, { kind = "salvage", amount = 16 }]
+ok_text = "Frozen to the hand. You break a finger to free it, and he does not stop you."
+fail = [{ kind = "hurt", amount = 18 }]
+fail_text = "The hammer will not leave him. The cold rushes in."
+
+[[event]]
+id = "cold-forge-heart"
+name = "The Cold Forge Heart"
+bands = [5]
+kinds = ["forge"]
+text = "A forge with no coal and no fire, only a patch of air that shimmers, as if remembering."
+[[event.option]]
+id = "feed"
+label = "Feed it a handful of your own warmth"
+need = [{ kind = "flag", id = "keeps-the-flame" }]
+cost = 1
+ok = [{ kind = "heal", amount = 20 }, { kind = "xp", amount = 34 }]
+ok_text = "The air blooms, then thins. You are a little emptier, and clearer."
+[[event.option]]
+id = "listen"
+label = "Listen to what it remembers"
+need = [{ kind = "flag", id = "hears-the-flame" }]
+cost = 1
+check = { attr = "spirit", dc = 16 }
+ok = [{ kind = "xp", amount = 40 }, { kind = "core", id = "glass-core" }]
+ok_text = "A shard of cold glass forms in the air. It is yours."
+fail = [{ kind = "wound", id = "hollow-ache" }, { kind = "fatigue", amount = 12 }]
+fail_text = "It remembers too much."
+[[event.option]]
+id = "stoke"
+label = "Stoke it with scrap"
+cost = 1
+ok = [{ kind = "salvage", amount = 14 }, { kind = "xp", amount = 28 }]
+ok_text = "The air takes the scrap and gives nothing back."
+
+[[event]]
+id = "frost-anvil"
+name = "The Frost Anvil"
+bands = [5]
+kinds = ["forge"]
+text = "An anvil furred with frost, a cold bar laid across it as if the smith had stepped away for a drink."
+[[event.option]]
+id = "shape"
+label = "Shape the bar by feel"
+need = [{ kind = "tag", tag = "tinker" }]
+cost = 1
+check = { attr = "finesse", dc = 15 }
+ok = [{ kind = "xp", amount = 36 }, { kind = "salvage", amount = 20 }]
+ok_text = "The bar bends like warm iron under your hands."
+fail = [{ kind = "wound", id = "cold-touch" }]
+fail_text = "It bends like cold iron, which is to say, not at all."
+[[event.option]]
+id = "etch"
+label = "Etch a ward on it"
+need = [{ kind = "tag", tag = "runecraft" }]
+cost = 1
+ok = [{ kind = "xp", amount = 38 }, { kind = "coin", amount = 80 }]
+ok_text = "The frost recedes from the mark. The anvil sings."
+[[event.option]]
+id = "pry"
+label = "Pry off the face"
+cost = 1
+check = { attr = "might", dc = 16 }
+ok = [{ kind = "coin", amount = 110 }]
+ok_text = "Hardened steel. The anvil complains."
+fail = [{ kind = "hurt", amount = 18 }]
+fail_text = "The face does not give."
+
+[[event]]
+id = "smiths-tomb"
+name = "The Smiths' Tomb"
+bands = [5]
+kinds = ["forge"]
+text = "A forge converted into a tomb, the anvil as altar. A dozen cold hammers hang from the walls, each with a name."
+[[event.option]]
+id = "name"
+label = "Take down the hammer with your name"
+need = [{ kind = "flag", id = "keeps-the-key" }]
+cost = 1
+ok = [{ kind = "xp", amount = 40 }, { kind = "relic" }]
+ok_text = "One of them is yours, or near enough. It weighs exactly what you expected."
+[[event.option]]
+id = "lay"
+label = "Lay a flower on the anvil"
+need = [{ kind = "flag", id = "gave-the-key" }]
+cost = 1
+ok = [{ kind = "heal", amount = 16 }, { kind = "xp", amount = 32 }]
+ok_text = "The tomb is cold. Something in it is not."
+[[event.option]]
+id = "rob"
+label = "Rob the hammers"
+cost = 1
+check = { attr = "finesse", dc = 15 }
+ok = [{ kind = "coin", amount = 100 }, { kind = "salvage", amount = 16 }]
+ok_text = "Steel and gold, and a lot of hush."
+fail = [{ kind = "wound", id = "hollow-ache" }]
+fail_text = "The hammers know their names."
+
+[[event]]
+id = "frozen-cistern"
+name = "The Frozen Cistern"
+bands = [5]
+kinds = ["flooded"]
+text = "A cistern frozen to its depths, with things caught in the ice at every level."
+[[event.option]]
+id = "cut"
+label = "Cut one free"
+need = [{ kind = "tag", tag = "brawn" }]
+cost = 1
+check = { attr = "might", dc = 15 }
+ok = [{ kind = "coin", amount = 105 }, { kind = "salvage", amount = 12 }]
+ok_text = "A sealed chest, brittle and light."
+fail = [{ kind = "wound", id = "cold-touch" }]
+fail_text = "The ice shears and bites."
+[[event.option]]
+id = "melt"
+label = "Melt a path"
+need = [{ kind = "calling", id = "ember-priest" }]
+cost = 1
+ok = [{ kind = "coin", amount = 90 }, { kind = "xp", amount = 34 }]
+ok_text = "Steam, and a clear way to the best of the finds."
+[[event.option]]
+id = "skate"
+label = "Skate across for the nearest"
+cost = 1
+check = { attr = "finesse", dc = 15 }
+ok = [{ kind = "coin", amount = 70 }]
+ok_text = "Quick, and not far."
+fail = [{ kind = "hurt", amount = 16 }]
+fail_text = "You fall, and the ice holds, and you do not."
+
+[[event]]
+id = "black-tide"
+name = "The Black Tide"
+bands = [5]
+kinds = ["flooded"]
+text = "A slow tide of black water, thick as oil, rises and falls in the flooded hall though there is no sea."
+[[event.option]]
+id = "ride"
+label = "Ride it across"
+need = [{ kind = "tag", tag = "pathfind" }]
+cost = 1
+check = { attr = "finesse", dc = 15 }
+ok = [{ kind = "xp", amount = 36 }, { kind = "reveal" }]
+ok_text = "The tide lifts, hauls, and sets you down on the far side. The map comes clear."
+fail = [{ kind = "fatigue", amount = 12 }]
+fail_text = "You go with it, and then against it, and are very tired."
+[[event.option]]
+id = "dip"
+label = "Dip a bottle"
+need = [{ kind = "tag", tag = "tinker" }]
+cost = 1
+ok = [{ kind = "salvage", amount = 16 }, { kind = "xp", amount = 26 }]
+ok_text = "The water is heavy and oily, with a tang. A smith would know what to do with it."
+[[event.option]]
+id = "sing"
+label = "Sing it back"
+need = [{ kind = "node", id = "ep-oracle" }]
+cost = 1
+ok = [{ kind = "xp", amount = 34 }, { kind = "heal", amount = 14 }]
+ok_text = "The tide rolls back like a dog told to stay."
+
+[[event]]
+id = "the-deep-pool"
+name = "The Deep Pool"
+bands = [5]
+kinds = ["flooded"]
+text = "A pool at the room's centre, black and cold. A faint light burns at the bottom."
+[[event.option]]
+id = "dive"
+label = "Dive for the light"
+need = [{ kind = "tag", tag = "brawn" }]
+cost = 1
+check = { attr = "might", dc = 16 }
+ok = [{ kind = "core", id = "lodestone-core" }]
+ok_text = "A core, humming, that always points up. It is a very good thing to have in the deep."
+fail = [{ kind = "wound", id = "cold-touch" }, { kind = "hurt", amount = 16 }]
+fail_text = "You go too deep, and the cold comes in."
+[[event.option]]
+id = "gaze"
+label = "Gaze into it"
+need = [{ kind = "tag", tag = "foresee" }]
+cost = 1
+ok = [{ kind = "xp", amount = 36 }]
+ok_text = "The light shows you where you will be."
+[[event.option]]
+id = "fish"
+label = "Fish with a lantern"
+cost = 1
+check = { attr = "wits", dc = 14 }
+ok = [{ kind = "coin", amount = 82 }, { kind = "xp", amount = 22 }]
+ok_text = "A drowned traveller's purse."
+fail = [{ kind = "fatigue", amount = 10 }]
+fail_text = "You fish all hour, and catch cold."
+
+[[event]]
+id = "frost-bridge"
+name = "The Frost Bridge"
+bands = [5]
+kinds = ["flooded"]
+text = "A bridge of ice crosses the black water, thin as a plank. Below it, something large is moving slowly."
+[[event.option]]
+id = "cross"
+label = "Cross at a run"
+cost = 1
+check = { attr = "finesse", dc = 16 }
+ok = [{ kind = "xp", amount = 34 }, { kind = "coin", amount = 70 }]
+ok_text = "The bridge cracks behind you. You do not look back."
+fail = [{ kind = "wound", id = "cold-touch" }, { kind = "hurt", amount = 14 }]
+fail_text = "You fall, and the water finds you."
+[[event.option]]
+id = "build"
+label = "Build a rope bridge"
+need = [{ kind = "tag", tag = "bridgewright" }]
+cost = 1
+ok = [{ kind = "xp", amount = 32 }, { kind = "coin", amount = 60 }]
+ok_text = "A safe crossing, and plenty of time to think."
+[[event.option]]
+id = "wait"
+label = "Wait for it to pass"
+need = [{ kind = "tag", tag = "sneak" }]
+cost = 2
+ok = [{ kind = "xp", amount = 24 }]
+ok_text = "It passes, and you cross on its wake."
+
+[[event]]
+id = "last-warm-coal"
+name = "The Last Warm Coal"
+bands = [5]
+kinds = ["shrine"]
+text = "A bowl of ash on an altar, and in it one coal that will not go out, though it gives off no heat."
+[[event.option]]
+id = "take"
+label = "Take it for the town"
+need = [{ kind = "flag", id = "keeps-the-flame" }]
+cost = 1
+ok = [{ kind = "xp", amount = 40 }, { kind = "heal", amount = 20 }]
+ok_text = "It is cold in your hand, and very, very bright."
+[[event.option]]
+id = "snuff"
+label = "Snuff it"
+need = [{ kind = "flag", id = "lets-it-fall" }]
+cost = 1
+ok = [{ kind = "xp", amount = 34 }, { kind = "coin", amount = 90 }]
+ok_text = "It goes out. A gold ring lies underneath."
+[[event.option]]
+id = "share"
+label = "Split it with the hall"
+need = [{ kind = "flag", id = "shares-the-flame" }]
+cost = 1
+ok = [{ kind = "xp", amount = 38 }, { kind = "wound", id = "lamplight-grace" }]
+ok_text = "You break it in two, and leave half on the altar."
+
+[[event]]
+id = "quiet-shrine-of-watch"
+name = "The Watch Shrine"
+bands = [5]
+kinds = ["shrine"]
+text = "A shrine of tin lanterns, with a plain stool, and a row of names scratched in the wall: the names of the watch."
+[[event.option]]
+id = "add"
+label = "Add your name"
+need = [{ kind = "flag", id = "keeps-the-watch" }]
+cost = 1
+ok = [{ kind = "xp", amount = 40 }, { kind = "wound", id = "lamplight-grace" }]
+ok_text = "Your name joins theirs. The lanterns turn a little toward you."
+[[event.option]]
+id = "open"
+label = "Open the lanterns"
+need = [{ kind = "flag", id = "opens-the-gate" }]
+cost = 1
+ok = [{ kind = "xp", amount = 36 }, { kind = "coin", amount = 90 }]
+ok_text = "Behind each lantern, a small key. You collect them all."
+[[event.option]]
+id = "ask"
+label = "Ask the gate what it wants"
+need = [{ kind = "flag", id = "answers-the-gate" }]
+cost = 1
+ok = [{ kind = "xp", amount = 38 }, { kind = "relic" }]
+ok_text = "A voice behind the wall tells you the price. You pay it."
+
+[[event]]
+id = "wall-of-ash-faces"
+name = "The Wall of Ash Faces"
+bands = [5]
+kinds = ["shrine"]
+text = "Faces made of ash are pressed into the wall, row after row, each in a different expression."
+[[event.option]]
+id = "read"
+label = "Read the faces"
+need = [{ kind = "tag", tag = "lore" }]
+cost = 1
+ok = [{ kind = "xp", amount = 40 }]
+ok_text = "They are the fire's tenders. Each smiled less than the one before."
+[[event.option]]
+id = "kiss"
+label = "Kiss the nearest on the brow"
+need = [{ kind = "tag", tag = "bless" }]
+cost = 1
+ok = [{ kind = "heal", amount = 18 }, { kind = "fatigue", amount = -12 }]
+ok_text = "The ash sighs, and becomes warm. You feel a small forgiveness."
+[[event.option]]
+id = "scrape"
+label = "Scrape the ash into a pouch"
+cost = 1
+check = { attr = "finesse", dc = 14 }
+ok = [{ kind = "salvage", amount = 14 }, { kind = "coin", amount = 60 }]
+ok_text = "Fire-ash is a smith's seasoning."
+fail = [{ kind = "wound", id = "soot-lung" }]
+fail_text = "It is very fine ash, and you are very close."
+
+[[event]]
+id = "furnace-threshold"
+name = "The Furnace Threshold"
+bands = [5]
+kinds = ["shrine"]
+text = "A threshold of black stone before a great door, worn pale by ten thousand knees."
+[[event.option]]
+id = "kneel"
+label = "Kneel with them"
+cost = 1
+check = { attr = "spirit", dc = 15 }
+ok = [{ kind = "xp", amount = 42 }, { kind = "heal", amount = 20 }]
+ok_text = "The stone is cold, and the cold is respectful."
+fail = [{ kind = "fatigue", amount = 12 }]
+fail_text = "You are not among the faithful. You rise sore."
+[[event.option]]
+id = "light"
+label = "Light a taper on the threshold"
+need = [{ kind = "calling", id = "ember-priest" }]
+cost = 1
+ok = [{ kind = "xp", amount = 40 }, { kind = "wound", id = "ember-blessing" }]
+ok_text = "The taper lights without being struck."
+[[event.option]]
+id = "stand"
+label = "Stand on it and say who you are"
+need = [{ kind = "level", min = 10 }]
+cost = 1
+ok = [{ kind = "xp", amount = 34 }, { kind = "coin", amount = 80 }]
+ok_text = "You say your name, and something hears."

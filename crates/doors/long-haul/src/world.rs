@@ -12,9 +12,12 @@ use crate::codec::{Reader, Writer};
 use crate::content::Content;
 use crate::frontier::{Frontier, GEN_VERSION};
 use crate::market::{FULL_STOCK_DEPTHS, base_target, depth_at};
+use crate::social::{Social, SocialDelta};
 
 /// The world's stored format version.
-pub const WORLD_FORMAT: u8 = 1;
+pub const WORLD_FORMAT: u8 = 2;
+/// The bytes before the social section (format byte, generator, season, day, tons).
+const HEADER_LEN: usize = 22;
 /// The most news events running at once.
 pub const MAX_EVENTS: usize = 24;
 /// The longest a captain's name stays on a chart.
@@ -80,6 +83,8 @@ pub enum Delta {
         /// The captain's name.
         name: String,
     },
+    /// A social change: convoys, piracy, outposts, the hall.
+    Social(SocialDelta),
 }
 
 /// The shared world.
@@ -99,10 +104,31 @@ pub struct World {
     pub events: Vec<NewsEvent>,
     /// Tons traded by every captain, for the season.
     pub traded_tons: i64,
+    /// Convoys, piracy, outposts and records.
+    pub social: Social,
 }
 
 fn clamp_i32(value: i64) -> i32 {
     i32::try_from(value).unwrap_or(if value < 0 { i32::MIN } else { i32::MAX })
+}
+
+/// The economy a new outpost has, from what its system offers.
+fn outpost_economy(content: &Content, frontier: &Frontier, system: u16) -> u8 {
+    let want = frontier.system(system).map_or("industrial", |s| {
+        if s.belts >= 2 {
+            "mining"
+        } else if s.planets >= 3 {
+            "farming"
+        } else if s.richness >= 7 {
+            "research"
+        } else {
+            "industrial"
+        }
+    });
+    content
+        .economy_ix(want)
+        .and_then(|i| u8::try_from(i).ok())
+        .unwrap_or(0)
 }
 
 impl World {
@@ -136,6 +162,7 @@ impl World {
             charted: vec![None; frontier.systems.len()],
             events: Vec::new(),
             traded_tons: 0,
+            social: Social::new(day),
         }
     }
 
@@ -180,6 +207,15 @@ impl World {
                     self.traded_tons += i64::from(tons.unsigned_abs());
                     *cell = clamp_i32(next);
                 }
+                let base_len = frontier
+                    .stations
+                    .len()
+                    .saturating_sub(self.social.outposts.len());
+                if let Some(k) = usize::from(*station).checked_sub(base_len)
+                    && let Some(o) = self.social.outposts.get_mut(k)
+                {
+                    o.traded += i64::from(tons.unsigned_abs());
+                }
             }
             Delta::Chart { system, day, name } => {
                 if let Some(slot) = self.charted.get_mut(usize::from(*system))
@@ -192,6 +228,7 @@ impl World {
                     });
                 }
             }
+            Delta::Social(d) => self.social.apply(d, self.day),
         }
     }
 
@@ -321,6 +358,10 @@ impl World {
         self.day = day;
         self.events.retain(|e| e.active(day));
         self.spawn_news(content, frontier, day, rng);
+        let base = frontier;
+        let extended = self.extended(content, base);
+        let frontier = &extended;
+        self.sync_rows(content, frontier);
         let reach: Vec<(usize, Vec<u8>)> = self
             .events
             .iter()
@@ -360,6 +401,56 @@ impl World {
                 }
             }
         }
+        self.social_night(content, base, day, rng);
+    }
+
+    /// The map as players have made it: the generated frontier plus every outpost.
+    #[must_use]
+    pub fn extended(&self, content: &Content, base: &Frontier) -> Frontier {
+        base.with_outposts(content, &self.social.outposts)
+    }
+
+    /// Make sure every station of `frontier` has a row of stock (new outposts start at target).
+    fn sync_rows(&mut self, content: &Content, frontier: &Frontier) {
+        for station in frontier.stations.iter().skip(self.stock.len()) {
+            let row = station
+                .goods
+                .iter()
+                .enumerate()
+                .map(|(slot, s)| {
+                    let depth = depth_at(&content.goods, frontier, station.id, slot);
+                    clamp_i32(base_target(depth, s.role))
+                })
+                .collect();
+            self.stock.push(row);
+        }
+    }
+
+    /// The part of the night that belongs to players: raids, convoys, outposts.
+    fn social_night(&mut self, content: &Content, base: &Frontier, day: i64, rng: &mut DoorRng) {
+        let pools: Vec<i64> = content.social.convoy_event.iter().map(|e| e.pool).collect();
+        self.social.tick(day, &pools, rng);
+        if self.social.season_day(day) >= crate::social::OUTPOST_MIN_DAY {
+            let suffixes = content.social.outpost_suffix.clone();
+            let before = self.social.outposts.len();
+            let mut k = 0usize;
+            self.social.found_outposts(
+                day,
+                |system| outpost_economy(content, base, system),
+                |lead, _| {
+                    k += 1;
+                    let suffix = suffixes
+                        .get((lead.len() + before + k) % suffixes.len().max(1))
+                        .cloned()
+                        .unwrap_or_default();
+                    let lead = lead.split_whitespace().next().unwrap_or("Free");
+                    format!("{lead} {suffix}")
+                },
+            );
+        }
+        self.social.grow_outposts();
+        let extended = self.extended(content, base);
+        self.sync_rows(content, &extended);
     }
 
     fn spawn_news(&mut self, content: &Content, frontier: &Frontier, day: i64, rng: &mut DoorRng) {
@@ -415,6 +506,73 @@ impl World {
         r.u32()
     }
 
+    /// A format-1 world as a format-2 world with an empty social section (the framework's
+    /// migration from world version 1).
+    #[must_use]
+    pub fn migrate_v1(bytes: &[u8]) -> Option<Vec<u8>> {
+        if bytes.first() != Some(&1) || bytes.len() < HEADER_LEN {
+            return None;
+        }
+        let mut r = Reader::new(bytes);
+        r.u8()?;
+        r.u8()?;
+        r.u32()?;
+        let day = r.i64()?;
+        let mut out = bytes[..HEADER_LEN].to_vec();
+        out[0] = 2;
+        out.extend_from_slice(&Social::empty_bytes(day));
+        out.extend_from_slice(&bytes[HEADER_LEN..]);
+        Some(out)
+    }
+
+    /// The social section of a stored world, without reading the stock (used to carry the hall
+    /// into the next season's world).
+    #[must_use]
+    pub fn peek_social(bytes: &[u8], content: &Content) -> Option<(u32, Social)> {
+        let mut r = Reader::new(bytes);
+        (r.u8()? == WORLD_FORMAT).then_some(())?;
+        r.u8()?;
+        let season = r.u32()?;
+        r.i64()?;
+        r.i64()?;
+        let social = Social::read(&mut r, usize::from(u16::MAX), content.economies.len())?;
+        Some((season, social))
+    }
+
+    /// A fresh world for a new season that keeps the hall of the one before it.
+    #[must_use]
+    pub fn successor(content: &Content, frontier: &Frontier, day: i64, old: Option<&[u8]>) -> Self {
+        let mut world = Self::fresh(content, frontier, day);
+        if let Some((season, old_social)) = old.and_then(|b| Self::peek_social(b, content))
+            && season < frontier.season
+        {
+            world.social.past = old_social.closed_into(season);
+        }
+        world
+    }
+
+    /// Replay a session's `deltas` on the stored bytes (or on a fresh world, when there are none
+    /// or they belong to another season), and return the new bytes. Used by the closure the
+    /// session hands the board, which may run more than once on a conflict.
+    #[must_use]
+    pub fn apply_stored(
+        old: Option<&[u8]>,
+        content: &Content,
+        base: &Frontier,
+        today: i64,
+        deltas: &[Delta],
+    ) -> Vec<u8> {
+        let mut world = old
+            .and_then(|bytes| Self::decode(bytes, content, base))
+            .filter(|w| w.season == base.season && w.gen_version == GEN_VERSION)
+            .unwrap_or_else(|| Self::successor(content, base, today, old));
+        let extended = world.extended(content, base);
+        for delta in deltas {
+            world.apply(content, &extended, delta);
+        }
+        world.encode()
+    }
+
     /// The stored form.
     #[must_use]
     pub fn encode(&self) -> Vec<u8> {
@@ -424,6 +582,7 @@ impl World {
         w.u32(self.season);
         w.i64(self.day);
         w.i64(self.traded_tons);
+        self.social.write(&mut w);
         w.len(self.stock.len());
         for row in &self.stock {
             w.u8(u8::try_from(row.len()).unwrap_or(u8::MAX));
@@ -455,7 +614,7 @@ impl World {
     /// Read a stored world, refusing anything that does not fit `frontier` (a different shape
     /// means a different map, and its stock would be meaningless).
     #[must_use]
-    pub fn decode(bytes: &[u8], frontier: &Frontier) -> Option<Self> {
+    pub fn decode(bytes: &[u8], content: &Content, frontier: &Frontier) -> Option<Self> {
         let mut r = Reader::new(bytes);
         if r.u8()? != WORLD_FORMAT {
             return None;
@@ -464,6 +623,9 @@ impl World {
         let season = r.u32()?;
         let day = r.i64()?;
         let traded_tons = r.i64()?;
+        let social = Social::read(&mut r, frontier.systems.len(), content.economies.len())?;
+        let extended = frontier.with_outposts(content, &social.outposts);
+        let frontier = &extended;
         let n_stations = r.len(frontier.stations.len(), 1)?;
         if n_stations != frontier.stations.len() {
             return None;
@@ -520,6 +682,7 @@ impl World {
             charted,
             events,
             traded_tons,
+            social,
         })
     }
 }

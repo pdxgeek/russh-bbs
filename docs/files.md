@@ -1,6 +1,6 @@
 # File areas
 
-File areas, quarantine, approval, tags, search and download lists, and the SFTP subsystem that moves the bytes (M4-F2, D-TBD). The bytes live in the blob store ([D30, D106](decisions.md)); this document is about the rules above it. Code: `russh_bbs_core::files` (rules and the Files screens' state machine), the file store in `russh-bbs-store` (migration `0028`), `russh_bbs_server::sftp` (the subsystem and the ClamAV adapter).
+File areas, quarantine, approval, tags, search and download lists, and the SFTP subsystem that moves the bytes (M4-F2, D141). The bytes live in the blob store ([D30, D106](decisions.md)); this document is about the rules above it. Code: `russh_bbs_core::files` (rules and the Files screens' state machine), the file store in `russh-bbs-store` (migration `0028`), `russh_bbs_server::sftp` (the subsystem and the ClamAV adapter).
 
 **Privacy, honestly.** The board can read every file. The only files it cannot read are ones a member encrypted themselves (for example with `age` or `gpg`) before uploading. Nothing here is labelled private, and the Files screens say so in one line (`files.note.readable`). See [threat-model.md](threat-model.md).
 

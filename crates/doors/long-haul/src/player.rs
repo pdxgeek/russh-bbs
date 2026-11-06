@@ -18,9 +18,11 @@ use crate::skills::{Skill, level_of, xp_for};
 /// The save's format byte. Format 1 is the L1 engine's; format 2 appends crew, contracts,
 /// the open scene and the wider ledger after the L1 body, so a format-1 save migrates by
 /// changing the byte and appending an empty tail ([`Player::migrate_v1`]).
-pub const SAVE_FORMAT: u8 = 2;
+pub const SAVE_FORMAT: u8 = 3;
 /// Causes the format-1 ledger knew.
 const LEGACY_CAUSES: usize = 12;
+/// Causes the format-2 ledger knew.
+const V2_CAUSES: usize = 16;
 /// Most keys remembered of jobs and recruits already taken.
 pub const MAX_TAKEN: usize = 48;
 /// Drive-days a captain gets each real day.
@@ -65,10 +67,16 @@ pub enum Cause {
     Salvage,
     /// Gains and losses in transit events.
     Event,
+    /// Prizes taken and paid in piracy.
+    Piracy,
+    /// Convoy pool payments and dividends.
+    Convoy,
+    /// Pledges to outposts.
+    Outpost,
 }
 
 /// How many causes there are.
-pub const CAUSES: usize = 16;
+pub const CAUSES: usize = 19;
 
 impl Cause {
     /// Position in a ledger array.
@@ -91,6 +99,9 @@ impl Cause {
             Self::Contract => 13,
             Self::Salvage => 14,
             Self::Event => 15,
+            Self::Piracy => 16,
+            Self::Convoy => 17,
+            Self::Outpost => 18,
         }
     }
 }
@@ -237,6 +248,8 @@ pub struct Player {
     pub taken: Vec<u64>,
     /// An open scene, if any.
     pub scene: Option<Scene>,
+    /// Piracy, convoys, outposts, arcs and the seasons already played.
+    pub social: crate::socialplay::PlayerSocial,
 }
 
 impl Player {
@@ -317,6 +330,7 @@ impl Player {
             contracts: Vec::new(),
             taken: Vec::new(),
             scene: None,
+            social: crate::socialplay::PlayerSocial::default(),
         };
         // The loan bought the ship the captain already flies; only the purse is cash in hand.
         player.credit(Cause::Start, cash);
@@ -393,6 +407,13 @@ impl Player {
         self.encode_with(1)
     }
 
+    /// The format-2 byte layout (the L2 engine's), kept so the migration to format 3 has a real
+    /// input to be tested against. It drops the ledger causes and the social section.
+    #[must_use]
+    pub fn encode_v2(&self) -> Vec<u8> {
+        self.encode_with(2)
+    }
+
     /// The bytes that make a format-1 save a format-2 save with nothing in the new sections.
     #[must_use]
     pub fn migrate_v1(bytes: &[u8]) -> Option<Vec<u8>> {
@@ -418,6 +439,24 @@ impl Player {
         w.len(0);
         w.len(0);
         w.u8(0);
+        out.extend_from_slice(&w.finish());
+        Some(out)
+    }
+
+    /// The bytes that make a format-2 save a format-3 save: the extra ledger causes (all zero)
+    /// and an empty social section.
+    #[must_use]
+    pub fn migrate_v2(bytes: &[u8]) -> Option<Vec<u8>> {
+        if bytes.first() != Some(&2) {
+            return None;
+        }
+        let mut out = bytes.to_vec();
+        out[0] = 3;
+        let mut w = Writer::new();
+        for _ in 0..2 * (CAUSES - V2_CAUSES) {
+            w.i64(0);
+        }
+        crate::socialplay::PlayerSocial::default().write(&mut w);
         out.extend_from_slice(&w.finish());
         Some(out)
     }
@@ -510,6 +549,18 @@ impl Player {
         if format >= 2 {
             self.write_tail(&mut w);
         }
+        if format >= 3 {
+            for v in self
+                .ledger
+                .income
+                .iter()
+                .skip(V2_CAUSES)
+                .chain(self.ledger.spend.iter().skip(V2_CAUSES))
+            {
+                w.i64(*v);
+            }
+            self.social.write(&mut w);
+        }
         w.finish()
     }
 
@@ -566,7 +617,7 @@ impl Player {
     pub fn decode(bytes: &[u8], content: &Content, frontier: &Frontier) -> Option<Self> {
         let mut r = Reader::new(bytes);
         let format = r.u8()?;
-        if format != 1 && format != SAVE_FORMAT {
+        if !(1..=SAVE_FORMAT).contains(&format) {
             return None;
         }
         let captain = r.text()?;
@@ -735,6 +786,18 @@ impl Player {
             }
             scene = Scene::read(&mut r, content, crew.len(), frontier)?;
         }
+        let mut social = crate::socialplay::PlayerSocial::default();
+        if format >= 3 {
+            for slot in ledger
+                .income
+                .iter_mut()
+                .skip(V2_CAUSES)
+                .chain(ledger.spend.iter_mut().skip(V2_CAUSES))
+            {
+                *slot = r.i64()?;
+            }
+            social = crate::socialplay::PlayerSocial::read(&mut r, content.modules.len())?;
+        }
         r.done().then_some(Self {
             captain,
             background,
@@ -768,6 +831,7 @@ impl Player {
             contracts,
             taken,
             scene,
+            social,
         })
     }
 }

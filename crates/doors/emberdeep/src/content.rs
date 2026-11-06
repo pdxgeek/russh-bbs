@@ -510,6 +510,25 @@ pub enum RoomKind {
     Shaft,
 }
 
+impl RoomKind {
+    /// A stable index for tallies (0 to 9).
+    #[must_use]
+    pub const fn index(self) -> usize {
+        match self {
+            Self::Entry => 0,
+            Self::Exit => 1,
+            Self::Guardian => 2,
+            Self::Corridor => 3,
+            Self::Vault => 4,
+            Self::Forge => 5,
+            Self::Flooded => 6,
+            Self::Shrine => 7,
+            Self::Lair => 8,
+            Self::Shaft => 9,
+        }
+    }
+}
+
 /// The kinds of shortcut a hero can open for everyone.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -584,6 +603,16 @@ pub enum Need {
     Level {
         /// How high.
         min: u32,
+    },
+    /// The hero has made this choice in a questline (a flag set for good).
+    Flag {
+        /// The flag.
+        id: String,
+    },
+    /// The hero has not made this choice.
+    NoFlag {
+        /// The flag.
+        id: String,
     },
 }
 
@@ -1137,6 +1166,31 @@ impl Table for Bestiary {
     }
 }
 
+pub(crate) fn check_option(who: &str, o: &RoomOption, problems: &mut Vec<String>) {
+    if o.label.trim().is_empty() || o.label.chars().count() > 60 || !plain_text(&o.label) {
+        problems.push(format!("{who}: label must be 1 to 60 plain characters"));
+    }
+    if o.cost > 4 {
+        problems.push(format!("{who}: cost at most 4"));
+    }
+    if !text_ok(&o.ok_text) || (o.check.is_some() && !text_ok(&o.fail_text)) {
+        problems.push(format!(
+            "{who}: ok_text (and fail_text with a check) must be plain text"
+        ));
+    }
+    if o.check.is_none() && !o.fail.is_empty() {
+        problems.push(format!("{who}: `fail` without a check never happens"));
+    }
+    if o.ok.is_empty() {
+        problems.push(format!("{who}: `ok` is empty"));
+    }
+    for gain in o.ok.iter().chain(&o.fail) {
+        if let Some(why) = gain_problem(gain) {
+            problems.push(format!("{who}: {why}"));
+        }
+    }
+}
+
 fn gain_problem(gain: &Gain) -> Option<&'static str> {
     match gain {
         Gain::Coin { amount: 0 }
@@ -1180,31 +1234,7 @@ impl Table for Rooms {
             );
             for o in &r.option {
                 let who = format!("[room] `{}` option `{}`", r.id, o.id);
-                if o.label.trim().is_empty()
-                    || o.label.chars().count() > 60
-                    || !plain_text(&o.label)
-                {
-                    problems.push(format!("{who}: label must be 1 to 60 plain characters"));
-                }
-                if o.cost > 4 {
-                    problems.push(format!("{who}: cost at most 4"));
-                }
-                if !text_ok(&o.ok_text) || (o.check.is_some() && !text_ok(&o.fail_text)) {
-                    problems.push(format!(
-                        "{who}: ok_text (and fail_text with a check) must be plain text"
-                    ));
-                }
-                if o.check.is_none() && !o.fail.is_empty() {
-                    problems.push(format!("{who}: `fail` without a check never happens"));
-                }
-                if o.ok.is_empty() {
-                    problems.push(format!("{who}: `ok` is empty"));
-                }
-                for gain in o.ok.iter().chain(&o.fail) {
-                    if let Some(why) = gain_problem(gain) {
-                        problems.push(format!("{who}: {why}"));
-                    }
-                }
+                check_option(&who, o, &mut problems);
                 let shortcut = o.ok.iter().any(|g| matches!(g, Gain::Shortcut { .. }));
                 if shortcut && r.kind != RoomKind::Shaft {
                     problems.push(format!("{who}: only a shaft room can open a shortcut"));
@@ -1242,6 +1272,10 @@ pub struct Content {
     pub projects: crate::content_town::Projects,
     /// Contracts, companions and rumours.
     pub town: crate::content_town::TownTables,
+    /// Dungeon events.
+    pub events: crate::content_story::Events,
+    /// Questlines.
+    pub quests: crate::content_story::Quests,
 }
 
 impl Content {
@@ -1264,6 +1298,8 @@ impl Content {
             recipes: content::load("recipes", crate::content_town::RECIPES_TOML)?,
             projects: content::load("projects", crate::content_town::PROJECTS_TOML)?,
             town: content::load("town", crate::content_town::TOWN_TOML)?,
+            events: content::load("events", crate::content_story::EVENTS_TOML)?,
+            quests: content::load("quests", crate::content_story::QUESTS_TOML)?,
         };
         let problems = content.cross_check();
         if problems.is_empty() {
@@ -1286,6 +1322,7 @@ impl Content {
         self.check_effect_moves(&mut problems);
         self.check_rooms(&mut problems);
         self.check_town(&mut problems);
+        self.check_story(&mut problems);
         for (id, why) in [
             ("brink", "a death save survived"),
             ("dragged-home", "a rescue"),
@@ -1296,6 +1333,84 @@ impl Content {
             }
         }
         problems
+    }
+
+    fn check_story(&self, problems: &mut Vec<String>) {
+        use crate::content_story::Goal;
+        for e in &self.events.event {
+            for o in &e.option {
+                for need in &o.need {
+                    self.check_need("event", &e.id, need, problems);
+                }
+                for g in o.ok.iter().chain(&o.fail) {
+                    match g {
+                        Gain::Recipe { id } if self.recipe(id).is_none() => {
+                            problems.push(format!("event `{}`: unknown recipe `{id}`", e.id));
+                        }
+                        Gain::Core { id } if self.core(id).is_none() => {
+                            problems.push(format!("event `{}`: unknown core `{id}`", e.id));
+                        }
+                        Gain::Wound { id } if self.wound(id).is_none() => {
+                            problems.push(format!("event `{}`: unknown wound `{id}`", e.id));
+                        }
+                        _ => {}
+                    }
+                }
+            }
+        }
+        let flags: Vec<&str> = self
+            .quests
+            .quest
+            .iter()
+            .flat_map(|q| q.step.iter())
+            .flat_map(|s| s.choose.iter())
+            .map(|c| c.flag.as_str())
+            .collect();
+        for needed in crate::endings::verdict_flags() {
+            if !flags.contains(&needed) {
+                problems.push(format!(
+                    "no questline choice sets `{needed}`, which a verdict needs"
+                ));
+            }
+        }
+        let rooms = self.rooms.room.iter().map(|r| (&r.id, &r.option));
+        let events = self.events.event.iter().map(|e| (&e.id, &e.option));
+        for (id, options) in rooms.chain(events) {
+            for o in options {
+                for n in &o.need {
+                    if let Need::Flag { id: f } | Need::NoFlag { id: f } = n
+                        && !flags.contains(&f.as_str())
+                    {
+                        problems.push(format!("`{id}`: no questline choice sets `{f}`"));
+                    }
+                }
+            }
+        }
+        for q in &self.quests.quest {
+            for s in &q.step {
+                if let Goal::Slay { monster, .. } = &s.goal
+                    && self.monster(monster).is_none_or(|m| m.guardian)
+                {
+                    problems.push(format!(
+                        "quest `{}` step `{}`: `{monster}` is not an ordinary monster",
+                        q.id, s.id
+                    ));
+                }
+                for g in &s.reward {
+                    match g {
+                        Gain::Recipe { id } if self.recipe(id).is_none() => problems.push(format!(
+                            "quest `{}` step `{}`: unknown recipe `{id}`",
+                            q.id, s.id
+                        )),
+                        Gain::Core { id } if self.core(id).is_none() => problems.push(format!(
+                            "quest `{}` step `{}`: unknown core `{id}`",
+                            q.id, s.id
+                        )),
+                        _ => {}
+                    }
+                }
+            }
+        }
     }
 
     fn check_town(&self, problems: &mut Vec<String>) {

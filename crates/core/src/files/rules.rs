@@ -1,4 +1,4 @@
-//! Who may see and use a file area (D33, D-TBD).
+//! Who may see and use a file area (D33, D141).
 //!
 //! The same shape as forums: `member` holds the `files.*` permissions **globally**, so a global
 //! holding reaches every area, and a **restricted** area needs the permission held for that area

@@ -1,5 +1,5 @@
 //! File areas: areas, files, quarantine, approval, tags, search and download lists (M4-F2,
-//! D-TBD). The bytes live in the blob store (D30, D106); this module owns every rule about them.
+//! D141). The bytes live in the blob store (D30, D106); this module owns every rule about them.
 //!
 //! * [`FileStore`] is persistence only (both backends, one shared test suite). A front end
 //!   (the SFTP subsystem, the TUI) calls [`service`] and [`transfer`] with the session's
