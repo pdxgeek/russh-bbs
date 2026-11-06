@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO download_list (account_id, file_id, added_at) VALUES (?, ?, ?)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "f94e0bbb8bd03f60f9da5a4220ededa1027f805be8b7637801b5f5a65ec83257"
+}

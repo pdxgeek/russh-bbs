@@ -1,0 +1,18 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE file SET state = $1, blob_key = COALESCE($2, blob_key), decided_at = $3, decided_by = $4\n             WHERE id = $5 AND state = 'quarantine'",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Int8",
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "e820586313fbd326a7355ff80e1ea634e5dd35b296f8a220329ce7be3dbf82bb"
+}

@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT count(*) AS \"n!: i64\" FROM file_tag WHERE file_id = ? AND tag = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "n!: i64",
+        "ordinal": 0,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "416ad383cb351028f0f0bc28da3edaf621091baac8b890063fa9a5ad24ef1d84"
+}

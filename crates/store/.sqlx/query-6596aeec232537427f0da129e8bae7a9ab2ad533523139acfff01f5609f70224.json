@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT count(*) AS \"n!: i64\" FROM download_list WHERE account_id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "n!: i64",
+        "ordinal": 0,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "6596aeec232537427f0da129e8bae7a9ab2ad533523139acfff01f5609f70224"
+}

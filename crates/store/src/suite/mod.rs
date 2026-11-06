@@ -16,6 +16,7 @@ pub(crate) mod credits;
 pub(crate) mod doors;
 pub(crate) mod drafts;
 pub(crate) mod feeds;
+pub(crate) mod files;
 pub(crate) mod forums;
 pub(crate) mod founder;
 pub(crate) mod invites;
@@ -41,6 +42,7 @@ use russh_bbs_core::credits::CreditStore;
 use russh_bbs_core::doors::DoorStore;
 use russh_bbs_core::drafts::DraftStore;
 use russh_bbs_core::feeds::FeedStore;
+use russh_bbs_core::files::FileStore;
 use russh_bbs_core::forums::ForumStore;
 use russh_bbs_core::founder::FounderStore;
 use russh_bbs_core::invites::InviteStore;
@@ -75,6 +77,7 @@ pub(crate) trait TestStore:
     + DraftStore
     + ForumStore
     + FeedStore
+    + FileStore
     + MailStore
     + TerminalSettingsStore
     + ProfileStore
@@ -109,6 +112,7 @@ impl<T> TestStore for T where
         + DraftStore
         + ForumStore
         + FeedStore
+        + FileStore
         + MailStore
         + TerminalSettingsStore
         + ProfileStore
@@ -190,7 +194,7 @@ macro_rules! shared_suite {
             #[allow(unused_imports)]
             use super::*;
             use $crate::suite::{
-                access, access_edit, accounts, audit, chat, community, credits, doors, drafts, feeds, forums, founder, invites, keys, limits,
+                access, access_edit, accounts, audit, chat, community, credits, doors, drafts, feeds, files, forums, founder, invites, keys, limits,
                 mail, password_accounts, passwords, profiles,
                 queue, registration, scheduler, terminal_settings, widgets,
             };
@@ -470,6 +474,19 @@ macro_rules! shared_suite {
                 doors::deleting_an_account_deletes_its_door_data,
                 doors::the_roles_hold_the_door_staff_permissions_the_docs_say,
                 doors::a_broken_store_errors_instead_of_reading_as_empty,
+                files::areas_are_created_by_managers_only_with_unique_names_and_an_audit_row,
+                files::quarantine_is_invisible_to_others_until_approved,
+                files::reject_deletes_the_bytes_and_hides_the_row,
+                files::the_scan_decides_what_auto_approve_may_do,
+                files::restricted_areas_are_not_reached_through_a_global_holding,
+                files::the_upload_limits_are_enforced_per_file_and_per_day,
+                files::tags_descriptions_and_search_obey_access,
+                files::download_lists_hold_only_what_the_member_may_still_fetch,
+                files::removal_follows_who_owns_the_file_and_what_state_it_is_in,
+                files::two_deciders_cannot_both_win,
+                files::a_deleted_account_takes_its_download_list_and_not_the_file,
+                files::a_broken_store_fails_file_calls,
+                files::the_database_refuses_bad_file_rows,
                 scheduler::a_last_run_round_trips_and_a_later_one_replaces_it,
                 scheduler::the_database_refuses_an_unknown_outcome_and_a_stored_one_is_not_misread,
                 scheduler::a_scheduler_over_the_store_remembers_its_runs_across_a_restart,

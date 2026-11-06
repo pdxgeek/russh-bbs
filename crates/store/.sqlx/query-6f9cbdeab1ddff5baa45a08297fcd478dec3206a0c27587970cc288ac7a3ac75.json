@@ -1,0 +1,121 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT f.id AS \"id!\", f.area_id AS \"area_id!\", a.name AS \"area_name!\", f.uploader_id,\n                      u.username AS \"uploader?\", f.name, f.original_name, f.description, f.size,\n                      f.sha256, f.blob_key, f.state, f.scan, f.scan_note, f.created_at,\n                      f.decided_at, f.downloads\n               FROM file f JOIN file_area a ON a.id = f.area_id\n               LEFT JOIN accounts u ON u.id = f.uploader_id\n               WHERE f.state = 'approved' AND f.area_id = ANY($1)\n                 AND NOT EXISTS (\n                     SELECT 1 FROM unnest($2::text[]) AS t(term) WHERE NOT (\n                         strpos(lower(f.name), t.term) > 0\n                         OR strpos(lower(f.description), t.term) > 0\n                         OR EXISTS (SELECT 1 FROM file_tag g WHERE g.file_id = f.id AND strpos(g.tag, t.term) > 0)))\n               ORDER BY f.id DESC LIMIT $3 OFFSET $4",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id!",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "area_id!",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 2,
+        "name": "area_name!",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "uploader_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 4,
+        "name": "uploader?",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 6,
+        "name": "original_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 7,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 8,
+        "name": "size",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 9,
+        "name": "sha256",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 10,
+        "name": "blob_key",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 11,
+        "name": "state",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 12,
+        "name": "scan",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 13,
+        "name": "scan_note",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 14,
+        "name": "created_at",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 15,
+        "name": "decided_at",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 16,
+        "name": "downloads",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8Array",
+        "TextArray",
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  "hash": "6f9cbdeab1ddff5baa45a08297fcd478dec3206a0c27587970cc288ac7a3ac75"
+}

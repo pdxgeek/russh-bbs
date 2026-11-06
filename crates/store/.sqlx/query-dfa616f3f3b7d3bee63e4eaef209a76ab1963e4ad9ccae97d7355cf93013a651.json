@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO file_area (name, name_key, description, restricted, auto_approve, created_by, created_at)\n               VALUES ($1, $2, $3, $4, $5, $6, $7)\n               ON CONFLICT (name_key) DO NOTHING\n               RETURNING id AS \"id!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id!",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Text",
+        "Bool",
+        "Bool",
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "dfa616f3f3b7d3bee63e4eaef209a76ab1963e4ad9ccae97d7355cf93013a651"
+}

@@ -630,3 +630,44 @@ pub fn door_player_unbarred(actor: Actor, player: AccountId, door: &str) -> Audi
     AuditEvent::new(actor, Action::DoorPlayerUnbarred, Target::Account(player))
         .detail(&format!("door {door}"))
 }
+
+/// `actor` created file area `area`, `restricted` or open, auto-approving or not (M4-F2). The
+/// name is not written.
+#[must_use]
+pub fn file_area_created(
+    actor: AccountId,
+    area: ResourceRef,
+    restricted: bool,
+    auto_approve: bool,
+) -> AuditEvent {
+    AuditEvent::new(Actor::Account(actor), Action::FileAreaCreated, Target::None)
+        .on(area)
+        .detail(&format!(
+            "{}, {}",
+            if restricted { "restricted" } else { "open" },
+            if auto_approve {
+                "auto-approve"
+            } else {
+                "approval needed"
+            }
+        ))
+}
+
+/// `actor` decided or removed file `file` in `area`, uploaded by `uploader` (M4-F2). Ids only;
+/// `note` is a fixed word such as `infected`.
+#[must_use]
+pub fn file_event(
+    actor: Actor,
+    action: Action,
+    area: Option<ResourceRef>,
+    uploader: Option<AccountId>,
+    file: i64,
+    note: &str,
+) -> AuditEvent {
+    let target = uploader.map_or(Target::None, Target::Account);
+    let mut event = AuditEvent::new(actor, action, target);
+    if let Some(area) = area {
+        event = event.on(area);
+    }
+    event.detail(format!("file {file} {note}").trim_end())
+}

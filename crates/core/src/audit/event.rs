@@ -204,6 +204,23 @@ pub enum Action {
     /// Staff closed a mail report (M3-I). The detail holds the report id only.
     #[strum(serialize = "mail.report_closed")]
     MailReportClosed,
+    /// Staff created a file area (M4-F2). The resource is the area; the detail says whether it
+    /// is restricted and whether it auto-approves. The name is not written.
+    #[strum(serialize = "file_area.created")]
+    FileAreaCreated,
+    /// A quarantined file went live (M4-F2): staff approved it, or its area auto-approves and
+    /// the scanner had no objection (the actor is then the system). The resource is the area;
+    /// the target is the uploader; the detail holds ids only, never the name.
+    #[strum(serialize = "file.approved")]
+    FileApproved,
+    /// A quarantined file was refused (M4-F2): by staff, or by the scanner (the actor is then
+    /// the system and the detail says `infected`). Same fields as `file.approved`.
+    #[strum(serialize = "file.rejected")]
+    FileRejected,
+    /// A file was removed (M4-F2) by staff, or by its uploader while it was still in quarantine.
+    /// Same fields as `file.approved`.
+    #[strum(serialize = "file.removed")]
+    FileRemoved,
 }
 
 impl Action {
