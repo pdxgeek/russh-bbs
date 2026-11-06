@@ -23,6 +23,12 @@ use crate::tide::{Access, WET_BAND};
 /// The map is `SIZE` by `SIZE` tiles.
 pub const SIZE: usize = 64;
 
+/// How far from the Tidecourt a dredged channel is dredged, in tiles.
+pub const DREDGE_RADIUS: i32 = 14;
+
+/// The elevation a dredged channel is raised to (the flats' own, so it is dry at a low).
+pub const DREDGE_FLOOR: u8 = 36;
+
 /// The northern rows that make up the Deep.
 pub const DEEP_ROWS: usize = 6;
 
@@ -200,6 +206,34 @@ pub struct Map {
     pub sites: Vec<(u8, u8)>,
     /// Placed points of interest.
     pub pois: Vec<Poi>,
+    /// Causeways laid by clans, as this player meets them (the world's list, with the toll
+    /// this player would pay). Not generated: see [`Map::lay`].
+    pub laid: Vec<Laid>,
+}
+
+/// A causeway tile laid by a clan.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Laid {
+    /// Column.
+    pub x: u8,
+    /// Row.
+    pub y: u8,
+    /// The builder's clan name.
+    pub owner: String,
+    /// The toll this player pays to cross it, in tallies (zero for the builder and for a pact
+    /// partner who shares causeways).
+    pub toll: u8,
+    /// Whether the player's own clan laid it.
+    pub mine: bool,
+}
+
+/// The ground a causeway may be laid on.
+#[must_use]
+pub const fn can_lay_on(kind: TileKind) -> bool {
+    matches!(
+        kind,
+        TileKind::Mudflat | TileKind::Channel | TileKind::PeatBog | TileKind::SaltPan
+    )
 }
 
 fn lattice(rng: &mut DoorRng, n: usize) -> Vec<u32> {
@@ -353,6 +387,7 @@ impl Map {
             tidecourt: TIDECOURT,
             sites,
             pois: Vec::new(),
+            laid: Vec::new(),
         };
         map.place_pois(templates, &mut rng);
         map
@@ -499,6 +534,83 @@ impl Map {
     #[must_use]
     pub fn tile(&self, x: usize, y: usize) -> Option<Tile> {
         (x < SIZE && y < SIZE).then(|| self.tiles[y * SIZE + x])
+    }
+
+    /// Lay a causeway tile: the ground becomes a causeway that the water never covers. Returns
+    /// `false` (and changes nothing) if the ground cannot take one, or a place stands there.
+    pub fn lay(&mut self, laid: Laid) -> bool {
+        let (x, y) = (usize::from(laid.x), usize::from(laid.y));
+        let Some(tile) = self.tile(x, y) else {
+            return false;
+        };
+        if !can_lay_on(tile.kind) || self.poi_at(laid.x, laid.y).is_some() {
+            return false;
+        }
+        self.tiles[y * SIZE + x] = Tile {
+            kind: TileKind::Causeway,
+            elevation: 100,
+        };
+        self.laid.push(laid);
+        true
+    }
+
+    /// The causeway laid at `(x, y)`.
+    #[must_use]
+    pub fn laid_at(&self, x: u8, y: u8) -> Option<&Laid> {
+        self.laid.iter().find(|l| l.x == x && l.y == y)
+    }
+
+    /// The Deep tile nearest the Tidecourt: the gate of the Deep.
+    #[must_use]
+    pub fn deep_gate(&self) -> Option<(u8, u8)> {
+        let (tx, ty) = (i32::from(self.tidecourt.0), i32::from(self.tidecourt.1));
+        self.iter()
+            .filter(|(_, t)| t.kind == TileKind::Deep)
+            .min_by_key(|((x, y), _)| {
+                let (dx, dy) = (
+                    i32::try_from(*x).unwrap_or(0) - tx,
+                    i32::try_from(*y).unwrap_or(0) - ty,
+                );
+                (dx * dx + dy * dy, *y, *x)
+            })
+            .map(|((x, y), _)| (u8::try_from(x).unwrap_or(0), u8::try_from(y).unwrap_or(0)))
+    }
+
+    /// Apply what quests have done to the marsh for the whole board: `flags` is the world's
+    /// bit set of [`crate::story::Flag`]. `templates` names the points of interest.
+    pub fn apply_flags(&mut self, flags: u8, templates: &[PoiTemplate]) {
+        use crate::story::Flag;
+        if flags & Flag::Dredge.bit() != 0 {
+            let (tx, ty) = (i32::from(self.tidecourt.0), i32::from(self.tidecourt.1));
+            for y in 0..SIZE {
+                for x in 0..SIZE {
+                    let (dx, dy) = (
+                        i32::try_from(x).unwrap_or(0) - tx,
+                        i32::try_from(y).unwrap_or(0) - ty,
+                    );
+                    let near = dx * dx + dy * dy <= DREDGE_RADIUS * DREDGE_RADIUS;
+                    let tile = self.tiles[y * SIZE + x];
+                    if near && tile.kind == TileKind::Channel {
+                        self.tiles[y * SIZE + x] = Tile {
+                            kind: TileKind::Mudflat,
+                            elevation: tile.elevation.max(DREDGE_FLOOR),
+                        };
+                    }
+                }
+            }
+        }
+        for (flag, template) in [
+            (Flag::ClearEels, "eel-lair"),
+            (Flag::ClearHags, "bog-hag-lair"),
+        ] {
+            if flags & flag.bit() != 0 {
+                self.pois.retain(|p| {
+                    templates
+                        .get(usize::from(p.template))
+                        .is_none_or(|t| t.id != template)
+                });
+            }
+        }
     }
 
     /// The point of interest at `(x, y)`.

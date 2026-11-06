@@ -97,6 +97,7 @@ pub struct Ctx<'a> {
     pub(crate) rng: &'a mut DoorRng,
     pub(crate) effects: &'a mut Effects,
     pub(crate) text: &'a mut TextBudget,
+    pub(crate) world: Option<&'a [u8]>,
 }
 
 impl Ctx<'_> {
@@ -129,6 +130,22 @@ impl Ctx<'_> {
     /// one key keeps the last.
     pub fn request_save(&mut self, bytes: Vec<u8>) {
         self.effects.save = Some(bytes);
+    }
+
+    /// The latest shared world the board has read for this session (`None`: no world exists
+    /// yet). Read-only, and only this door's own world: there is no other store to reach.
+    ///
+    /// **When it is fresh.** The board re-reads the world before a key when the last read is
+    /// at least one clock second old (so at most one store read per session per second, however
+    /// fast the keys come), and again right after it applies this session's own world edits.
+    /// Within one second, or one batch of keys, it can therefore be one edit behind another
+    /// player. It is a view for choosing and showing, not a lock: to change the world keep using
+    /// [`Ctx::edit_world`], whose closure is handed the stored bytes at write time and is retried
+    /// on a conflict. In a replay the world is whatever the log recorded (see
+    /// [`ReplayLog`](crate::replay::ReplayLog)).
+    #[must_use]
+    pub const fn world(&self) -> Option<&[u8]> {
+        self.world
     }
 
     /// Ask the board to change the shared world with `edit` (see [`WorldEdit`]).
@@ -175,6 +192,7 @@ mod tests {
             rng: &mut rng,
             effects: &mut effects,
             text,
+            world: None,
         };
         f(&mut ctx)
     }
@@ -227,9 +245,11 @@ mod tests {
             rng: &mut rng,
             effects: &mut effects,
             text: &mut budget,
+            world: Some(&[7]),
         };
         assert_eq!(ctx.today(), Day::from_raw(3));
         assert_eq!(ctx.season(), 4);
+        assert_eq!(ctx.world(), Some(&[7][..]));
         ctx.request_save(vec![1]);
         ctx.request_save(vec![2]);
         assert_eq!(effects.save(), Some(&[2][..]));

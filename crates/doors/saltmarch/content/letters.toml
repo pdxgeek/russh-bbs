@@ -86,3 +86,369 @@ id = "offer-guard"
 kind = "offer"
 requires = "always"
 text = "{clan} to {you}: when the water comes for one of us, the other stands at the gate."
+
+[[letter]]
+id = "greeting-won-a"
+kind = "greeting"
+requires = "raids-won"
+text = "{clan} to {you}: our crews came home heavy and in good humour. Greeting, and a place at our fire if you pass."
+
+[[letter]]
+id = "greeting-won-b"
+kind = "greeting"
+requires = "raids-won"
+text = "{clan} to {you}: we hold what we took with an easy hand. Greeting from a clan that sleeps well."
+
+[[letter]]
+id = "greeting-raided-a"
+kind = "greeting"
+requires = "raided"
+text = "{clan} to {you}: the gate is mended and the new boards are sound. Greeting, from a clan still standing."
+
+[[letter]]
+id = "greeting-raided-b"
+kind = "greeting"
+requires = "raided"
+text = "{clan} to {you}: we count our dead and our spears and send greeting regardless. The marsh is long, and so is memory."
+
+[[letter]]
+id = "greeting-betrayal-a"
+kind = "greeting"
+requires = "betrayal"
+text = "{clan} to {you}: we owe the Tidecourt an honest year. This is the first line of it: greeting, and an open hand."
+
+[[letter]]
+id = "greeting-betrayal-b"
+kind = "greeting"
+requires = "betrayal"
+text = "{clan} to {you}: we are not proud of what we signed and broke. We send greeting anyway, and mean it."
+
+[[letter]]
+id = "greeting-pact-a"
+kind = "greeting"
+requires = "pact"
+text = "{clan} to {you}: our pact is a good thing to have written down. Greeting from a clan that keeps its word."
+
+[[letter]]
+id = "greeting-pact-b"
+kind = "greeting"
+requires = "pact"
+text = "{clan} to {you}: the lamp is lit at our gate for an ally. Come when the tide allows."
+
+[[letter]]
+id = "greeting-trader-b"
+kind = "greeting"
+requires = "trader"
+text = "{clan} to {you}: our scales are true and our ledger is open. Greeting from a clan that counts out loud."
+
+[[letter]]
+id = "thanks-always-a"
+kind = "thanks"
+requires = "always"
+text = "{clan} to {you}: a kindness at the right tide is worth more than a loud one. Thank you."
+
+[[letter]]
+id = "thanks-always-b"
+kind = "thanks"
+requires = "always"
+text = "{clan} to {you}: your crews left our flats as they found them. We noticed, and we are grateful."
+
+[[letter]]
+id = "thanks-won-a"
+kind = "thanks"
+requires = "raids-won"
+text = "{clan} to {you}: you fought well, and it taught us something. Thank you for the lesson, and the lighter hold."
+
+[[letter]]
+id = "thanks-won-b"
+kind = "thanks"
+requires = "raids-won"
+text = "{clan} to {you}: when our crews carried off your goods, you left us the road home. We have not forgotten that."
+
+[[letter]]
+id = "thanks-raided-a"
+kind = "thanks"
+requires = "raided"
+text = "{clan} to {you}: you did not press us when our gate fell. We are grateful for the mercy and mean to repay it."
+
+[[letter]]
+id = "thanks-raided-b"
+kind = "thanks"
+requires = "raided"
+text = "{clan} to {you}: after the raid, you sent word first and spears second. That counted. Thank you."
+
+[[letter]]
+id = "thanks-betrayal-a"
+kind = "thanks"
+requires = "betrayal"
+text = "{clan} to {you}: you heard us out after we broke faith. Thank you for the second hearing."
+
+[[letter]]
+id = "thanks-betrayal-b"
+kind = "thanks"
+requires = "betrayal"
+text = "{clan} to {you}: you could have shouted our shame across the Tidecourt. You did not. Thank you."
+
+[[letter]]
+id = "thanks-pact-b"
+kind = "thanks"
+requires = "pact"
+text = "{clan} to {you}: you stood at our gate when the water came. A pact is only words until then. Thank you."
+
+[[letter]]
+id = "thanks-trader-b"
+kind = "thanks"
+requires = "trader"
+text = "{clan} to {you}: your measure was full and your word was good. The exchange is richer for you."
+
+[[letter]]
+id = "warning-always-b"
+kind = "warning"
+requires = "always"
+text = "{clan} to {you}: the channel by our hold floods fast. Keep your boats on the far bank at the turn."
+
+[[letter]]
+id = "warning-won-a"
+kind = "warning"
+requires = "raids-won"
+text = "{clan} to {you}: we have been through your gate once, and we know the way. Mend it, or we will be back."
+
+[[letter]]
+id = "warning-won-b"
+kind = "warning"
+requires = "raids-won"
+text = "{clan} to {you}: your crews have been slow at the low tide. We have noticed, and so will the next raiders."
+
+[[letter]]
+id = "warning-raided-b"
+kind = "warning"
+requires = "raided"
+text = "{clan} to {you}: our sluice is open and our spears are counted. Come by daylight or not at all."
+
+[[letter]]
+id = "warning-betrayal-a"
+kind = "warning"
+requires = "betrayal"
+text = "{clan} to {you}: a pact once broken is easy to break again. Think on that before you ask us to trust."
+
+[[letter]]
+id = "warning-betrayal-b"
+kind = "warning"
+requires = "betrayal"
+text = "{clan} to {you}: we know what your word is worth. We will weigh it twice from now on."
+
+[[letter]]
+id = "warning-pact-a"
+kind = "warning"
+requires = "pact"
+text = "{clan} to {you}: allies speak plainly. Your east wall is thin, and the reed-cats know it."
+
+[[letter]]
+id = "warning-pact-b"
+kind = "warning"
+requires = "pact"
+text = "{clan} to {you}: a pact keeps us from each other, not from the marsh. Watch your own water."
+
+[[letter]]
+id = "warning-trader-a"
+kind = "warning"
+requires = "trader"
+text = "{clan} to {you}: we have seen short measure on the exchange. Not from you, yet. We are watching the scales."
+
+[[letter]]
+id = "warning-trader-b"
+kind = "warning"
+requires = "trader"
+text = "{clan} to {you}: the toll-keepers are counting every barrel this season. Declare what you carry."
+
+[[letter]]
+id = "taunt-always-a"
+kind = "taunt"
+requires = "always"
+text = "{clan} to {you}: our salt is whiter, our ropes are tighter and our gate is shut. Come and look."
+
+[[letter]]
+id = "taunt-always-b"
+kind = "taunt"
+requires = "always"
+text = "{clan} to {you}: we hear your crews sing off-key in the reeds. We admire the nerve."
+
+[[letter]]
+id = "taunt-won-c"
+kind = "taunt"
+requires = "raids-won"
+text = "{clan} to {you}: your ledger has a hole in it now, and our larder has the shape of it."
+
+[[letter]]
+id = "taunt-raided-b"
+kind = "taunt"
+requires = "raided"
+text = "{clan} to {you}: you came, you took a little, and you went home wet. We will keep the door ajar."
+
+[[letter]]
+id = "taunt-betrayal-a"
+kind = "taunt"
+requires = "betrayal"
+text = "{clan} to {you}: we tore up the pact and the reeds did not whisper. You were fair game, and you know it."
+
+[[letter]]
+id = "taunt-betrayal-b"
+kind = "taunt"
+requires = "betrayal"
+text = "{clan} to {you}: a signature is only ink, and the tide takes ink. Ask yourself why you trusted ours."
+
+[[letter]]
+id = "taunt-pact-a"
+kind = "taunt"
+requires = "pact"
+text = "{clan} to {you}: bound to us by a pact, and still our crews outwork yours. A friendly rivalry, then."
+
+[[letter]]
+id = "taunt-pact-b"
+kind = "taunt"
+requires = "pact"
+text = "{clan} to {you}: the pact says no raids. It says nothing of who gathers more peat."
+
+[[letter]]
+id = "taunt-trader-a"
+kind = "taunt"
+requires = "trader"
+text = "{clan} to {you}: we sold well on the exchange today. Perhaps you will, one season."
+
+[[letter]]
+id = "taunt-trader-b"
+kind = "taunt"
+requires = "trader"
+text = "{clan} to {you}: your prices are the talk of the Tidecourt, and ours are the ones they pay."
+
+[[letter]]
+id = "apology-always-a"
+kind = "apology"
+requires = "always"
+text = "{clan} to {you}: a crew of ours trod on your flats and did not ask. It was a clumsy thing. We are sorry."
+
+[[letter]]
+id = "apology-always-b"
+kind = "apology"
+requires = "always"
+text = "{clan} to {you}: words were said at the market that should have stayed in our mouths. We take them back."
+
+[[letter]]
+id = "apology-won-a"
+kind = "apology"
+requires = "raids-won"
+text = "{clan} to {you}: we took more than we needed that night. We are sorry for the excess, if not the raid."
+
+[[letter]]
+id = "apology-won-b"
+kind = "apology"
+requires = "raids-won"
+text = "{clan} to {you}: our crews carried off a lamp that was not ours to take. We would return it if we could."
+
+[[letter]]
+id = "apology-raided-a"
+kind = "apology"
+requires = "raided"
+text = "{clan} to {you}: we answered your raid with more than it needed. We are sorry for the second fire."
+
+[[letter]]
+id = "apology-raided-b"
+kind = "apology"
+requires = "raided"
+text = "{clan} to {you}: we raised our voice when we should have lowered the bridge. Our fault. Our apology."
+
+[[letter]]
+id = "apology-betrayal-b"
+kind = "apology"
+requires = "betrayal"
+text = "{clan} to {you}: the pact was broken by our hand, not the water's. We are sorry, and we have the scars to show it."
+
+[[letter]]
+id = "apology-pact-a"
+kind = "apology"
+requires = "pact"
+text = "{clan} to {you}: we were late to your gate when you called. The pact deserved better. We are sorry."
+
+[[letter]]
+id = "apology-pact-b"
+kind = "apology"
+requires = "pact"
+text = "{clan} to {you}: a misunderstanding at the boundary, and the fault was ours. Your allies owe you a fair word."
+
+[[letter]]
+id = "apology-trader-a"
+kind = "apology"
+requires = "trader"
+text = "{clan} to {you}: a crate of ours was short at the exchange. It was a mistake. We have made it good."
+
+[[letter]]
+id = "apology-trader-b"
+kind = "apology"
+requires = "trader"
+text = "{clan} to {you}: we sold you what we should have kept for ourselves, and then cursed your luck. Sorry."
+
+[[letter]]
+id = "offer-won-a"
+kind = "offer"
+requires = "raids-won"
+text = "{clan} to {you}: we have taken what we came for. Let us settle with a pact before one of us takes more."
+
+[[letter]]
+id = "offer-won-b"
+kind = "offer"
+requires = "raids-won"
+text = "{clan} to {you}: we can keep coming, or we can keep our word. We offer the second."
+
+[[letter]]
+id = "offer-raided-a"
+kind = "offer"
+requires = "raided"
+text = "{clan} to {you}: after the raid, we would sooner have a pact than a feud. Name your terms."
+
+[[letter]]
+id = "offer-raided-b"
+kind = "offer"
+requires = "raided"
+text = "{clan} to {you}: our gates have known your spears. Let them know your trade instead."
+
+[[letter]]
+id = "offer-betrayal-a"
+kind = "offer"
+requires = "betrayal"
+text = "{clan} to {you}: we broke one pact and want a chance at a second. We will go slowly, and under witness."
+
+[[letter]]
+id = "offer-betrayal-b"
+kind = "offer"
+requires = "betrayal"
+text = "{clan} to {you}: a smaller pact, a shorter term, and a harbourmaster's seal. Let us earn the rest."
+
+[[letter]]
+id = "offer-pact-a"
+kind = "offer"
+requires = "pact"
+text = "{clan} to {you}: our pact has held a season. Let us make it a longer one."
+
+[[letter]]
+id = "offer-pact-b"
+kind = "offer"
+requires = "pact"
+text = "{clan} to {you}: allies share a fire. We would share a granary in lean times as well."
+
+[[letter]]
+id = "offer-trader-a"
+kind = "offer"
+requires = "trader"
+text = "{clan} to {you}: we trade well with you. Let us write it down and call it a pact."
+
+[[letter]]
+id = "offer-trader-b"
+kind = "offer"
+requires = "trader"
+text = "{clan} to {you}: a standing price for salt and peat, set by the harbourmaster, fair to both."
+
+[[letter]]
+id = "offer-always-d"
+kind = "offer"
+requires = "always"
+text = "{clan} to {you}: share the tide-tables and the bad news. We will do the same."

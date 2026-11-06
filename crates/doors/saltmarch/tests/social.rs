@@ -673,7 +673,10 @@ async fn a_raid_the_guard_beats_off_costs_the_raider_and_the_defender_keeps_ever
     b.finish().await;
     let bob = board.clan(2).await;
     assert_eq!((bob.social.repelled, bob.social.raided), (1, 0));
-    assert!(bob.tallies >= bob0.tallies, "nothing was taken");
+    // A night costs what its crew cost (a hand who drinks is a tally a night), so the proof that
+    // nothing was taken is the clan's own ledger of what it was robbed of.
+    assert_eq!(bob.social.robbed, 0, "nothing was taken");
+    assert!(bob.tallies + 8 >= bob0.tallies);
     assert!(bob.morale >= bob0.morale);
 }
 
@@ -825,6 +828,21 @@ async fn a_pact_is_made_and_broken_and_the_clans_remember() {
     for log in [&offered, &accepted, &broken] {
         replay(&board, log).await;
     }
+}
+
+#[tokio::test]
+async fn a_question_mark_typed_into_a_letter_line_is_text_not_the_look_around_key() {
+    let board = Board::new(DAY);
+    found(&board, 1, "ann").await;
+    found(&board, 2, "bob").await;
+    let mut a = board.visit(1, "ann", 3).await;
+    a.go(&["go:court", "go:letters", "compose"]).await;
+    a.go(&["line"]).await;
+    for c in "who? me?".chars() {
+        a.key(DoorKey::Char(c)).await;
+    }
+    a.key(DoorKey::Enter).await;
+    assert!(a.said("Your line: who? me?"), "{}", a.screen());
 }
 
 #[tokio::test]

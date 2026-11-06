@@ -1,0 +1,24 @@
+┌───────────────────────────────── russh-bbs ──────────────────────────────────┐
+│Saltmarch                                                                     │
+│                                                                              │
+│ ⌂ founder  day 9 of season 1            turns ███████▎░░ 22/30  ◈ 40 tallies │
+│ ≈ TIDE █████████████░░░┃░░░░░░  59 ↓ low in 3h44 (23)  middling tides  calm  │
+│╭ Crew 3/3 ──────────────────────────╮╭ Maren Brinecook, the wader ──────────╮│
+││ name               trade      age  ││Age     █████████▍░░ 47 (retires at 60││
+││▸Maren Brinecook    wader      47  »││Away on a raid: back with the report. ││
+││ Ivo Tidewatcher    raker      30  »││grit ██░░ 5  wit ██░░ 5  reac ██▍░ 6  ││
+││ Fenna Silthand     reed-witch 30   ││◆ Hardy Heals like a reed ~           ││
+││                                    ││◆ Greedy Works hard for th~           ││
+││                                    ││✓ no injuries                         ││
+││                                    ││♡ no bonds yet: hardship shared makes ││
+││                                    ││Skills                                ││
+││                                    ││wader      ████▌░░░░░░░░░░░░░░░░░░  2 ││
+││                                    ││                                      ││
+││                                    │╰──────────────────────────────────────╯│
+││                                    │╭ Orders for Maren Brinecook ──────────╮│
+││                                    ││ a Take on Rook Bogtrotter, salvage~  ││
+││                                    ││ b Take on Maren Marshborn, boatwri~  ││
+││                                    ││ c Train Maren Brinecook in wader (~  ││
+│╰────────────────────────────────────╯╰──────────────────────────────────────╯│
+│ » Take on Rook Bogtrotter, salvager (age 18), 22 t~ up/down crew  </> order  │
+└──────────────────────────────────────────────────────────────────────────────┘

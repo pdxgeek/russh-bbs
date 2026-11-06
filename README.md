@@ -27,6 +27,11 @@ Then, from any machine: `ssh -p 2222 new@host` to join (the waiting room; you ch
 
 Or `docker compose up -d` with the example [compose.yaml](compose.yaml). All state lives in the `/data` volume. Images are published on version tags only. Full guide, including backups, upgrades and the host key fingerprint: [docs/deploy.md](docs/deploy.md). The container is not a sandbox for door games.
 
+## Guides
+
+- **Running a board:** the [sysop guide](docs/guide/sysop/01-install.md): install, first start, config, people, look and feel, doors, backups, troubleshooting.
+- **Using a board:** the [member guide](docs/guide/member/01-connect.md), and [who can read what](docs/guide/privacy.md).
+
 ## Software name vs. board name
 
 `russh-bbs` is the software. A running board has its own name, chosen by its sysop (candidates for the first board: Chatsubo, Lowtek). See [docs/decisions.md](docs/decisions.md).
