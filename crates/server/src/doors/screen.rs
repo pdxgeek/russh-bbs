@@ -195,3 +195,6 @@ fn door_key(key: Key) -> Option<DoorKey> {
         | Key::Other => None,
     }
 }
+
+#[cfg(test)]
+mod key_tests;
