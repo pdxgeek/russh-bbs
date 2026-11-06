@@ -9,6 +9,8 @@ pub mod doors;
 pub mod feeds;
 pub mod forums;
 pub mod founder;
+#[cfg(test)]
+mod fuzz;
 pub mod mail;
 pub mod members;
 pub mod settings;

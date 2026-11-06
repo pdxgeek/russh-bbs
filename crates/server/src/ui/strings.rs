@@ -64,6 +64,47 @@ pub enum StringError {
     Claim(String),
 }
 
+/// The longest refusal text that is logged or shown, in characters.
+const REASON_MAX: usize = 160;
+
+/// A refusal reason made safe to log and to show: one line, control characters escaped, and
+/// cut at [`REASON_MAX`] characters. Text from a file (a TOML error, a key or a value the file
+/// chose) can be any length and hold any character; every reason that quotes it goes through
+/// here first (H-4).
+pub(crate) fn reason(text: &str) -> String {
+    let mut out = String::new();
+    for (count, c) in text.chars().enumerate() {
+        if count >= REASON_MAX {
+            out.push_str("...");
+            break;
+        }
+        match c {
+            '\n' | '\r' | '\t' => out.push(' '),
+            c if c.is_control() => out.extend(c.escape_default()),
+            c => out.push(c),
+        }
+    }
+    out
+}
+
+impl StringError {
+    /// This error with every file-chosen part cut by [`reason`].
+    pub(crate) fn bounded(self) -> Self {
+        match self {
+            Self::Syntax(m) => Self::Syntax(reason(&m)),
+            Self::NotText(k) => Self::NotText(reason(&k)),
+            Self::Missing(k) => Self::Missing(reason(&k)),
+            Self::Unknown(k) => Self::Unknown(reason(&k)),
+            Self::Empty(k) => Self::Empty(reason(&k)),
+            Self::Unsafe(k) => Self::Unsafe(reason(&k)),
+            Self::TooLong(k) => Self::TooLong(reason(&k)),
+            Self::Reserved(k) => Self::Reserved(reason(&k)),
+            Self::Claim(k) => Self::Claim(reason(&k)),
+            Self::TooLarge(n) => Self::TooLarge(n),
+        }
+    }
+}
+
 /// Keys no theme may replace: the captions next to the security markers, and the text shown when
 /// markers cannot be drawn. A theme that could reword them could make a marker say the opposite.
 pub(crate) const RESERVED: [&str; 1] = [keys::STATUS_UNAVAILABLE];

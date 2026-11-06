@@ -243,7 +243,8 @@ pub(crate) fn ans_piece(file_name: &str, bytes: &[u8]) -> Result<ArtPiece, ArtEr
     };
     let slot = Slot::from_name(slot_name).ok_or_else(|| {
         ArtError::Invalid(format!(
-            "the file name must be <slot>.ans or <style>.<slot>.ans with a slot of login, menu, area or logoff, not {file_name:?}"
+            "the file name must be <slot>.ans or <style>.<slot>.ans with a slot of login, menu, area or logoff, not {:?}",
+            crate::ui::strings::reason(file_name)
         ))
     })?;
     let style = style

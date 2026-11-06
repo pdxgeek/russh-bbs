@@ -179,7 +179,7 @@ fn read_file(file: FileInput<'_>) -> Result<Vec<(&'static KeyDef, Value)>, Confi
                 for (leaf, value) in section {
                     let path = format!("{name}.{leaf}");
                     let def = keys::by_path(&path).ok_or_else(|| ConfigError::UnknownKey {
-                        key: path.clone(),
+                        key: crate::ui::strings::reason(&path),
                         origin: origin.clone(),
                     })?;
                     out.push((def, value));
@@ -192,7 +192,12 @@ fn read_file(file: FileInput<'_>) -> Result<Vec<(&'static KeyDef, Value)>, Confi
                     format!("`{name}` is a section; write it as [{name}] with keys under it"),
                 ));
             }
-            (false, _) => return Err(ConfigError::UnknownKey { key: name, origin }),
+            (false, _) => {
+                return Err(ConfigError::UnknownKey {
+                    key: crate::ui::strings::reason(&name),
+                    origin,
+                });
+            }
         }
     }
     Ok(out)

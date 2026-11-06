@@ -89,7 +89,7 @@ pub fn parse(text: &str, sysop: bool) -> Result<ArtFile, ArtError> {
         return Err(ArtError::TooManyBytes(text.len(), MAX_BYTES));
     }
     let raw: RawFile =
-        toml::from_str(text).map_err(|error| ArtError::Invalid(format!("not valid: {error}")))?;
+        toml::from_str(text).map_err(|error| invalid(format!("not valid: {}", error.message())))?;
     if raw.format != FORMAT {
         return Err(invalid(format!(
             "format {} is not understood (this server reads format {FORMAT})",
@@ -200,8 +200,9 @@ pub(crate) fn quote(text: &str) -> String {
     out
 }
 
+/// A refusal. The text may quote the file, so it is cut to one short line.
 fn invalid(message: impl Into<String>) -> ArtError {
-    ArtError::Invalid(message.into())
+    ArtError::Invalid(crate::ui::strings::reason(&message.into()))
 }
 
 fn build(

@@ -113,7 +113,7 @@ impl ConfigError {
         Self::Invalid {
             key: key.to_owned(),
             origin: origin.clone(),
-            message: message.into(),
+            message: crate::ui::strings::reason(&message.into()),
         }
     }
 }

@@ -47,7 +47,7 @@ use serde::Deserialize;
 
 use super::{MAX_THEME_FILES, Theme, ThemeError, ThemeSet};
 use crate::ui::art::{self, ANS_MAX_BYTES, ART_TOML_MAX_BYTES, ArtError, ArtSet, Slot};
-use crate::ui::strings::StringTable;
+use crate::ui::strings::{StringTable, reason};
 
 /// The pack container version this server reads and writes.
 pub const PACK_VERSION: u32 = 1;
@@ -165,7 +165,7 @@ pub fn parse(text: &str, base: &StringTable) -> Result<Pack, PackError> {
         return Err(PackError::TooLarge(text.len()));
     }
     let raw: RawPack =
-        toml::from_str(text).map_err(|error| PackError::Syntax(error.message().to_owned()))?;
+        toml::from_str(text).map_err(|error| PackError::Syntax(reason(error.message())))?;
     if raw.pack != PACK_VERSION {
         return Err(PackError::Version(raw.pack));
     }
@@ -182,7 +182,10 @@ pub fn parse(text: &str, base: &StringTable) -> Result<Pack, PackError> {
     let mut seen_slots: Vec<Slot> = Vec::new();
     for (index, entry) in raw.art.iter().enumerate() {
         let at = index + 1;
-        let fail = |reason: String| PackError::Art { entry: at, reason };
+        let fail = |why: String| PackError::Art {
+            entry: at,
+            reason: reason(&why),
+        };
         match entry.kind.as_str() {
             "art.toml" => {
                 if entry.slot.is_some() || entry.hex.is_some() {
@@ -482,5 +485,7 @@ pub fn list_dir(dir: &Path, base: &StringTable) -> Vec<PackFile> {
         .collect()
 }
 
+#[cfg(test)]
+mod fuzz_tests;
 #[cfg(test)]
 mod tests;
