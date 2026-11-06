@@ -24,6 +24,14 @@ pub(crate) enum Spot {
     Guild,
     Library,
     Works,
+    /// Parties: who rides together.
+    Company,
+    /// The opt-in duel ring.
+    Ring,
+    /// The chain of questlines, and the epitaph.
+    Journal,
+    /// The Cold Furnace's question to the one who felled its guardian.
+    Verdict,
 }
 
 /// Keys a menu hands out, in order.
@@ -38,10 +46,10 @@ pub(crate) struct Entry {
 }
 
 #[derive(Default)]
-struct Menu(Vec<Entry>);
+pub(super) struct Menu(pub(super) Vec<Entry>);
 
 impl Menu {
-    fn add(&mut self, label: impl Into<String>, action: Action) {
+    pub(super) fn add(&mut self, label: impl Into<String>, action: Action) {
         if let Some(key) = MENU_KEYS.chars().nth(self.0.len()) {
             self.0.push(Entry {
                 key,
@@ -115,7 +123,7 @@ impl Session {
         }
     }
 
-    fn head_with_status(&self, game: &Game, title: &str) -> Vec<Line> {
+    pub(super) fn head_with_status(&self, game: &Game, title: &str) -> Vec<Line> {
         let d = game.derived(&self.content);
         let mut head = vec![styled(title, DoorStyle::Strong)];
         head.extend(self.status_lines(game, &d));
@@ -133,6 +141,9 @@ impl Session {
             Spot::Guild => self.guild_view(game),
             Spot::Library => self.library_view(game),
             Spot::Works => self.works_view(game),
+            Spot::Company | Spot::Ring | Spot::Journal | Spot::Verdict => {
+                self.social_view(game, spot)
+            }
         }
     }
 

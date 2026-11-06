@@ -32,6 +32,7 @@ Status of the project: M0, M1, M2 and M3 are merged. M1's QA gate passed except 
 | Configuration keys, env vars, flags | [config.md](config.md) |
 | Scope and order of work | [features.md](features.md), [mvp-scope.md](mvp-scope.md), [milestones.md](milestones.md) |
 | Terminal UI, menus, layouts, themes, icons | [ui.md](ui.md) |
+| Example board kit (menus, pages, a seventh style) | [examples/board/README.md](../examples/board/README.md) |
 | Door games and the door framework | [doors/README.md](doors/README.md) |
 | Chat rooms, presence, whispers | [chat.md](chat.md) |
 | Internal mail (sealed at rest, reports) | [mail.md](mail.md) |

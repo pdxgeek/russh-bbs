@@ -1,0 +1,26 @@
+# Original art for the "A short history" page, drawn for russh-bbs.
+format = 1
+name = "history"
+credit = "russh-bbs project (original art)"
+
+[[piece]]
+slot = "area"
+fallback = "{board}"
+rows = [
+  "╭──────────────────────────────────────╮  ",
+  "│  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  │  ",
+  "│  I    II   III   IV         ·  today   │",
+  "╰──────────────────────────────────────╯  ",
+]
+fg = [
+  "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy..",
+  "y......................................y..",
+  "y..Y....Y....Y....Y.........Y..wwwww..y...",
+  "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy..",
+]
+ascii = [
+  "+--------------------------------------+  ",
+  "|  .  .  .  .  .  .  .  .  .  .  .  .  |  ",
+  "|  I    II   III   IV         .  today   |",
+  "+--------------------------------------+  ",
+]

@@ -1,0 +1,24 @@
+┌───────────────────────────────── russh-bbs ──────────────────────────────────┐
+│Emberdeep                                                                     │
+│                                                                              │
+│◆ EMBERDEEP · The Hall · season 1 · the dungeon remade 0x                     │
+│ Standings │ The dead │ The world │ Companies │ The ring │ Donors │ Chronicle │
+│╭ The ring's ladder ─────────────────────────────────────────────────────────╮│
+││No one has fought in the ring yet.                                          ││
+││                                                                            ││
+││0 duel(s) fought this season. Stakes lost feed the works.                   ││
+││                                                                            ││
+││                                                                            ││
+││                                                                            ││
+││                                                                            ││
+││                                                                            ││
+││                                                                            ││
+││                                                                            ││
+││                                                                            ││
+││                                                                            ││
+││                                                                            ││
+││                                                                            ││
+││                                                                            ││
+│╰────────────────────────────────────────────────────────────────────────────╯│
+│[Left/Right] tab  [Esc] back                                                  │
+└──────────────────────────────────────────────────────────────────────────────┘

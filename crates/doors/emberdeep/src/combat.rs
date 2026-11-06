@@ -752,6 +752,9 @@ impl Game {
             .hero
             .kills
             .saturating_add(u32::try_from(fight.enemies.len()).unwrap_or(0));
+        for e in &fight.enemies {
+            self.note_kill(&e.id);
+        }
         say(
             ev,
             Tone::Good,
@@ -767,6 +770,7 @@ impl Game {
         }
         if let Place::Delve { depth, room } = self.place {
             self.today.cleared.push((depth, room));
+            self.share_clear(depth, room);
             if let Some(name) = guardian_name {
                 let band = dungeon::band_of(depth);
                 self.hero.relics = self.hero.relics.saturating_add(1);
@@ -776,6 +780,10 @@ impl Game {
                     format!("{name} is slain. The way down is open for everyone."),
                 );
                 let by = self.hero.name.clone();
+                self.hero.story.guardians |= 1 << (band - 1);
+                if band >= 5 {
+                    self.hero.story.verdict_due = true;
+                }
                 self.emit(crate::world::Change::Slain(band, by));
             }
         }

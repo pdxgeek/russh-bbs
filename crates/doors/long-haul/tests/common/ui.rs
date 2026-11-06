@@ -285,6 +285,11 @@ pub fn scenes() -> Vec<Scene> {
         scene("loan", docked("l")),
         scene("news", docked("n")),
         scene("standing", docked("a")),
+        scene("society_convoy", docked("o")),
+        scene("society_piracy", docked("o right")),
+        scene("society_outposts", docked("o right right")),
+        scene("society_hall", docked("o right right right")),
+        scene("society_journal", docked("o right right right right")),
         scene("event", |door| {
             let mut h = Harness::new(1, 11);
             let mut p = rich_captain(&mut h, false);

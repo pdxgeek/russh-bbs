@@ -1,0 +1,24 @@
+┌───────────────────────────────── russh-bbs ──────────────────────────────────┐
+│Long Haul                                                                     │
+│                                                                              │
+│▲ LONG HAUL  founder  0 cr  debt 20,646  days ●●●●●●●●●● 10                   │
+│╭ SOCIETY: CONVOYS, PIRACY, OUTPOSTS ────────────────────────────────────────╮│
+││[Convoy]  Piracy   Outposts   Hall   Journal                                ││
+││The server can read all of this. Other captains see only what is marked     ││
+││shared.                                                                     ││
+││Convoys: up to 4 captains who share risk and reward. Your ships need not be ││
+││in the same place: the guns of the others cut your raider odds and the pool ││
+││pays out while you sleep.                                                   ││
+││No convoy has room. [n] forms one.                                          ││
+││                                                                            ││
+││                                                                            ││
+││                                                                            ││
+││                                                                            ││
+││                                                                            ││
+││                                                                            ││
+││                                                                            ││
+│╰────────────────────────────────────────────────────────────────────────────╯│
+│Your convoy has broken up.                                                    │
+│[Left/Right] tab  [Up/Down] choose  [Enter] join/hunt  [n] form  [x] leave    │
+│[t] say  [1-8] note  [f] colours  [p/P] pledge  [Esc] back                    │
+└──────────────────────────────────────────────────────────────────────────────┘

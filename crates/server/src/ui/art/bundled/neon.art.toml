@@ -37,3 +37,53 @@ fg = [
   "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC",
   "c.....c.....c.....c.....c.....c.....c.....c.....c.....c.....c.....c.....",
 ]
+
+[[piece]]
+slot = "area"
+fallback = "<< {board} >>"
+rows = [
+  "   ▂▄▄▄▃▁                ▁▂▁     ▂▄▄▄▃▁                ▂▃▂▁    ▁▃▄▄▃▁   ",
+  "▂▅███████▆▃▄▆███▇▅▃   ▂▅█████▆▄▅███████▆▃▂▄▆▇▇▆▅▂▁  ▂▆██████▅▄▇██████▇▃ ",
+  "███████████████████▇▅▇████████████████████████████▇▇████████████████████",
+]
+fg = [
+  "RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR",
+  "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM",
+  "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC",
+]
+ascii = [
+  "   :|||:.                .:.     :|||:.                :::.    .:||:.   ",
+  ":|########:|#####|:   :|######||########::|####|:.  :#######||########: ",
+  "####################|###################################################",
+]
+
+[[piece]]
+slot = "logoff"
+fallback = "See you on the grid - {board}"
+rows = [
+  "                     ████████                     ",
+  "                  ██████████████                  ",
+  "                █████████████████                 ",
+  "               ██████ ██████ █████                ",
+  "               ██████ ██████ █████                ",
+  "──────────────────────────────────────────────────",
+  "               see you on the grid                ",
+]
+fg = [
+  ".....................YYYYYYYY.....................",
+  "..................YYYYYYYYYYYYYY..................",
+  "................RRRRRRRRRRRRRRRRR.................",
+  "...............RRRRRRRRRRRRRRRRRRR................",
+  "...............MMMMMMMMMMMMMMMMMMM................",
+  "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC",
+  "...............ccccccccccccccccccc................",
+]
+ascii = [
+  "                     ########                     ",
+  "                  ##############                  ",
+  "                #################                 ",
+  "               ###### ###### #####                ",
+  "               ###### ###### #####                ",
+  "--------------------------------------------------",
+  "               see you on the grid                ",
+]

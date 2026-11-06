@@ -1,0 +1,24 @@
+┌───────────────────────────────── russh-bbs ──────────────────────────────────┐
+│Emberdeep                                                                     │
+│                                                                              │
+│◆ EMBERDEEP · The Company ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ founder L1 Warden │
+│who rides together   Coin 20  Salvage 0  Store 0  Turns 25/25                 │
+│╭ The Company ─────────────────────────────╮╭ Preview ───────────────────────╮│
+││You ride alone.                           ││Close the door                  ││
+││You have invited bob.                     ││Closing the door hides you from ││
+││No one is looking for company.            ││the invitations list. You can   ││
+││                                          ││still invite others.            ││
+││                                          ││                                ││
+││                                          ││                                ││
+││                                          ││                                ││
+││                                          ││                                ││
+││                                          ││                                ││
+││                                          ││                                ││
+││                                          ││                                ││
+││                                          ││                                ││
+││                                          ││                                ││
+││                                          ││                                ││
+││                                          ││                                ││
+│╰──────────────────────────────────────────╯╰────────────────────────────────╯│
+│[1] Close the door to invitatio…  [Esc] back                                  │
+└──────────────────────────────────────────────────────────────────────────────┘

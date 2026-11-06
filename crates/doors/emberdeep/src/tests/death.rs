@@ -127,7 +127,15 @@ fn another_hero_can_carry_a_fallen_one_home_in_time() {
     let ev = dead.new_day(&c, TODAY + 1);
     assert_eq!(dead.place, Place::Town, "{}", said(&ev));
     assert_eq!(dead.hero.weapon, "stiletto");
-    assert_eq!(dead.hero.coin, 100);
+    // The rescued hero thanks the rescuer out of their own purse: a fifth of it, at most
+    // 10 + 3 per level of the fall, paid as a note the rescuer collects.
+    assert!((80..100).contains(&dead.hero.coin), "{}", dead.hero.coin);
+    let thanks = 100 - dead.hero.coin;
+    assert!(dead.take_changes().iter().any(|ch| matches!(
+        ch,
+        Change::Social(crate::social::SocialChange::Note(n))
+            if n.to == "Helper" && n.amount == thanks
+    )));
     assert!(dead.hero.wounds.iter().any(|(w, _)| w == "dragged-home"));
     assert!(
         dead.hero.hp < dead.derived(&c).max_hp,

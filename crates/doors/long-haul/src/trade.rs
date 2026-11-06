@@ -244,9 +244,16 @@ impl Player {
         }
         let slot = &mut self.turnover[faction.index()];
         *slot += total;
-        let steps = *slot / TURNOVER_PER_STANDING;
+        // A haven wants trade and warms to a stranger twice as fast (balance: a navy washout
+        // was locked out of the black market for most of a season).
+        let per = if faction == Faction::Free {
+            TURNOVER_PER_STANDING / 2
+        } else {
+            TURNOVER_PER_STANDING
+        };
+        let steps = *slot / per;
         if steps > 0 {
-            *slot -= steps * TURNOVER_PER_STANDING;
+            *slot -= steps * per;
             self.shift_standing(faction, i16::try_from(steps.min(10)).unwrap_or(10), events);
         }
     }

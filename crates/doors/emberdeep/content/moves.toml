@@ -21,4 +21,12 @@ move = [
   { id = "feint", name = "Feint", text = "Draw the guard, then cut under it.", reach = "melee", cost = 1, power = 50, kind = "sunder", amount = 2 },
   { id = "flourish", name = "Flourish", text = "A show-off finisher.", reach = "melee", cost = 3, power = 230, kind = "strike" },
   { id = "riposte", name = "Riposte", text = "Turn the enemy's blow back on it.", reach = "melee", cost = 1, power = 80, kind = "interrupt" },
+  { id = "pommel-strike", name = "Pommel Strike", text = "Crack the hilt into the enemy's guard.", reach = "melee", cost = 1, power = 65, kind = "interrupt" },
+  { id = "spark-snare", name = "Spark Snare", text = "A flash of sparks that marks the target.", reach = "ranged", cost = 1, power = 40, kind = "mark", amount = 25 },
+  { id = "splinter-cut", name = "Splinter Cut", text = "A ragged cut that leaves barbs in the wound.", reach = "melee", cost = 2, power = 80, kind = "bleed", amount = 4 },
+  { id = "gale-push", name = "Gale Push", text = "A blast of hot air that sends the enemy reeling to the back.", reach = "ranged", cost = 1, power = 50, kind = "shove" },
+  { id = "breaker-blow", name = "Breaker Blow", text = "A wedge-blow that splits plate and hide.", reach = "melee", cost = 2, power = 100, kind = "sunder", amount = 3 },
+  { id = "fire-lash", name = "Fire Lash", text = "A whip of embers that cuts and keeps burning.", reach = "ranged", cost = 2, power = 100, kind = "bleed", amount = 3 },
+  { id = "glass-ward", name = "Glass Ward", text = "A sheet of bright light between you and the blow.", reach = "melee", cost = 2, power = 0, kind = "ward", amount = 16 },
+  { id = "kindle", name = "Kindle", text = "Fan the banked fire and let it close your wounds.", reach = "melee", cost = 3, power = 0, kind = "mend", amount = 22 },
 ]

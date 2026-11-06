@@ -1,0 +1,30 @@
+ Tidepool BBS │ Theme packs                                                               UTC 04:44
+Installed styles (e exports the one under the cursor to packs/)
+  default                  default  (built in, nothing to export)
+  phosphor                 Phosphor
+  neon                     Neon Night
+  paper                    Paper
+  amber                    Amber Terminal
+  deepspace                Deep Space
+  ansi                     Classic ANSI
+  green                    Green
+  contrast                 High Contrast
+
+Pack files in packs/ (i imports the one under the cursor)
+  paper.pack.toml              ready: style paper
+> tidepool.pack.toml           ready: style tidepool
+
+
+
+
+
+
+
+
+
+
+
+
+
+Imported tidepool (1 art files). It loads when the server restarts.
+ ↑↓ move  e export style  i import pack  r look again  b back

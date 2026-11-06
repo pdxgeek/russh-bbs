@@ -414,7 +414,7 @@ CP437 bytes in, cells out (`art::ans::parse`).
 
 ### The six bundled sets
 
-Original art, drawn for this project, one login banner and one menu header per style (`bundled/<style>.art.toml`; credit "russh-bbs project (original art)"). Nothing is taken from another board or pack.
+Original art, drawn for this project: per style a login banner, a menu header, an **area header** (three rows, drawn above forums, mail and chat) and a **logoff picture** (`bundled/<style>.art.toml`; credit "russh-bbs project (original art)"; ART-1, D138). Every piece has its own ASCII-tier rows and a one-line fallback for a narrow screen. Nothing is taken from another board or pack. There is one `area` piece per style, shared by every screen that draws the slot; the doors list and the Files placeholder draw none (FIX-ART-1).
 
 | Style | Login banner / menu header |
 |---|---|
@@ -424,6 +424,19 @@ Original art, drawn for this project, one login banner and one menu header per s
 | `amber` | a strip of punched paper tape (it encodes the project name in 7-bit ASCII) |
 | `deepspace` | a ringed planet in a starfield |
 | `ansi` | a diagonal-shaded banner in CP437 blocks between double rules |
+
+| Style | Area header | Logoff picture |
+|---|---|---|
+| `phosphor` | a scope trace on a dotted graticule | the trace dying away to a flat line, "carrier lost" |
+| `neon` | an equaliser skyline in cyan, magenta and red | a striped sun going down behind a horizon line |
+| `paper` | a row of stamp perforations around a diamond rule | a closing note in a box, signed "your sysop" |
+| `amber` | a run of punched paper tape | the tape running out, "end of tape" |
+| `deepspace` | a zig-zag constellation in a field of stars | a comet through the stars, "fair winds, traveller" |
+| `ansi` | a block fade bar | a "NO CARRIER" box with a drop shadow |
+
+### The example board kit (ART-1)
+
+`examples/board/` is a copy-and-edit kit: a `menus.toml` that reorders, renames, re-keys and nests (three levels) with five pages, an example theme pack `tidepool` (a seventh style, exported from Paper with the UI-7 screen and edited, with its own four art pieces) and a README for sysops. `crates/server/src/ui/kit_tests.rs` loads all of it through the real loaders and checks caps, ASCII forms, credits and that no file holds a reserved, private-use or control character. Walk: [qa/art-1-walk.md](qa/art-1-walk.md).
 
 ### Theme preview (Sysop tools, `t`)
 
