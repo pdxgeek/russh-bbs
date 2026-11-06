@@ -258,6 +258,11 @@ cargo deny check
 
 A passing build does not prove behavior: for anything user-visible, also run the server and exercise it with a real `ssh` client.
 
+## Guides
+
+- **Running a board:** the [sysop guide](docs/guide/sysop/01-install.md): install, first start, config, people, look and feel, doors, backups, troubleshooting.
+- **Using a board:** the [member guide](docs/guide/member/01-connect.md), and [who can read what](docs/guide/privacy.md).
+
 ## Software name vs. board name
 
 `russh-bbs` is the software. A running board has its own name, chosen by its sysop (candidates for the first board: Chatsubo, Lowtek). See [docs/decisions.md](docs/decisions.md).
