@@ -182,6 +182,12 @@ Every slice: adds its permission rows to [access.md](access.md) and the `Permiss
 
 **M3 batches.** Batch 1: M3-A, M3-B, M3-C, M3-D (no shared Owns paths). Batch 2 after the needed batch-1 slices merge: M3-E, M3-F, M3-H, M3-J. Batch 3: M3-G, M3-I. At most four workers at once. Slices that add migrations develop in parallel but merge one at a time: merge `main` first, then take the next migration number. Menu entries in `core::menu` are the one shared file every screen slice touches; add one entry per slice and resolve conflicts at merge.
 
+### Hardening (H-*)
+
+| Slice | Owns | Depends on | Status | Branch / PR |
+|---|---|---|---|---|
+| H-1 Telnet front end fuzz and regression tests | `crates/server/src/telnet` (tests; small fixes) | M3-H | Claimed | `hard/telnet-fuzz` |
+
 ## Cross-slice requests
 
 Add a line here if you need a change in code another slice owns. Do not make it yourself.
