@@ -18,6 +18,7 @@
 //! | `arc:ID:STEP` | a storyline moves to a step |
 //! | `arc_end:ID:ENDING` | a storyline ends, and its ending's own effects follow |
 //! | `world:EFFECT` | a big change to the school everyone shares |
+//! | `verdict:ID` | cast trust on how the east wing's secret comes out (the mystery's endings) |
 //! | `betray:NPC` | the player sells a helper out; `betray:last_ally` names the latest scheme's first helper |
 
 use serde::Deserialize;
@@ -74,6 +75,8 @@ pub enum Eff {
     World(String),
     /// A betrayal.
     Betray(String),
+    /// Trust cast on how the east wing's secret comes out (the mystery's endings).
+    Verdict(String),
 }
 
 /// Why an effect string did not parse.
@@ -128,6 +131,7 @@ impl Eff {
             ["arc_end", a, ending] => Self::ArcEnd(id(a), id(ending)),
             ["world", x] => Self::World(id(x)),
             ["betray", x] => Self::Betray(id(x)),
+            ["verdict", x] => Self::Verdict(id(x)),
             _ => return Err(bad()),
         })
     }

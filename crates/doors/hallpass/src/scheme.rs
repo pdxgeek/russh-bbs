@@ -401,7 +401,14 @@ impl Game {
             | Action::Choose(_)
             | Action::Join(_)
             | Action::Quit(_)
-            | Action::Meet => Err(Refused::new("That is not a scheme action.")),
+            | Action::Meet
+            | Action::Plot { .. }
+            | Action::Spread { .. }
+            | Action::Nominate
+            | Action::Canvass
+            | Action::Vote(_)
+            | Action::OptOut(_)
+            | Action::Search => Err(Refused::new("That is not a scheme action.")),
         }
     }
 
