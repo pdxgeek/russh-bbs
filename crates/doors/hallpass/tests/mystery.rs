@@ -89,9 +89,50 @@ fn step_of(sb: &Sandbox) -> String {
 #[test]
 fn the_mystery_has_four_acts_over_weeks_and_every_clue_is_gated() {
     let c = content();
-    // Four acts, a dozen clues; the first can be found in the first fortnight and the last not
-    // before day 26, so the arc spans weeks, and the finale is after the last.
-    assert_eq!(c.mystery.clues.len(), 12);
+    // Four acts and forty clues (a dozen on the main road and twenty-eight second sources and side
+    // branches); the first can be found in the first fortnight and the last not before day 26, so
+    // the arc spans weeks, and the finale is after the last.
+    assert_eq!(c.mystery.clues.len(), 40);
+    let main: Vec<_> = c
+        .mystery
+        .clues
+        .iter()
+        .filter(|x| x.id.starts_with('c'))
+        .collect();
+    assert_eq!(main.len(), 12, "the main road is still twelve clues");
+    for side in c.mystery.clues.iter().filter(|x| !x.id.starts_with('c')) {
+        assert!(!side.after.is_empty(), "{} follows an earlier clue", side.id);
+        assert!(side.risk <= 3, "{}", side.id);
+    }
+    // Every act has side clues, and most of them are opened by a friend, not a step.
+    for act in 1..=4u8 {
+        assert!(
+            c.mystery
+                .clues
+                .iter()
+                .filter(|x| !x.id.starts_with('c') && x.act == act)
+                .count()
+                >= 4,
+            "act {act}"
+        );
+    }
+    let by_friend = c
+        .mystery
+        .clues
+        .iter()
+        .filter(|x| {
+            x.needs.iter().any(|n| {
+                matches!(
+                    n,
+                    russh_bbs_door_hallpass::cond::Cond::Cmp {
+                        stat: russh_bbs_door_hallpass::cond::Stat::Bond(_),
+                        ..
+                    }
+                )
+            })
+        })
+        .count();
+    assert!(by_friend >= 15, "{by_friend} clues are opened by a friendship");
     for act in 1..=4 {
         assert!(c.mystery.clues.iter().any(|x| x.act == act));
     }
@@ -179,9 +220,14 @@ fn a_whole_investigation_by_search_reaches_the_choice_and_each_gate_holds_on_the
         sb.game.stat(&russh_bbs_door_hallpass::cond::Stat::Clues),
         12
     );
-    // A clue is found once.
+    // A clue is found once; the next thing in the cabinet is the envelope behind the report.
     sb.game.player.place = "admin_corridor".into();
     sb.game.player.slot = u8::try_from(slot_of(&sb.game, "after")).unwrap();
+    assert_eq!(
+        sb.game.next_clue().map(|c| c.id.as_str()),
+        Some("a4_vane_envelope")
+    );
+    find(&mut sb, "admin_corridor", "after", "a4_vane_envelope");
     assert!(sb.game.next_clue().is_none());
     // The journal says where the story stands.
     assert!(

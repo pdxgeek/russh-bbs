@@ -582,7 +582,7 @@ fn the_social_and_mystery_tables_meet_the_content_the_slice_promises() {
     assert!(c.social.rumours.len() >= 8);
     assert!(c.social.runners.len() >= 3);
     assert!(c.social.awards.len() >= 7);
-    assert_eq!(c.mystery.clues.len(), 12);
+    assert_eq!(c.mystery.clues.len(), 40, "the design's forty steps");
     assert_eq!(c.mystery.verdicts.len(), 5);
     // Six endings of the pupil's story: five verdicts and walking away.
     assert_eq!(c.arc("the_wing").unwrap().ending.len(), 6);
@@ -785,15 +785,11 @@ fn breaking_the_mystery_is_caught_with_the_named_problem() {
     assert!(edited("mystery", "risk = 3", "risk = 9").contains("risk is over 3"));
     // An act with no clue.
     let no_four = problems(broken(|s, _| {
-        let once = replace(
-            EMBEDDED.mystery,
-            "act = 4\nplace = \"east_wing\"",
-            "act = 3\nplace = \"east_wing\"",
-        );
-        s.mystery = replace(
-            once,
-            "act = 4\nplace = \"admin_corridor\"",
-            "act = 3\nplace = \"admin_corridor\"",
+        s.mystery = Box::leak(
+            EMBEDDED
+                .mystery
+                .replace("act = 4\n", "act = 3\n")
+                .into_boxed_str(),
         );
     }));
     assert!(

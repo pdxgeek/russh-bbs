@@ -146,6 +146,304 @@ risk = 3
 text = "In the cabinet marked CLOSED: the fire report. Cause: a prank gone wrong. Signed D. Vane. The bolt is never once mentioned."
 effects = ["know:fire_report", "arc:the_wing:choice"]
 
+
+# ---------------------------------------------------------------- the longer investigation (M4-H5)
+# Twenty-eight more clues: side branches and second sources that deepen the same four acts. Most
+# ask for a friend (a bond) rather than a step of the story, so the same truth is reached by
+# different roads; none of them is needed to reach an ending, and several of their flags are
+# asked for by the scenes in talks.toml. A clue follows the one it names in `after`.
+
+[[clue]]
+id = "a1_abney_remembers"
+act = 1
+place = "library"
+kinds = ["free", "after", "evening"]
+needs = ["bond:abney>=3", "day>=7"]
+after = ["c1_register"]
+text = "Miss Abney does not look up from the card index. 'Page eighteen of the March register went to the paper in a hurry, the year the wing closed. I reshelved the stub myself. I was the one who was told to forget it.'"
+effects = ["know:abney_remembers", "bond:abney:+1"]
+
+[[clue]]
+id = "a1_posy_map"
+act = 1
+place = "library"
+kinds = ["free", "after", "evening"]
+needs = ["bond:posy>=3", "day>=7"]
+after = ["c1_register"]
+text = "Posy's map of the school is wrong in all the interesting places, which is how you find the right one: a room on the East Wing's ground floor drawn with no door at all, and a small question mark beside it."
+effects = ["know:posy_map"]
+
+[[clue]]
+id = "a1_osei_negatives"
+act = 1
+place = "old_wing"
+kinds = ["free", "after", "evening"]
+needs = ["bond:osei>=3", "day>=8"]
+after = ["c1_register"]
+text = "In Kofi's darkroom a glass negative is drying: the whole school, the autumn the wing closed. Eight girls in the front row, and one face scratched out of the emulsion with something very fine."
+effects = ["know:old_photograph", "bond:osei:+1"]
+
+[[clue]]
+id = "a1_lark_pew"
+act = 1
+place = "chapel"
+kinds = ["free", "after"]
+needs = ["bond:lark>=3", "day>=8"]
+after = ["c2_hymn"]
+text = "Lark has found a line of verse scratched inside a pew: For I.H., who sang last, and the lamp that is still lit. 'It rhymes with nothing,' says Lark. 'That's how I knew it was true.'"
+effects = ["know:ines_poem", "bond:lark:+1"]
+
+[[clue]]
+id = "a1_bertie_overhears"
+act = 1
+place = "library"
+kinds = ["evening"]
+needs = ["bond:bertie>=3", "day>=8"]
+after = ["c1_register"]
+text = "Bertie wakes under the reading table and says, as though continuing a conversation, that the librarian and the caretaker talked in whispers last week. 'He said his name was Harrow once. She said she'd always known. Then I went back to sleep.'"
+effects = ["know:harrow_name", "bond:bertie:+1"]
+
+[[clue]]
+id = "a1_wilf_light"
+act = 1
+place = "grounds"
+kinds = ["free", "after", "evening"]
+needs = ["bond:wilf>=3", "day>=8"]
+after = ["c1_register"]
+text = "Wilf counts herons at dusk and has noticed something else: a lamp in the East Wing's top window every fourth night, and a figure carrying a lantern across the lawn from the caretaker's shed. 'The herons don't mind it,' he says. 'I thought I should write it down.'"
+effects = ["know:wilf_light", "bond:wilf:+1"]
+
+[[clue]]
+id = "a2_bex_chalk"
+act = 2
+place = "old_wing"
+kinds = ["evening", "night", "free", "after"]
+needs = ["bond:bex>=3", "day>=12"]
+after = ["c3_arrows"]
+text = "Bex goes red and admits it: she's been redrawing the arrows. 'The first one was already there when I climbed up here, with a note: keep this going. I thought it was a dare.' She won't say who left the note. Her chalk is the same blue as the first arrow."
+effects = ["know:bex_chalk", "bond:bex:+1"]
+
+[[clue]]
+id = "a2_fenn_note"
+act = 2
+place = "chapel"
+kinds = ["free", "after", "evening"]
+needs = ["day>=12"]
+after = ["c4_pipes"]
+risk = 1
+text = "Under the ribbon on the key, folded very small: For whoever comes next. It is not a pupil's hand, and it is not the chaplain's. The signature is a single letter, F."
+effects = ["know:fenn_left_key"]
+
+[[clue]]
+id = "a2_loft_hymnal"
+act = 2
+place = "organ_loft"
+kinds = ["evening", "after", "free"]
+needs = ["day>=14"]
+after = ["c5_loft"]
+risk = 1
+text = "A hymnal on the organ's music desk is open at number seventy-three, with a pressed forget-me-not in it and in pencil, in a grown man's hand: Never again. Not this one. Not by me."
+effects = ["know:hymn_73"]
+
+[[clue]]
+id = "a2_mo_planks"
+act = 2
+place = "caretaker_shed"
+kinds = ["free", "after", "evening"]
+needs = ["bond:mo>=3", "day>=14"]
+after = ["c5_loft"]
+text = "Mo's half-built dinghy is made of old planks, grey with age and charred along one edge. 'Mr. Fenn gave them to me,' says Mo, 'and he said I could have the lot if I never asked where they came from. They're from a wall that burned, I think.'"
+effects = ["know:fenn_gave_planks", "bond:mo:+1"]
+
+[[clue]]
+id = "a2_cut_padlock"
+act = 2
+place = "tunnels"
+kinds = ["evening", "night", "free", "after"]
+needs = ["item:tunnel_map", "day>=15"]
+after = ["c6_tunnel"]
+risk = 1
+text = "At the end of the east branch an old padlock hangs on a rusted hasp, cut through and replaced with a new one, clean and oiled, with a tiny bell tied to it. Someone is guarding this door in a way they would like you to think is accidental."
+effects = ["know:cut_padlock"]
+
+[[clue]]
+id = "a2_greta_echo"
+act = 2
+place = "classroom_corridor"
+kinds = ["free", "after"]
+needs = ["bond:greta>=4", "day>=14"]
+after = ["c5_loft"]
+text = "Greta sings a single note in the stairwell and holds it. The echo returns from below the floor, not the walls. 'There's a stair down there,' she says. 'Where nobody sings. It's the right shape for a choir.'"
+effects = ["know:echo_stair", "bond:greta:+1"]
+
+[[clue]]
+id = "a2_ping_tapping"
+act = 2
+place = "workshop"
+kinds = ["evening", "after", "free"]
+needs = ["bond:ping>=3", "day>=14"]
+after = ["c5_loft"]
+text = "Ping's coat-hanger aerial picks up a faint, regular rapping on the heating pipes: three, two, three, then a pause. 'A hymn tune,' says Ping. 'In Morse. Somebody is tapping it out on the East Wing radiator every night at ten.'"
+effects = ["know:pipe_tapping", "bond:ping:+1"]
+
+[[clue]]
+id = "a2_cellar_beam"
+act = 2
+place = "cellars"
+kinds = ["night", "evening", "after", "free"]
+needs = ["day>=16"]
+after = ["c7_trunk"]
+risk = 1
+text = "A cellar beam has eight names burned into it, one for each bed in the East Wing dormitory. Seven have been softened with years of damp. The eighth, I. HARROW, has been re-cut, recently and deeply, by a hand that has not let it fade."
+effects = ["know:eight_names"]
+
+[[clue]]
+id = "a2_moss_lilies"
+act = 2
+place = "caretaker_shed"
+kinds = ["free", "after"]
+needs = ["bond:moss>=3", "day>=16"]
+after = ["c7_trunk"]
+text = "Behind the shed, in Moss's cold frame, grows a bed of lilies that were not planted by Moss. 'Mr. Fenn put the bulbs in the autumn I arrived,' says Moss. 'He told me they were for somebody. Once a year he sits with them for an hour. I water them in between.'"
+effects = ["know:ines_lilies", "bond:moss:+1"]
+
+[[clue]]
+id = "a3_wing_music"
+act = 3
+place = "east_wing"
+kinds = ["night"]
+needs = ["item:east_wing_key", "day>=21"]
+after = ["c9_hall"]
+risk = 2
+text = "The music room is at the end of the corridor, with a scorched piano and a stack of hymn slips on its lid. Every slip says seventy-three. The piano stool has been polished, and its seat is still warm."
+effects = ["know:wing_music"]
+
+[[clue]]
+id = "a3_window_nails"
+act = 3
+place = "east_wing"
+kinds = ["night"]
+needs = ["item:east_wing_key", "day>=22"]
+after = ["a3_wing_music"]
+risk = 2
+text = "The dormitory window has been nailed shut from the outside, years ago; you can see the old holes. Beside them are new ones, where someone re-nailed it last term. Why would anyone keep sealing a room nobody uses?"
+effects = ["know:nailed_window"]
+
+[[clue]]
+id = "a3_false_floor"
+act = 3
+place = "east_wing"
+kinds = ["night"]
+needs = ["item:east_wing_key", "skill:sneak>=2", "day>=23"]
+after = ["c10_diary"]
+risk = 2
+text = "Under the last bed a floorboard lifts. In the hollow beneath is a bundle of letters in a child's round hand, addressed to a brother called Abel. The last, unsent, says only: They have locked the door. Please don't tell Mother. I am not frightened, only cold."
+effects = ["know:ines_letters"]
+
+[[clue]]
+id = "a3_stacks_register"
+act = 3
+place = "restricted_stacks"
+kinds = ["free", "evening", "after", "class"]
+needs = ["know:ines_locket", "day>=18"]
+after = ["c7_trunk"]
+risk = 1
+text = "The brown register for that year is in the stacks, in the order of the school's calendar. The March page records, in a scrupulous hand: East Wing closed by order of the Acting Bursar. Girls rehoused. One pupil unaccounted for. Entry struck out by D. Vane."
+effects = ["know:register_entry"]
+
+[[clue]]
+id = "a3_abney_card"
+act = 3
+place = "library"
+kinds = ["evening", "after"]
+needs = ["bond:abney>=8", "day>=20"]
+after = ["a1_abney_remembers"]
+text = "Miss Abney slides a lending card across the desk. 'The brown register,' she says. 'Last borrowed on the morning after the fire by a young curate, who returned it the same afternoon, white as a sheet. I have never lent it since.' The card is signed W. Soames."
+effects = ["know:soames_borrowed", "bond:abney:+2"]
+
+[[clue]]
+id = "a3_paper_morgue"
+act = 3
+place = "paper_office"
+kinds = ["evening", "after", "free"]
+needs = ["rank:paper>=1", "day>=20"]
+after = ["c9_hall"]
+risk = 1
+text = "In the paper's morgue, bound in grey cloth, is the issue for the week after the fire. The front page carries one short item, FIRE IN THE EAST WING, unsigned except for the editor's initials: P.A. A very young hand, afraid of its own sentences."
+effects = ["know:abney_wrote_it"]
+
+[[clue]]
+id = "a3_shed_logbook"
+act = 3
+place = "caretaker_shed"
+kinds = ["free", "after", "evening"]
+needs = ["skill:sneak>=1", "day>=19"]
+after = ["c7_trunk"]
+risk = 1
+text = "A logbook on the shed shelf, in a steady hand, with one entry for every night for thirty years: East Wing checked. Door sound. Light seen / not seen. And, once a year, the same words: Visited the garden. Said her name."
+effects = ["know:fenn_logbook"]
+
+[[clue]]
+id = "a3_rory_logbook"
+act = 3
+place = "boathouse"
+kinds = ["evening", "after", "free", "night"]
+needs = ["bond:rory>=3", "day>=19"]
+after = ["c7_trunk"]
+text = "Rory flips open the boat store's old logbook to show you the oldest entry: a boat signed out on the night of the fire by the caretaker's boy, who rowed across the lake in the dark to fetch the doctor. 'Too late, the note says,' says Rory. 'The boy who went was fourteen.'"
+effects = ["know:fenn_rowed", "bond:rory:+1"]
+
+[[clue]]
+id = "a3_hattie_cats"
+act = 3
+place = "grounds"
+kinds = ["free", "after", "evening"]
+needs = ["bond:hattie>=3", "day>=19"]
+after = ["c7_trunk"]
+text = "Hattie tells you where the cats sleep: eleven of them, in the one warm room in the school, through a loose board behind the shed. 'Somebody puts out a bowl for them every night,' she says. 'There's a letter F on the bowl. I think he thinks nobody notices.'"
+effects = ["know:cats_in_the_wing", "bond:hattie:+1"]
+
+[[clue]]
+id = "a4_vane_envelope"
+act = 4
+place = "admin_corridor"
+kinds = ["free", "after"]
+needs = ["day>=27"]
+after = ["c12_report"]
+risk = 3
+text = "Behind the fire report, in the cabinet marked CLOSED, lies an envelope addressed to Mr. A. Harrow and never posted. It begins: I signed what I was told, and have been signing ever since. It ends: I am sorry. It is dated the week of the fire, and the ink has not faded."
+effects = ["know:vane_letter"]
+
+[[clue]]
+id = "a4_soames_prayerbook"
+act = 4
+place = "chapel"
+kinds = ["free", "after", "evening"]
+needs = ["bond:soames>=6", "day>=25"]
+after = ["c10_diary"]
+text = "Reverend Soames leaves his prayer book on the lectern, and in it a folded page: a confession, in his young hand, never sent to anyone. I was told to turn the key. I turned it. I have never since been able to sing the number seventy-three."
+effects = ["know:soames_note", "bond:soames:+1"]
+
+[[clue]]
+id = "a4_fenn_tin"
+act = 4
+place = "caretaker_shed"
+kinds = ["free", "after", "evening"]
+needs = ["bond:fenn>=8", "day>=25"]
+after = ["c10_diary"]
+text = "Mr. Fenn lets you see inside the tin on the shed shelf: a child's drawing of a lamp, a ribbon, a pressed flower and a school photograph with one girl's face rubbed soft by thumbs. 'She wanted to be a lighthouse keeper,' he says. 'I thought it better to be one.'"
+effects = ["know:fenn_tin", "bond:fenn:+2"]
+
+[[clue]]
+id = "a4_wren_plates"
+act = 4
+place = "paper_office"
+kinds = ["evening", "after", "free"]
+needs = ["bond:wren>=8", "day>=26"]
+after = ["c10_diary"]
+text = "Wren shows you the printing plates she made in case anyone ever brought her the story: the whole front page, set and locked in the chase. 'I haven't printed it,' she says. 'But I haven't unlocked it either.' She hands you the key to the case."
+effects = ["know:wren_plates", "bond:wren:+2"]
+
 # ---------------------------------------------------------------- the five verdicts
 
 [[verdict]]
