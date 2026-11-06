@@ -30,6 +30,9 @@ pub const QUESTS_TOML: &str = concat!(
 /// Contracts table text.
 pub const CONTRACTS_TOML: &str = include_str!("../content/contracts.toml");
 
+/// Bytes of branch telemetry kept (about 1500 branches).
+pub const SEEN_CAP: usize = 256;
+
 /// The most outbox orders a clan keeps waiting.
 pub const OUTBOX_CAP: usize = 8;
 /// The most contracts offered on a board in a day.
@@ -296,6 +299,10 @@ pub struct Story {
     pub toll_income: u32,
     /// Orders for the world.
     pub outbox: Vec<Out>,
+    /// Which branches of the scenes this clan has taken (two bits for each option of each
+    /// scene in table order: won, lost). Telemetry for the balance runs and the hall; no rule
+    /// reads it.
+    pub seen: Vec<u8>,
 }
 
 impl Default for Story {
@@ -311,6 +318,7 @@ impl Default for Story {
             tolls_paid: 0,
             toll_income: 0,
             outbox: Vec::new(),
+            seen: Vec::new(),
         }
     }
 }
@@ -334,6 +342,26 @@ impl Story {
     #[must_use]
     pub fn heirloom(&self) -> Option<Heirloom> {
         Heirloom::from_code(self.heirloom)
+    }
+
+    /// Note that branch `bit` of the scenes was taken.
+    pub fn note_branch(&mut self, bit: usize) {
+        let byte = bit / 8;
+        if byte >= SEEN_CAP {
+            return;
+        }
+        if self.seen.len() <= byte {
+            self.seen.resize(byte + 1, 0);
+        }
+        self.seen[byte] |= 1 << (bit % 8);
+    }
+
+    /// Whether branch `bit` was taken.
+    #[must_use]
+    pub fn branch_seen(&self, bit: usize) -> bool {
+        self.seen
+            .get(bit / 8)
+            .is_some_and(|b| b & (1 << (bit % 8)) != 0)
     }
 
     /// Queue an order for the world (the oldest goes if the outbox is full of tolls).
@@ -365,6 +393,8 @@ impl Story {
         w.u8(self.laid);
         w.u32(self.tolls_paid);
         w.u32(self.toll_income);
+        w.u16(u16::try_from(self.seen.len()).unwrap_or(0));
+        w.raw(&self.seen);
         w.count(self.outbox.len());
         for o in &self.outbox {
             match o {
@@ -405,6 +435,11 @@ impl Story {
         let (done, failed, heirloom, toll, laid, tolls_paid) =
             (r.u16()?, r.u16()?, r.u8()?, r.u8()?, r.u8()?, r.u32()?);
         let toll_income = r.u32()?;
+        let seen_len = usize::from(r.u16()?);
+        if seen_len > SEEN_CAP {
+            return None;
+        }
+        let seen = r.take(seen_len)?.to_vec();
         let n = r.u8()?;
         let mut outbox = Vec::new();
         for _ in 0..n {
@@ -433,6 +468,7 @@ impl Story {
             tolls_paid,
             toll_income,
             outbox,
+            seen,
         })
     }
 }

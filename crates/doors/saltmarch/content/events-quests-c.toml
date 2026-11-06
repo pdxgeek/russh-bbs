@@ -11,7 +11,7 @@ text = "At the drowned chapel the tide is making its highest line. Under the wal
 poi = ["shrine"]
 needs = ["tier:reed:1", "!mark:q-bell-below-one"]
 draws = ["trade:reed-witch"]
-weight = 9
+weight = 16
 [[event.option]]
 label = "Stand on the wall and listen to it out"
 [event.option.win]
@@ -38,7 +38,7 @@ tiles = ["mudflat", "salt-pan"]
 water = ["high"]
 needs = ["tier:reed:1", "!mark:q-bell-below-one"]
 draws = ["trade:reed-witch"]
-weight = 7
+weight = 16
 [[event.option]]
 label = "Follow the sound to the chapel wall"
 [event.option.win]
@@ -63,7 +63,8 @@ title = "Ose Tallow's fire"
 text = "A reed camp, and a woman at the fire with a bell-rope coiled in her lap and no bell on the end of it. Ose Tallow rang for the chapel forty years. She has heard you have heard it."
 poi = ["camp"]
 needs = ["mark:q-bell-below-one", "!mark:q-bell-below-two"]
-weight = 9
+weight = 16
+draws = ["mark:q-bell-below-one"]
 [[event.option]]
 label = "Give her rope for the old bell-pull"
 needs = ["carry:rope:1"]
@@ -89,7 +90,8 @@ text = "At dead low the chapel floor shows through the silt, and the bell lies o
 poi = ["shrine"]
 water = ["low"]
 needs = ["mark:q-bell-below-two", "!mark:q-bell-below-three"]
-weight = 9
+weight = 16
+draws = ["mark:q-bell-below-two"]
 [[event.option]]
 label = "Wade into the nave and cut the net away"
 skill = "wader"
@@ -119,7 +121,8 @@ title = "Warden Aske comes asking"
 text = "Warden Pell Aske of the Tidecourt is waiting on the reed-bank with a ledger and two boatmen. She has heard there is a bell. The Court, she says, is fond of bells."
 tiles = ["reedbed", "island"]
 needs = ["mark:q-bell-below-three", "!mark:q-bell-below-four"]
-weight = 9
+weight = 16
+draws = ["mark:q-bell-below-three"]
 [[event.option]]
 label = "Tell her where it lies"
 [event.option.win]
@@ -145,7 +148,8 @@ text = "The highest water of the year, and the chapel is half under it. The bell
 poi = ["shrine"]
 water = ["high"]
 needs = ["mark:q-bell-below-four", "!mark:q-bell-below-end-court", "!mark:q-bell-below-end-hags", "!mark:q-bell-below-end-sleep"]
-weight = 10
+weight = 16
+draws = ["mark:q-bell-below-four"]
 [[event.option]]
 label = "Raise the bell and hand it to the Court"
 needs = ["boat"]
@@ -175,7 +179,8 @@ title = "Ose at the bell-rope"
 text = "Ose Tallow is waiting at the reed camp with the spliced bell-rope over her arm. The bell rings below the chapel, thin and sure. She has decided, and she would like you there when she says it."
 poi = ["camp"]
 needs = ["mark:q-bell-below-four", "!mark:q-bell-below-end-court", "!mark:q-bell-below-end-hags", "!mark:q-bell-below-end-sleep"]
-weight = 8
+weight = 16
+draws = ["mark:q-bell-below-four"]
 [[event.option]]
 label = "Take the rite from her, line by line"
 needs = ["tier:reed:3"]
@@ -203,7 +208,7 @@ text = "A net floats upside-down in the channel, its floats bobbing, and under i
 tiles = ["channel"]
 needs = ["tier:reed:1", "!mark:q-eel-mothers-one"]
 draws = ["trade:wader"]
-weight = 9
+weight = 16
 [[event.option]]
 label = "Haul the tangle out and see what it holds"
 skill = "wader"
@@ -232,7 +237,8 @@ title = "The netters' widows"
 text = "A row of reed huts, nets drying on every stake and not one man mending. The widows of the channel sit round a fire and look at you, and the oldest, Hepzi Mudd, lifts her chin: you have seen the net."
 poi = ["camp"]
 needs = ["mark:q-eel-mothers-one", "!mark:q-eel-mothers-two"]
-weight = 9
+weight = 16
+draws = ["mark:q-eel-mothers-one"]
 [[event.option]]
 label = "Give them food from the stores"
 needs = ["carry:food:2"]
@@ -257,7 +263,8 @@ title = "The eel-hole"
 text = "The bank at the eel-hole is a honeycomb of wet holes, and each one has a silver tail in it, turning. Further back, on a flat stone with her feet in the water, a grey-haired woman is watching you and humming."
 poi = ["lair"]
 needs = ["mark:q-eel-mothers-two", "!mark:q-eel-mothers-three"]
-weight = 9
+weight = 16
+draws = ["mark:q-eel-mothers-two"]
 [[event.option]]
 label = "Creep along the bank and count them"
 skill = "wader"
@@ -287,7 +294,8 @@ title = "Maud Greyfin speaks"
 text = "Maud Greyfin, the eel-wife, is on the mere's edge with a bucket of silver at her feet. She talks to eels as other people talk to chickens. She has terms, and she says them quickly, as though to a child who cannot be trusted with long ones."
 tiles = ["mere", "channel"]
 needs = ["mark:q-eel-mothers-three", "!mark:q-eel-mothers-four"]
-weight = 8
+weight = 16
+draws = ["mark:q-eel-mothers-three"]
 [[event.option]]
 label = "Hear her terms to the end"
 [event.option.win]
@@ -312,7 +320,8 @@ title = "What the brood is owed"
 text = "The eel-hole at dusk, and all the silver turning in the holes. Maud Greyfin waits on her stone. She has said her terms. The netters want the brood gone, the Court wants it moved, and the brood does not care."
 poi = ["lair"]
 needs = ["mark:q-eel-mothers-four", "!mark:q-eel-mothers-end-cull", "!mark:q-eel-mothers-end-tithe", "!mark:q-eel-mothers-end-deep"]
-weight = 10
+weight = 16
+draws = ["mark:q-eel-mothers-four"]
 [[event.option]]
 label = "Cull the brood, hole by hole"
 needs = ["trade:fighter"]
@@ -354,7 +363,8 @@ text = "Maud Greyfin is waiting on the mere's edge with a covered pail. The broo
 tiles = ["mere", "channel"]
 water = ["mid", "low"]
 needs = ["mark:q-eel-mothers-four", "!mark:q-eel-mothers-end-cull", "!mark:q-eel-mothers-end-tithe", "!mark:q-eel-mothers-end-deep"]
-weight = 7
+weight = 16
+draws = ["mark:q-eel-mothers-four"]
 [[event.option]]
 label = "Offer the netters' tithe, in the Reed-folk's name"
 needs = ["tier:reed:3"]
@@ -384,7 +394,8 @@ title = "The tithe at the channel mouth"
 text = "At the channel mouth the Reed-folk have left Maud's tithe: baskets of silver fish, the first catch of the moon, set out on the mud. She has put your clan's share to one side."
 tiles = ["channel", "mudflat"]
 needs = ["mark:q-eel-mothers-end-tithe"]
-weight = 7
+weight = 16
+draws = ["mark:q-eel-mothers-end-tithe"]
 [[event.option]]
 label = "Take your share and leave a little back"
 [event.option.win]
@@ -403,7 +414,7 @@ title = "The ford the eels remember"
 text = "At the old ford a long ripple follows the boat on the surface, and does not leave. The eels remember the lamps and the drums, and the marks on the arm tell them where to look."
 tiles = ["channel", "mere"]
 needs = ["mark:eel-scarred"]
-weight = 6
+weight = 16
 [[event.option]]
 label = "Pole on steadily and do not hurry"
 needs = ["trait:steady"]
@@ -435,7 +446,7 @@ text = "A reed hut with a pipe-smoke roof and a little green glass phial hung in
 poi = ["hermit"]
 needs = ["tier:reed:2", "!mark:q-witchs-apprentice-one"]
 draws = ["trade:reed-witch"]
-weight = 8
+weight = 16
 [[event.option]]
 label = "Agree to escort Tamsin"
 [event.option.win]
@@ -459,7 +470,8 @@ title = "Tamsin on the causeway"
 text = "The causeway is half under and the girl walks it like a heron, light and careful. She has said nine words today. Something in her sleeve is clinking, and she keeps her hand on it."
 tiles = ["causeway", "mudflat"]
 needs = ["mark:q-witchs-apprentice-one", "!mark:q-witchs-apprentice-two"]
-weight = 9
+weight = 16
+draws = ["mark:q-witchs-apprentice-one"]
 [[event.option]]
 label = "Share your food and ask what the clinking is"
 needs = ["carry:food:1"]
@@ -484,7 +496,8 @@ title = "The wardens at the reed toll"
 text = "A pole across the path, a lamp on a stake and two Tidecourt wardens in grey coats. They are looking for a girl in a reed-witch's cloak. One of them is already looking at Tamsin."
 tiles = ["reedbed", "island"]
 needs = ["mark:q-witchs-apprentice-two", "!mark:q-witchs-apprentice-three"]
-weight = 9
+weight = 16
+draws = ["mark:q-witchs-apprentice-two"]
 [[event.option]]
 label = "Pay the toll and ask no questions"
 [event.option.win]
@@ -509,7 +522,8 @@ title = "What Tamsin says at night"
 text = "The fire is low. Tamsin has been quiet all day and now she is not. The witch did not send her away to be safe, she says. She sent her away because the Court wants what Tamsin can do, and Tamsin does not want to be wanted."
 camp = true
 needs = ["mark:q-witchs-apprentice-three", "!mark:q-witchs-apprentice-four"]
-weight = 9
+weight = 16
+draws = ["mark:q-witchs-apprentice-three"]
 [[event.option]]
 label = "Sit with her and let her tell it all"
 needs = ["bond"]
@@ -534,7 +548,8 @@ title = "Where Tamsin goes"
 text = "The path forks at the old hermit's stone: one road back to Granny Wick's, one to the Court's causeway and the wardens, and one that is only the way home to your own hold. Tamsin stands where the three meet, looking at you."
 poi = ["hermit"]
 needs = ["mark:q-witchs-apprentice-four", "!mark:q-witchs-apprentice-end-stay", "!mark:q-witchs-apprentice-end-home", "!mark:q-witchs-apprentice-end-court"]
-weight = 10
+weight = 16
+draws = ["mark:q-witchs-apprentice-four"]
 [[event.option]]
 label = "Take her home to Granny Wick"
 [event.option.win]
@@ -559,7 +574,8 @@ title = "The warden's post"
 text = "A warden's post on the causeway, a lamp and a ledger and a grey-coated woman named Garr. She has been told to expect a girl. She tells you the Court will pay well and the girl will be cared for. She says it very evenly."
 tiles = ["causeway", "island"]
 needs = ["mark:q-witchs-apprentice-four", "!mark:q-witchs-apprentice-end-stay", "!mark:q-witchs-apprentice-end-home", "!mark:q-witchs-apprentice-end-court"]
-weight = 7
+weight = 16
+draws = ["mark:q-witchs-apprentice-four"]
 [[event.option]]
 label = "Give Tamsin to Garr and take the silver"
 [event.option.win]
@@ -583,7 +599,7 @@ title = "Tamsin at the hold"
 text = "The camp is quieter since Tamsin came. She has put the green phial on the shelf over the hearth and taught the youngest a rhyme that makes the fire burn longer. She wants to know if she can help."
 camp = true
 needs = ["mark:apprentice-stays"]
-weight = 7
+weight = 16
 [[event.option]]
 label = "Let her tend the party's blisters and coughs"
 [event.option.win]
@@ -605,7 +621,7 @@ text = "In the reed camp a netter sits against a post with his mouth working and
 poi = ["camp"]
 needs = ["tier:reed:1", "!mark:q-quiet-fever-one"]
 draws = ["trade:healer"]
-weight = 9
+weight = 16
 [[event.option]]
 label = "Look him over as a healer"
 needs = ["trade:healer"]
@@ -635,7 +651,8 @@ title = "Bram Orris is out of herbs"
 text = "Bram Orris the healer keeps a hut full of empty jars. He used to keep it full. The fever has eaten his stores in a fortnight, and the herb he needs is pale sedge from the peat, and the peat is a long walk."
 poi = ["hermit"]
 needs = ["mark:q-quiet-fever-one", "!mark:q-quiet-fever-two"]
-weight = 9
+weight = 16
+draws = ["mark:q-quiet-fever-one"]
 [[event.option]]
 label = "Give him reed and rope for the drying racks"
 needs = ["carry:reed:3"]
@@ -660,7 +677,8 @@ title = "Pale sedge in the peat"
 text = "A pocket of pale sedge in the peat, white as paper, growing in a hollow where the peat smoke does not reach. This is what Bram needs. It is also where the fever is thick: the air tastes of old copper."
 tiles = ["peat-bog"]
 needs = ["mark:q-quiet-fever-two", "!mark:q-quiet-fever-three"]
-weight = 9
+weight = 16
+draws = ["mark:q-quiet-fever-two"]
 [[event.option]]
 label = "Cut it at dusk, as Bram said"
 skill = "healer"
@@ -689,7 +707,8 @@ title = "The Court's quarantine notice"
 text = "A notice nailed to a post on the causeway, on the Court's heavy paper: reed camps with the quiet fever are to be shut, their people held, their goods burned. A warden named Ilse Marr is reading it to a small and sullen crowd."
 tiles = ["causeway", "island"]
 needs = ["mark:q-quiet-fever-two", "!mark:q-quiet-fever-three"]
-weight = 8
+weight = 16
+draws = ["mark:q-quiet-fever-two"]
 [[event.option]]
 label = "Read it out loud to the crowd, and calm them"
 needs = ["tier:court:2"]
@@ -714,7 +733,8 @@ title = "The wreck out of the Deep"
 text = "A wreck has drifted in on the spring: long, grey, with a name painted over in a hurry. The deck is quiet. The air round it is thick and tastes of copper. Whatever the fever is, it came on this."
 tiles = ["wreck", "deep", "mere"]
 needs = ["mark:q-quiet-fever-three", "!mark:q-quiet-fever-four"]
-weight = 8
+weight = 16
+draws = ["mark:q-quiet-fever-three"]
 [[event.option]]
 label = "Board with a cloth across your face and look"
 needs = ["trade:healer"]
@@ -750,7 +770,8 @@ title = "Bram's last pot"
 text = "Bram Orris's hut again: a pot on the fire, pale sedge in a jar, salt, and a pinch of iron dust. Bram is thin and fierce and sure. It has to be done at dusk and done right, he says, and the healers who can do it are few."
 poi = ["hermit"]
 needs = ["mark:q-quiet-fever-four", "!mark:q-quiet-fever-end-cure", "!mark:q-quiet-fever-end-ban", "!mark:q-quiet-fever-end-ruin"]
-weight = 10
+weight = 16
+draws = ["mark:q-quiet-fever-four"]
 [[event.option]]
 label = "Brew the salve with Bram, and cure the camps"
 needs = ["trade:healer"]
@@ -780,7 +801,8 @@ title = "The warden's line"
 text = "Ilse Marr has drawn a line of lamps along the causeway, and behind it the reed camps are dark. She has sealed them. Her lamps are the only light, and her men are tired. She would like the clan's help, and says so plainly."
 tiles = ["causeway", "reedbed"]
 needs = ["mark:q-quiet-fever-four", "!mark:q-quiet-fever-end-cure", "!mark:q-quiet-fever-end-ban", "!mark:q-quiet-fever-end-ruin"]
-weight = 8
+weight = 16
+draws = ["mark:q-quiet-fever-four"]
 [[event.option]]
 label = "Hold the line with the wardens"
 needs = ["size:3"]
@@ -805,7 +827,8 @@ title = "The sealed ruin"
 text = "North of the drifted wreck a ruin stands sealed with a pale slab. A glyph is cut in it, a bell with a line through it. Somebody has been breaking the seal from outside, and somebody has been very sick."
 poi = ["ruin"]
 needs = ["mark:q-quiet-fever-four", "!mark:q-quiet-fever-end-cure", "!mark:q-quiet-fever-end-ban", "!mark:q-quiet-fever-end-ruin"]
-weight = 8
+weight = 16
+draws = ["mark:q-quiet-fever-four"]
 [[event.option]]
 label = "Break the seal and go in for the source"
 skill = "salvager"
@@ -839,7 +862,7 @@ title = "The shut reed camp"
 text = "A reed camp with its doors barred and a Court lamp on a stake. Faces watch from the gaps. A woman says through the slats that they know who closed the path. She says it quietly."
 poi = ["camp"]
 needs = ["mark:marsh-quarantined"]
-weight = 8
+weight = 16
 [[event.option]]
 label = "Push a little food through the slats"
 needs = ["carry:food:1"]

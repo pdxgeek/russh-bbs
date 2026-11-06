@@ -963,6 +963,29 @@ impl Catalog {
         }
     }
 
+    /// The position of an event in the table.
+    #[must_use]
+    pub fn event_index(&self, id: &str) -> Option<usize> {
+        self.events.iter().position(|e| e.id == id)
+    }
+
+    /// The branch number of an option's outcome (two for each option, in table order:
+    /// won then lost), for the telemetry in [`crate::story::Story::seen`].
+    #[must_use]
+    pub fn branch_bit(&self, event: usize, option: usize, lost: bool) -> usize {
+        let before: usize = self.events[..event.min(self.events.len())]
+            .iter()
+            .map(|e| e.options.len())
+            .sum();
+        (before + option) * 2 + usize::from(lost)
+    }
+
+    /// How many branches the scenes have.
+    #[must_use]
+    pub fn branch_count(&self) -> usize {
+        self.events.iter().map(|e| e.options.len()).sum::<usize>() * 2
+    }
+
     /// A building by id.
     #[must_use]
     pub fn building(&self, id: &str) -> Option<&BuildingDef> {

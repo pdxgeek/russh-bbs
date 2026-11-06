@@ -685,8 +685,8 @@ pub(in crate::session) fn describe(s: &Session) -> Vec<String> {
             out.push("The league table: clans ranked by renown, which rewards a big hold, a skilled crew, expeditions, pacts kept and raids won (raids count for little on their own), less any pact broken.".to_owned());
             out.push(standing_line(s, clan));
             out.push(format!(
-                "Your renown: hold {}, crew {}, deeds {}, the Deep {}, pacts {}, raids {}, wealth {}, betrayals minus {}.",
-                rn.hold, rn.crew, rn.deeds, rn.deep, rn.pacts, rn.raids, rn.wealth, rn.penalty
+                "Your renown: hold {}, crew {}, deeds {}, the Deep {}, pacts {}, raids {}, wealth {}, contracts, chains and roads {}, betrayals minus {}.",
+                rn.hold, rn.crew, rn.deeds, rn.deep, rn.pacts, rn.raids, rn.wealth, rn.story, rn.penalty
             ));
         }
         Mode::Menu(MenuId::Board) => {

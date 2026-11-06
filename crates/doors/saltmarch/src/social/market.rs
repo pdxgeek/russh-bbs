@@ -29,6 +29,8 @@ pub enum Memo {
     Refused,
     /// Tolls paid by travellers on the clan's causeway.
     Toll,
+    /// The Tidecourt's dividend for a week of keeping a pact.
+    Dividend,
 }
 
 impl Memo {
@@ -44,6 +46,7 @@ impl Memo {
             3 => Self::Cancelled,
             4 => Self::Refused,
             5 => Self::Toll,
+            6 => Self::Dividend,
             _ => return None,
         })
     }

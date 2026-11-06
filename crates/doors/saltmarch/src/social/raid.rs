@@ -517,6 +517,11 @@ fn fight(
     }
 }
 
+/// Percent chance a raider who fell in a lost raid does not get up again.
+pub const LOST_DEATH_PCT: u32 = 20;
+/// Percent chance a raider who fell in a won or drawn raid does not get up again.
+pub const WON_DEATH_PCT: u32 = 4;
+
 /// What a won raid takes from the posted stock.
 fn loot(w: &World, o: &Order, survivors: usize, half: bool) -> (Vec<(Resource, u32)>, u32) {
     let Some(b) = w.clans.get(usize::from(o.to)) else {
@@ -557,7 +562,11 @@ fn fates(raiders: &[(u16, i16, i16)], verdict: Verdict, rng: &mut DoorRng) -> Ve
         .iter()
         .map(|&(id, hp, max)| {
             let fate = if hp <= 0 {
-                let death = if verdict == Verdict::Lost { 35 } else { 8 };
+                let death = if verdict == Verdict::Lost {
+                    LOST_DEATH_PCT
+                } else {
+                    WON_DEATH_PCT
+                };
                 if rng.chance(death, 100) {
                     Fate::Dead
                 } else {

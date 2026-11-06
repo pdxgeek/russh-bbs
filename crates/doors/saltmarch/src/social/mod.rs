@@ -54,11 +54,11 @@ pub mod caps {
     /// Days unseen after which a clan cannot be raided at all.
     pub const DORMANT_SAFE_DAYS: i64 = 10;
     /// Percent of each posted good a won raid can take.
-    pub const LOOT_PCT: u32 = 12;
+    pub const LOOT_PCT: u32 = 16;
     /// Percent of the posted tallies a won raid can take.
-    pub const LOOT_TALLY_PCT: u32 = 8;
+    pub const LOOT_TALLY_PCT: u32 = 10;
     /// The most a raid can take, in tallies' worth at base prices.
-    pub const LOOT_MAX_VALUE: u32 = 90;
+    pub const LOOT_MAX_VALUE: u32 = 130;
     /// Items one raider can carry off.
     pub const CARRY_PER_RAIDER: u32 = 6;
     /// A clan whose renown is less than a third of the raider's is beneath the raider.
@@ -111,6 +111,8 @@ pub mod caps {
     pub const BOOK_SEASONS: usize = 8;
     /// The world blob is refused growth past this many bytes (the framework's cap is 256 KiB).
     pub const WORLD_SOFT_CAP: usize = 200_000;
+    /// Tallies each partner of a pact in force is paid for a week of keeping it.
+    pub const PEACE_DIVIDEND: u32 = 8;
 }
 
 /// A clan's index in the world's registry. The registry only grows within a season.

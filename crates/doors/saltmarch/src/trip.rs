@@ -2111,6 +2111,10 @@ fn choose(
         _ => &option.win,
     };
     events.push(Event::Told(outcome.text.clone()));
+    if let Some(ei) = env.cat.event_index(&event) {
+        clan.story
+            .note_branch(env.cat.branch_bit(ei, index, failed && option.lose.is_some()));
+    }
     // A skill used well is a skill learned, win or lose.
     if let Some(skill) = option.skill
         && let Some(best) = trip

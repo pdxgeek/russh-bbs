@@ -11,7 +11,7 @@ text = "The counting house cellar in the drowned town is chest-deep and cold. On
 tiles = ["drowned-town"]
 needs = ["tier:rakers:1", "!mark:q-brine-ledger-one"]
 draws = ["trade:salvager"]
-weight = 9
+weight = 16
 [[event.option]]
 label = "Wade in and lift it down"
 skill = "salvager"
@@ -45,7 +45,7 @@ title = "Vane's private shelf"
 text = "At the counting house, in the ledger room behind the rotted counters, one shelf has a brass hasp and a fresh coat of tar. The seal on it is Master Odo Vane's. Nothing else in the building is cared for."
 poi = ["ruin"]
 needs = ["tier:rakers:1", "!mark:q-brine-ledger-one"]
-weight = 8
+weight = 16
 [[event.option]]
 label = "Break the hasp"
 risk = 25
@@ -79,7 +79,7 @@ text = "On the salt-pan, old Hesk the pan-keeper sits at his shed door with a ba
 tiles = ["salt-pan"]
 needs = ["mark:q-brine-ledger-one", "!mark:q-brine-ledger-two"]
 draws = ["trade:raker"]
-weight = 9
+weight = 16
 [[event.option]]
 label = "Weigh a stone of his salt against the ledger"
 needs = ["trade:raker"]
@@ -115,7 +115,7 @@ text = "On the reedbeds, an eel-wife is gutting her catch on a stump and wrappin
 tiles = ["reedbed"]
 needs = ["mark:q-brine-ledger-two", "!mark:q-brine-ledger-three"]
 draws = ["trade:reed-witch"]
-weight = 8
+weight = 16
 [[event.option]]
 label = "Buy the pages off her with food"
 needs = ["carry:food:2"]
@@ -144,7 +144,8 @@ title = "The ledger at the toll-post"
 text = "On the causeway stands the Tidecourt toll-post, with its brass bell and its clerk in a rain-hat. You carry the whole ledger now, front to back. The clerk looks at the seal, then at you."
 tiles = ["causeway"]
 needs = ["mark:q-brine-ledger-three", "!mark:q-brine-ledger-end-expose", "!mark:q-brine-ledger-end-bury", "!mark:q-brine-ledger-end-sell"]
-weight = 9
+weight = 16
+draws = ["mark:q-brine-ledger-three"]
 [[event.option]]
 label = "Read it out to the toll-post and the queue behind you"
 [event.option.win]
@@ -168,7 +169,8 @@ title = "A fire that is not for salt"
 text = "At the Guild's pan-house on the salt-pan, the evaporating fire is banked for the night. Guild Reeve Kessa waits by it with a lamp. She has heard what you carry. 'Give it here,' she says, 'and I will see it is dealt with.'"
 tiles = ["salt-pan"]
 needs = ["mark:q-brine-ledger-three", "!mark:q-brine-ledger-end-expose", "!mark:q-brine-ledger-end-bury", "!mark:q-brine-ledger-end-sell"]
-weight = 8
+weight = 16
+draws = ["mark:q-brine-ledger-three"]
 [[event.option]]
 label = "Feed it to the fire"
 [event.option.win]
@@ -192,7 +194,8 @@ title = "Vane at the landing"
 text = "A slim boat idles at the mudflat landing, and a man in a good coat sits in it with his hands folded. Master Odo Vane. He looks at the ledger and then at your faces. 'Let us be sensible,' he says."
 tiles = ["mudflat", "channel"]
 needs = ["mark:q-brine-ledger-three", "!mark:q-brine-ledger-end-expose", "!mark:q-brine-ledger-end-bury", "!mark:q-brine-ledger-end-sell"]
-weight = 8
+weight = 16
+draws = ["mark:q-brine-ledger-three"]
 [[event.option]]
 label = "Sell it back to him at his price"
 [event.option.win]
@@ -227,7 +230,7 @@ text = "Tolliver's Pan is the oldest on the coast, a wide shallow dish of clay w
 tiles = ["salt-pan"]
 needs = ["tier:rakers:2", "!mark:q-last-pan-one"]
 draws = ["trade:raker"]
-weight = 9
+weight = 16
 [[event.option]]
 label = "Taste the brine and read the crust"
 needs = ["trade:raker"]
@@ -256,7 +259,7 @@ title = "The high-water stone"
 text = "The old shrine on the pan edge is a leaning stone scored with two hundred years of tide lines, and by the lowest line a smaller mark: three notches, with a wedge cut under them. The pan-wives call it the sluice mark."
 poi = ["shrine"]
 needs = ["tier:rakers:2", "!mark:q-last-pan-one"]
-weight = 7
+weight = 16
 [[event.option]]
 label = "Copy the marks down"
 [event.option.win]
@@ -286,7 +289,7 @@ text = "The feeder channel that brings the sea to Tolliver's Pan is silted to it
 tiles = ["channel"]
 needs = ["mark:q-last-pan-one", "!mark:q-last-pan-two"]
 draws = ["trade:wader", "trade:boatwright"]
-weight = 9
+weight = 16
 [[event.option]]
 label = "Dig the channel by hand"
 skill = "wader"
@@ -320,7 +323,8 @@ title = "Surveyors' stakes"
 text = "In the mudflat by the pan's outflow stand rows of new stakes, each with a red rag and a number. Tidecourt syndicate stakes. A boy in a dry coat sits on a stool, copying measurements, and looks very much like he wishes you were not here."
 tiles = ["mudflat"]
 needs = ["mark:q-last-pan-two", "!mark:q-last-pan-three"]
-weight = 9
+weight = 16
+draws = ["mark:q-last-pan-two"]
 [[event.option]]
 label = "Ask the boy who pays him"
 [event.option.win]
@@ -348,7 +352,8 @@ title = "The Tolliver sluice"
 text = "Maren has the old sluice stones laid out on the dike like a pulled tooth. The brass wheel is cleaned, the post is gone, and the feeder runs clean for the first time in a season. What is left is the work."
 tiles = ["salt-pan"]
 needs = ["mark:q-last-pan-three", "!mark:q-last-pan-end-sluice", "!mark:q-last-pan-end-sell", "!mark:q-last-pan-end-reeds"]
-weight = 9
+weight = 16
+draws = ["mark:q-last-pan-three"]
 [[event.option]]
 label = "Rebuild the sluice with timber and rope"
 needs = ["carry:timber:2", "carry:rope:1"]
@@ -382,7 +387,8 @@ title = "The syndicate's factor"
 text = "A stout factor in a dry coat waits on the causeway with a stool, a satchel, and a tide-clock. Marlin & Dree. He has heard that you walked the pan, and he would like to buy Tolliver's rights, today, in coin."
 tiles = ["causeway"]
 needs = ["mark:q-last-pan-three", "!mark:q-last-pan-end-sluice", "!mark:q-last-pan-end-sell", "!mark:q-last-pan-end-reeds"]
-weight = 8
+weight = 16
+draws = ["mark:q-last-pan-three"]
 [[event.option]]
 label = "Sell him Maren's rights"
 [event.option.win]
@@ -405,7 +411,8 @@ title = "Let the reeds have it"
 text = "On the reedbed edge of Tolliver's Pan a reed-witch is already waiting with a pole and a patient look. The reeds have been creeping in for a season. One cut in the dike and they will take the whole dish."
 tiles = ["reedbed"]
 needs = ["mark:q-last-pan-three", "!mark:q-last-pan-end-sluice", "!mark:q-last-pan-end-sell", "!mark:q-last-pan-end-reeds"]
-weight = 8
+weight = 16
+draws = ["mark:q-last-pan-three"]
 [[event.option]]
 label = "Cut the dike and let them in"
 [event.option.win]
@@ -428,7 +435,8 @@ title = "The white pan"
 text = "Tolliver's Pan has made salt all week, and the crust lies in white scales on the clay, thick as a hand. Maren sends a boy with a message: take what you like, and tell nobody how little it cost."
 tiles = ["salt-pan"]
 needs = ["mark:q-last-pan-end-sluice"]
-weight = 7
+weight = 16
+draws = ["mark:q-last-pan-end-sluice"]
 [[event.option]]
 label = "Rake what you can carry"
 skill = "raker"
@@ -454,7 +462,7 @@ text = "On the reed island stands a forge with no smoke. A chain across the door
 tiles = ["island"]
 needs = ["tier:rakers:2", "!mark:q-smiths-debt-one"]
 draws = ["trade:smith"]
-weight = 9
+weight = 16
 [[event.option]]
 label = "Read the lien-tag and ask the apprentice"
 [event.option.win]
@@ -483,7 +491,7 @@ title = "The debt is cried"
 text = "At the trader's stall a boy is crying the debts of the week, and halfway down the list: 'Hobb Ketterell, smith, forty and six in iron, called in by Marrow and Vess, forge to be forfeit.' Nobody laughs. The trader sells you a cup of tea and looks sorry."
 poi = ["trader"]
 needs = ["tier:rakers:2", "!mark:q-smiths-debt-one"]
-weight = 8
+weight = 16
 [[event.option]]
 label = "Ask the trader what Ketterell was like"
 [event.option.win]
@@ -507,7 +515,7 @@ text = "In the shell of a drowned shop with an anvil-shaped hole in the shopfron
 tiles = ["drowned-town"]
 needs = ["mark:q-smiths-debt-one", "!mark:q-smiths-debt-two"]
 draws = ["trade:salvager"]
-weight = 9
+weight = 16
 [[event.option]]
 label = "Dig out the box"
 skill = "salvager"
@@ -536,7 +544,8 @@ title = "The cask in the wreck"
 text = "The account book lists a last shipment of iron: one cask, delivered the week Ketterell died. A wreck on the flats has a cask lashed in its hold, with a blacksmith's mark burned into the staves. The hull is leaning and the tide is coming."
 tiles = ["wreck"]
 needs = ["mark:q-smiths-debt-two", "!mark:q-smiths-debt-three"]
-weight = 8
+weight = 16
+draws = ["mark:q-smiths-debt-two"]
 [[event.option]]
 label = "Climb in and roll the cask out"
 skill = "fighter"
@@ -570,7 +579,8 @@ title = "The collector"
 text = "A man in a grey coat stops you on the causeway. He has a lead tag in one hand and a writ in the other. 'Marrow and Vess,' he says. 'You have been walking the Ketterell matter. The assize sits in three days. Will you speak or pay?'"
 tiles = ["causeway"]
 needs = ["mark:q-smiths-debt-three", "!mark:q-smiths-debt-four"]
-weight = 8
+weight = 16
+draws = ["mark:q-smiths-debt-three"]
 [[event.option]]
 label = "Say you will think it over"
 [event.option.win]
@@ -595,7 +605,8 @@ title = "The forge, again"
 text = "Ketterell's forge sits cold, the lien-tag on its chain, the apprentice Ysolde watching from the anvil. You have the account book, the cask, and the assize in three days. There is a way to settle it that is plain, and two that are not."
 tiles = ["island"]
 needs = ["mark:q-smiths-debt-four", "!mark:q-smiths-debt-end-pay", "!mark:q-smiths-debt-end-take", "!mark:q-smiths-debt-end-break"]
-weight = 9
+weight = 16
+draws = ["mark:q-smiths-debt-four"]
 [[event.option]]
 label = "Pay what is owed"
 [event.option.win]
@@ -624,7 +635,8 @@ title = "The assize at the toll-post"
 text = "The assize of the Tidecourt meets in the lee of the toll-post: a bench, a clerk, a scale of justice that is mostly rust. Marrow and Vess's collector waits at the bench with the lien-tag. The room is full of people who owe someone something."
 tiles = ["causeway"]
 needs = ["mark:q-smiths-debt-four", "!mark:q-smiths-debt-end-pay", "!mark:q-smiths-debt-end-take", "!mark:q-smiths-debt-end-break"]
-weight = 8
+weight = 16
+draws = ["mark:q-smiths-debt-four"]
 [[event.option]]
 label = "Lay the receipts before the clerk"
 needs = ["mark:ketterell-receipts"]
@@ -654,7 +666,7 @@ text = "At low water the wreck field stands open: forty hulls in the silt, ribs 
 tiles = ["wreck"]
 needs = ["tier:rakers:2", "!mark:q-rakes-and-wrecks-one"]
 draws = ["trade:salvager", "trade:fighter"]
-weight = 9
+weight = 16
 [[event.option]]
 label = "Walk between the fires to hear both sides"
 risk = 20
@@ -687,7 +699,7 @@ title = "A salvage hold with lamps"
 text = "The grounded barge's hold is a salvage store: coils of rope, a box of nails, and rows of lanterns on pegs. One is shaded in green glass, trimmed and filled. A paper tag on its handle bears a Guild stamp."
 poi = ["salvage"]
 needs = ["tier:rakers:2", "!mark:q-rakes-and-wrecks-one"]
-weight = 7
+weight = 16
 [[event.option]]
 label = "Take the green lantern and ask around"
 [event.option.win]
@@ -711,7 +723,7 @@ text = "On the channel, past dusk, a green light swings on a pole at the far ban
 tiles = ["channel"]
 needs = ["mark:q-rakes-and-wrecks-one", "!mark:q-rakes-and-wrecks-two"]
 draws = ["boat"]
-weight = 9
+weight = 16
 [[event.option]]
 label = "Row out and warn the boat off"
 needs = ["boat"]
@@ -746,7 +758,8 @@ title = "Captain Dunmore's table"
 text = "At the drovers' camp Captain Sorrel Dunmore keeps a table of driftwood and a rule of no weapons at it. She is tall, sun-cracked, quiet, and the green lantern hangs behind her. 'Sit,' she says. 'Ask what you came to ask.'"
 poi = ["camp"]
 needs = ["mark:q-rakes-and-wrecks-two", "!mark:q-rakes-and-wrecks-three"]
-weight = 9
+weight = 16
+draws = ["mark:q-rakes-and-wrecks-two"]
 [[event.option]]
 label = "Ask her straight about the burning"
 [event.option.win]
@@ -776,7 +789,8 @@ title = "Peace on the flats"
 text = "The two camps stand on the mudflat with fifty paces of open ground between them. Pike, with his rakers, at one end; Dunmore, with her wreckers, at the other. They have agreed to nothing but to be watched. You are the only person either side will speak to."
 tiles = ["mudflat"]
 needs = ["mark:q-rakes-and-wrecks-three", "!mark:q-rakes-and-wrecks-end-peace", "!mark:q-rakes-and-wrecks-end-wreck", "!mark:q-rakes-and-wrecks-end-guild"]
-weight = 9
+weight = 16
+draws = ["mark:q-rakes-and-wrecks-three"]
 [[event.option]]
 label = "Stand between them as one who has bled for both"
 needs = ["bond"]
@@ -806,7 +820,8 @@ title = "Dunmore's cache"
 text = "On the wreck's high deck, with the tide running out under it, Captain Dunmore opens a locked chest in the stern. 'The Guild will have the field by the rule,' she says. 'Stand with us and there is something for you. Cheaply bought, dearly kept.'"
 tiles = ["wreck"]
 needs = ["mark:q-rakes-and-wrecks-three", "!mark:q-rakes-and-wrecks-end-peace", "!mark:q-rakes-and-wrecks-end-wreck", "!mark:q-rakes-and-wrecks-end-guild"]
-weight = 8
+weight = 16
+draws = ["mark:q-rakes-and-wrecks-three"]
 [[event.option]]
 label = "Side with the wreckers and take the cache"
 risk = 40
@@ -832,7 +847,8 @@ title = "Pike strips the field"
 text = "Foreman Pike's rakers stand in a ragged line along the north end of the wreck field, rakes in hand, banners up. The wreckers are camped across the open ground. Pike gives you a nod: 'Rakers work by the rule. Stand with us, and we will see it kept.'"
 tiles = ["mudflat"]
 needs = ["mark:q-rakes-and-wrecks-three", "!mark:q-rakes-and-wrecks-end-peace", "!mark:q-rakes-and-wrecks-end-wreck", "!mark:q-rakes-and-wrecks-end-guild"]
-weight = 8
+weight = 16
+draws = ["mark:q-rakes-and-wrecks-three"]
 [[event.option]]
 label = "Lead the rakers' line against the wreckers' camp"
 [event.option.win]

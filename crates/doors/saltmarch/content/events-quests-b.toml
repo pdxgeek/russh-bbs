@@ -9,7 +9,7 @@ id = "toll-board"
 title = "The toll board"
 text = "A board is nailed to the first post of the causeway, chalked with prices: a copper per boot, two per barrow, five for a boat's shadow. Clerk Ansel Pike sits under it with a ledger and a face like wet paper. 'Court business,' he says. 'Walk with me.'"
 tiles = ["causeway"]
-weight = 10
+weight = 16
 needs = ["tier:court:1", "!mark:q-toll-inquiry-1"]
 draws = ["trade:healer", "trade:wader"]
 [[event.option]]
@@ -39,7 +39,7 @@ id = "toll-pike-stall"
 title = "Pike at the pie stall"
 text = "Ansel Pike is eating a fish pie standing up, so as not to lose his place in the queue of people who want something. He sees your crew's boots and waves the pie at you. 'The causeway,' he says. 'Someone is gouging travellers there. Who is free to look?'"
 poi = ["trader"]
-weight = 7
+weight = 16
 needs = ["tier:court:1", "!mark:q-toll-inquiry-1"]
 [[event.option]]
 label = "Offer to look into it"
@@ -64,7 +64,7 @@ id = "toll-travellers"
 title = "Travellers who paid"
 text = "Four people sit on a barrow at the middle of the causeway, boots in their hands, arguing about the toll they have just paid and the one they cannot. A pedlar, a midwife and two sisters with a goat. They would like very much to tell somebody."
 tiles = ["causeway", "mudflat"]
-weight = 9
+weight = 16
 needs = ["mark:q-toll-inquiry-1", "!mark:q-toll-inquiry-2"]
 draws = ["trade:healer"]
 [[event.option]]
@@ -101,7 +101,8 @@ id = "toll-ferrymen-island"
 title = "Ferryman of the dry side"
 text = "On a reed island off the causeway, a ferryman has pulled his punt up on the grass. He used to carry travellers across for a copper. Now the causeway has the trade, and he has opinions about the people who built it and a sack of receipts."
 tiles = ["island", "reedbed"]
-weight = 7
+weight = 16
+draws = ["mark:q-toll-inquiry-1"]
 needs = ["mark:q-toll-inquiry-1", "!mark:q-toll-inquiry-2"]
 [[event.option]]
 label = "Buy the receipts"
@@ -126,7 +127,8 @@ id = "toll-inspector-camp"
 title = "The inspector's fire"
 text = "Inspector Hesper Voll has pitched a Court tent on the dry end of the causeway: neat, lamplit, patched with other tents. She is tall and speaks quietly, like a person who has had to repeat herself. 'You are the clan Pike sent. Show me what you have.'"
 camp = true
-weight = 10
+weight = 16
+draws = ["mark:q-toll-inquiry-2"]
 needs = ["mark:q-toll-inquiry-2", "!mark:q-toll-inquiry-3"]
 [[event.option]]
 label = "Lay out the statements and the copied board"
@@ -156,7 +158,8 @@ id = "toll-law-hearing"
 title = "The toll law at the market hall"
 text = "The market hall is full. Voll has read her report. Now the harbourmaster, Corwen Fiske, stands on a barrel and proposes a toll law: one coin to all, spent on the planks, posted on the board, inspected twice a year. People look at you. You are the clan that knows."
 poi = ["trader"]
-weight = 9
+weight = 16
+draws = ["mark:q-toll-inquiry-3"]
 needs = ["mark:q-toll-inquiry-3", "!mark:q-toll-inquiry-end-law", "!mark:q-toll-inquiry-end-builders", "!mark:q-toll-inquiry-end-bribe"]
 [[event.option]]
 label = "Speak for the law"
@@ -179,7 +182,8 @@ id = "toll-builders-stand"
 title = "The builders' stand"
 text = "The causeway-builders have gathered at the foot of their road with mallets and a banner of old sailcloth. Their foreman, Bram Tallow, is no fool. 'Every plank is ours,' he says. 'Every nail. Tell the Court that, or tell it nothing.' Behind him the causeway groans in the swell."
 tiles = ["causeway"]
-weight = 9
+weight = 16
+draws = ["mark:q-toll-inquiry-3"]
 needs = ["mark:q-toll-inquiry-3", "!mark:q-toll-inquiry-end-law", "!mark:q-toll-inquiry-end-builders", "!mark:q-toll-inquiry-end-bribe"]
 [[event.option]]
 label = "Show the inspector which planks are honest"
@@ -209,7 +213,8 @@ id = "toll-inspector-purse"
 title = "Voll's purse"
 text = "Voll finds you at the water's edge, alone. She is not quite hiding the purse. 'The inquiry could say several things,' she says. 'Some of them are quicker. Some are kinder to the right people. I would be grateful, and so would they.'"
 tiles = ["island", "mudflat"]
-weight = 8
+weight = 16
+draws = ["mark:q-toll-inquiry-3"]
 needs = ["mark:q-toll-inquiry-3", "!mark:q-toll-inquiry-end-law", "!mark:q-toll-inquiry-end-builders", "!mark:q-toll-inquiry-end-bribe"]
 [[event.option]]
 label = "Take the purse and lose your notes"
@@ -233,7 +238,8 @@ id = "toll-coin-returns"
 title = "A coin with a heron on it"
 text = "The trader at the quay turns your coin over twice and asks pleasantly where you came by it. It is one of the inspector's, the fresh-minted kind the Court uses and should not spend. 'Everybody saw her give you that,' the trader says. 'Everybody.'"
 poi = ["trader"]
-weight = 8
+weight = 16
+draws = ["mark:q-toll-inquiry-end-bribe"]
 needs = ["mark:q-toll-inquiry-end-bribe"]
 [[event.option]]
 label = "Say you found it in the road"
@@ -260,7 +266,7 @@ id = "crate-offer"
 title = "A crate sealed in grey wax"
 text = "Clerk Odalys Marr sits behind a table of seals and string. On it is a crate the size of a bread oven, tied with cord and stamped with a heron in grey wax. 'To the hermit on the far marsh,' she says. 'Unopened. Today is fine. Next week is not.'"
 poi = ["trader"]
-weight = 9
+weight = 16
 needs = ["tier:court:1", "!mark:q-sealed-cargo-1"]
 draws = ["trait:steady", "trade:wader"]
 [[event.option]]
@@ -290,7 +296,7 @@ id = "crate-offer-quay"
 title = "The clerk on the quay"
 text = "A clerk in a Court coat paces the end of a little reed-quay on an island, with a wax-sealed crate on a hand-barrow. Odalys Marr counts the days on her fingers. 'You,' she says, as if she had been expecting you. 'You have a boat or a good pair of boots. Take this to the far marsh.'"
 tiles = ["island"]
-weight = 7
+weight = 16
 needs = ["tier:court:1", "!mark:q-sealed-cargo-1"]
 [[event.option]]
 label = "Take the crate and the advance"
@@ -313,7 +319,8 @@ id = "crate-follower"
 title = "The man in good boots"
 text = "A man in clean boots has been walking behind you since the last bridge, in a way that does not look like walking behind you. He catches up at the edge of the flat. 'Silas Quill,' he says. 'I act for people who would like to know what you carry. A look. Nothing more.'"
 tiles = ["mudflat", "reedbed"]
-weight = 9
+weight = 16
+draws = ["mark:q-sealed-cargo-1"]
 needs = ["mark:q-sealed-cargo-1", "!mark:q-sealed-cargo-2"]
 [[event.option]]
 label = "Tell him it is not yours to show"
@@ -350,7 +357,8 @@ title = "The far reeds at night"
 text = "Past the last cut reed the marsh goes quiet. The crate has been getting colder through the day, and now frost grows on the cord although the night is mild. The wax is still whole. Something inside taps once, twice, as if remembering how."
 tiles = ["reedbed", "mere"]
 day = ["night", "dusk"]
-weight = 9
+weight = 16
+draws = ["mark:q-sealed-cargo-2"]
 needs = ["mark:q-sealed-cargo-2", "!mark:q-sealed-cargo-3"]
 [[event.option]]
 label = "Wrap the crate in oilskin and press on"
@@ -381,7 +389,8 @@ id = "crate-hermit-door"
 title = "The hermit's door"
 text = "The hermit, Old Corvane, opens the door of a hut made from an upturned boat. He looks at the crate and then at you. 'Is the heron whole?' he asks. 'Do not say it is. Show me.' The seal is whole. The crate is quiet, as if holding its breath."
 poi = ["hermit"]
-weight = 9
+weight = 16
+draws = ["mark:q-sealed-cargo-3"]
 needs = ["mark:q-sealed-cargo-3", "!mark:q-sealed-cargo-end-deliver", "!mark:q-sealed-cargo-end-open", "!mark:q-sealed-cargo-end-sell"]
 [[event.option]]
 label = "Hand it over, unopened"
@@ -404,7 +413,8 @@ id = "crate-opened-night"
 title = "A knife at the heron"
 text = "The fire is low. The crate sits at the edge of the light, grey and patient. Nobody has said what they all think: it would take one cut. The wax is only wax. The hermit is a week away, and nobody would know."
 camp = true
-weight = 8
+weight = 16
+draws = ["mark:q-sealed-cargo-3"]
 needs = ["mark:q-sealed-cargo-3", "!mark:q-sealed-cargo-end-deliver", "!mark:q-sealed-cargo-end-open", "!mark:q-sealed-cargo-end-sell"]
 [[event.option]]
 label = "Cut the seal and take what is inside"
@@ -438,7 +448,8 @@ id = "crate-rival-quay"
 title = "Quill's quay"
 text = "Silas Quill sits at a folding table at the end of a Tidecourt quay as if he had been waiting years. He does not look at the crate but at you. 'I will pay for the crate,' he says. 'Not for what is in it. I can wait for that. For the heron, unbroken, delivered here.'"
 poi = ["trader"]
-weight = 9
+weight = 16
+draws = ["mark:q-sealed-cargo-3"]
 needs = ["mark:q-sealed-cargo-3", "!mark:q-sealed-cargo-end-deliver", "!mark:q-sealed-cargo-end-open", "!mark:q-sealed-cargo-end-sell"]
 [[event.option]]
 label = "Sell him the crate"
@@ -462,7 +473,8 @@ id = "crate-parcel-pays"
 title = "Corvane's second parcel"
 text = "The hermit's boat-hut has a new thing on its rail: a bundle for you, tied with the same grey cord. Corvane waves from the door. 'For the heron-bearers,' he says. 'He who delivers is paid twice.' There is a note: 'Come again with the Court's letters.'"
 poi = ["hermit"]
-weight = 8
+weight = 16
+draws = ["mark:q-sealed-cargo-end-deliver"]
 needs = ["mark:q-sealed-cargo-end-deliver"]
 [[event.option]]
 label = "Take the bundle and thank him"
@@ -481,7 +493,8 @@ id = "crate-seal-cold"
 title = "The cold that follows the seal"
 text = "The wreck where you shelter for the night has a clean cold in it that is not the weather. The relic you took from the heron crate hums in its sack, and the ones you left at the fire sleep badly. A small grey heron stands in the shallows, watching."
 tiles = ["wreck", "peat-bog"]
-weight = 8
+weight = 16
+draws = ["mark:q-sealed-cargo-end-open"]
 needs = ["mark:q-sealed-cargo-end-open"]
 [[event.option]]
 label = "Sit up with it and do not look away"
@@ -508,7 +521,7 @@ id = "assize-registrar"
 title = "Registrar Teal's red tape"
 text = "Registrar Mabry Teal keeps a tiny office behind the market hall, lit by a lamp and stacked with ledgers. She holds up a tin tube with red tape round it. 'The old assize kept its rolls in tubes like this,' she says. 'Find them. Before somebody less honest does.'"
 poi = ["trader"]
-weight = 8
+weight = 16
 needs = ["tier:court:2", "!mark:q-drowned-assize-1"]
 draws = ["trade:salvager"]
 [[event.option]]
@@ -532,7 +545,7 @@ id = "assize-plaque"
 title = "Red tape on a drowned door"
 text = "A door in a half-drowned street still has a brass plaque: ASSIZE in letters worn almost smooth. A scrap of red tape hangs from the latch, rotten and bright. Registrar Teal described just such a door. There are other clans' footprints in the silt, a day old."
 tiles = ["drowned-town"]
-weight = 7
+weight = 16
 needs = ["tier:court:2", "!mark:q-drowned-assize-1"]
 [[event.option]]
 label = "Copy the plaque and mark the street"
@@ -558,7 +571,8 @@ title = "The stair to the flooded court"
 text = "The assize hall is a roofless shell, its floor a black pool. Under the water the old court stair goes down, each step green and slick, to a door with a lintel carved in a scale and a heron. The pool is cold and very clear, and it breathes."
 tiles = ["drowned-town"]
 water = ["low", "mid"]
-weight = 9
+weight = 16
+draws = ["mark:q-drowned-assize-1"]
 needs = ["mark:q-drowned-assize-1", "!mark:q-drowned-assize-2"]
 [[event.option]]
 label = "Wade down on a rope"
@@ -593,7 +607,8 @@ id = "assize-witch-warning"
 title = "An old woman at the shrine"
 text = "At a drowned-town shrine a reed-witch is weaving a net of small bells. She does not look up. 'Court wants the rolls,' she says. 'Guild wants the rolls. Nobody asks the ones the rolls were about.' She points a bone needle toward the third stair, left of the bell tower."
 poi = ["shrine"]
-weight = 7
+weight = 16
+draws = ["mark:q-drowned-assize-1"]
 needs = ["mark:q-drowned-assize-1", "!mark:q-drowned-assize-2"]
 [[event.option]]
 label = "Ask her which stair, and thank her"
@@ -618,7 +633,8 @@ id = "assize-cellar"
 title = "Cellar of the red tubes"
 text = "The rolls are in a cellar under the court, in racks of tin tubes with red tape faded to pink. Water laps the bottom row. Something glistens on the wall, long and slow. 'Leeches,' someone says, and nobody has to say more. The tubes are all still sealed."
 tiles = ["drowned-town"]
-weight = 9
+weight = 16
+draws = ["mark:q-drowned-assize-2"]
 needs = ["mark:q-drowned-assize-2", "!mark:q-drowned-assize-3"]
 [[event.option]]
 label = "Lift the tubes out one at a time, quickly"
@@ -648,7 +664,8 @@ id = "assize-reading"
 title = "The rolls by lamplight"
 text = "You unseal a tube with the camp knife. The roll inside is in a clerk's tidy hand: names, plots, charges. It says that the Reed-folk's holdings in the old town were taken by order of the assize, and that a Guild factor signed for the sale. There are twelve more tubes."
 camp = true
-weight = 9
+weight = 16
+draws = ["mark:q-drowned-assize-3"]
 needs = ["mark:q-drowned-assize-3", "!mark:q-drowned-assize-4"]
 [[event.option]]
 label = "Read all of it, and decide what it is for"
@@ -673,7 +690,8 @@ id = "assize-restore"
 title = "The rolls come home"
 text = "Registrar Teal receives the tubes in her office as if they were children. She turns each one over and breathes on the tape. The lamp throws a long shadow of her across the shelves. 'The assize can sit again,' she says. 'The Court has its memory.'"
 poi = ["trader"]
-weight = 9
+weight = 16
+draws = ["mark:q-drowned-assize-4"]
 needs = ["mark:q-drowned-assize-4", "!mark:q-drowned-assize-end-restore", "!mark:q-drowned-assize-end-burn", "!mark:q-drowned-assize-end-sell"]
 [[event.option]]
 label = "Hand over the rolls"
@@ -696,7 +714,8 @@ id = "assize-burn"
 title = "A pyre for the old claims"
 text = "The reed-witch from the drowned-town shrine has built a pyre of reeds on the shrine's step. The Reed-folk stand in a half circle, mud to the knees, silent. Everyone has brought a name. Nobody says what the pyre is for. It is waiting for the tubes."
 poi = ["shrine"]
-weight = 8
+weight = 16
+draws = ["mark:q-drowned-assize-4"]
 needs = ["mark:q-drowned-assize-4", "!mark:q-drowned-assize-end-restore", "!mark:q-drowned-assize-end-burn", "!mark:q-drowned-assize-end-sell"]
 [[event.option]]
 label = "Burn the rolls on the pyre"
@@ -719,7 +738,8 @@ id = "assize-sell"
 title = "The factor on the salt-pan"
 text = "A pan-boss's tent on the salt-pan has a clean tarpaulin and a clean table. Factor Brannoch Gale, in a Guild coat, does not rise. 'I hear you have some old paper,' he says. 'The Guild would like to own it. For tidiness. We pay promptly.'"
 tiles = ["salt-pan"]
-weight = 8
+weight = 16
+draws = ["mark:q-drowned-assize-4"]
 needs = ["mark:q-drowned-assize-4", "!mark:q-drowned-assize-end-restore", "!mark:q-drowned-assize-end-burn", "!mark:q-drowned-assize-end-sell"]
 [[event.option]]
 label = "Sell him the tubes"
@@ -742,7 +762,8 @@ id = "assize-sits"
 title = "The assize sits"
 text = "The Court has convened in the old way, in the market hall, under the heron banner. The Registrar reads from the restored rolls. A name is struck from a fine, a plot is returned, and a clerk looks up and finds you in the crowd. 'Clan of the tubes,' she says. 'The Court remembers.'"
 poi = ["trader"]
-weight = 8
+weight = 16
+draws = ["mark:q-drowned-assize-end-restore"]
 needs = ["mark:q-drowned-assize-end-restore"]
 [[event.option]]
 label = "Accept the Court's thanks"
@@ -769,7 +790,7 @@ id = "dredgers-meet"
 title = "The Patient Mule aground"
 text = "A flat dredge-barge lies tilted in a silted channel, its bucket-chain slack, its crew sitting on the rail eating cold eels. Captain Ruan Dray comes down the plank with a hat in his hand. 'The Mule needs a night's guard and a dredge-head we lost,' he says. 'Do it, and I will swear to clear the Tidecourt's channels.'"
 tiles = ["channel"]
-weight = 9
+weight = 16
 needs = ["tier:court:2", "!mark:q-dredgers-oath-1"]
 draws = ["trade:boatwright", "trade:wader"]
 [[event.option]]
@@ -799,7 +820,7 @@ id = "dredgers-harbour"
 title = "Dray at the harbourmaster's"
 text = "Captain Dray is in the harbourmaster's office arguing with a clerk about the price of a channel. He sees your boots and abandons the clerk. 'The Mule is aground and the dredge-head is lost,' he says. 'I need a clan with a steady hand and a free week. I will pay in oaths and channels.'"
 poi = ["trader"]
-weight = 7
+weight = 16
 needs = ["tier:court:2", "!mark:q-dredgers-oath-1"]
 [[event.option]]
 label = "Take the oath and the commission"
@@ -823,7 +844,8 @@ title = "A night on the barge"
 text = "The Mule creaks at her moorings. The dredgers sleep under the deck-tarp. Out in the dark channel something is working the water: a slow circling, a bubble, a sound like a throat. The eels do not like the Mule, and tonight they have come to say so."
 tiles = ["channel", "mudflat"]
 day = ["night", "dusk"]
-weight = 10
+weight = 16
+draws = ["mark:q-dredgers-oath-1"]
 needs = ["mark:q-dredgers-oath-1", "!mark:q-dredgers-oath-2"]
 [[event.option]]
 label = "Keep watch with a lantern and a pole"
@@ -859,7 +881,8 @@ id = "barge-eel-wives"
 title = "The eel-wives at the shrine"
 text = "At the channel's shrine, two eel-wives are laying fish heads on the stones. They look up as you come, calm and unfriendly. 'You are the Mule's guard,' says the elder. 'We know what she will do to the water. Guard her all you like. We will watch you guard.'"
 poi = ["shrine"]
-weight = 7
+weight = 16
+draws = ["mark:q-dredgers-oath-1"]
 needs = ["mark:q-dredgers-oath-1", "!mark:q-dredgers-oath-2"]
 [[event.option]]
 label = "Leave a gift of fish at the stones"
@@ -885,7 +908,8 @@ title = "The sunk dredge-head"
 text = "Past the bend, under a rotten piling, the channel's mud has a hump in it, and in the hump a row of bent iron teeth. The dredge-head: a cast bucket the size of a coffin, lost in the last spring tide with half the chain still on it. The water over it is dark and sweet."
 tiles = ["channel", "mere"]
 water = ["low", "mid"]
-weight = 9
+weight = 16
+draws = ["mark:q-dredgers-oath-2"]
 needs = ["mark:q-dredgers-oath-2", "!mark:q-dredgers-oath-3"]
 [[event.option]]
 label = "Chain it to the boat and haul"
@@ -920,7 +944,8 @@ id = "dredgers-finish"
 title = "The Mule's first cut"
 text = "The dredge-head is on. The Mule's chain clanks and a first bucket comes up streaming silt. Dray stands on the rail with his hat off. 'The channel by the Tidecourt,' he says. 'Clear to the quay, and walkable. If you stand by me, we cut it. All of it, to the old harbour wall.'"
 tiles = ["channel"]
-weight = 9
+weight = 16
+draws = ["mark:q-dredgers-oath-3"]
 needs = ["mark:q-dredgers-oath-3", "!mark:q-dredgers-oath-end-dredge", "!mark:q-dredgers-oath-end-refuse", "!mark:q-dredgers-oath-end-sabotage"]
 [[event.option]]
 label = "Stand by the Mule and see it done"
@@ -943,7 +968,8 @@ id = "dredgers-refuse"
 title = "What the eel-wives asked"
 text = "The elder eel-wife meets you at the shrine's edge at slack water. She does not ask for much. 'Do not let the Mule cut,' she says. 'The channels are ours, and the water is old, and the eels have nowhere else. We will remember who stood on our side.'"
 poi = ["shrine"]
-weight = 9
+weight = 16
+draws = ["mark:q-dredgers-oath-3"]
 needs = ["mark:q-dredgers-oath-3", "!mark:q-dredgers-oath-end-dredge", "!mark:q-dredgers-oath-end-refuse", "!mark:q-dredgers-oath-end-sabotage"]
 [[event.option]]
 label = "Refuse the work and keep the water as it is"
@@ -967,7 +993,8 @@ title = "A word in the night"
 text = "A man in a good coat finds you at the Mule's mooring after dark. He calls himself Merrow Quill and says he acts for a rival barge-master who would like the Mule to stay aground. He has a bag of coin and a small cask. 'Pitch,' he says. 'And a bung to pull.'"
 tiles = ["channel", "mudflat"]
 day = ["night", "dusk"]
-weight = 8
+weight = 16
+draws = ["mark:q-dredgers-oath-3"]
 needs = ["mark:q-dredgers-oath-3", "!mark:q-dredgers-oath-end-dredge", "!mark:q-dredgers-oath-end-refuse", "!mark:q-dredgers-oath-end-sabotage"]
 [[event.option]]
 label = "Pull the bung and fire the pitch"
@@ -996,7 +1023,8 @@ id = "dredged-water"
 title = "Clear water by the quay"
 text = "The channel by the Tidecourt runs clear now and a long way down. Children paddle in it. Dray's crew have strung a little rope-rail along the bank. A fat eel lies in the deep, looking up at the sky with open resentment."
 tiles = ["channel"]
-weight = 8
+weight = 16
+draws = ["mark:q-dredgers-oath-end-dredge"]
 needs = ["mark:q-dredgers-oath-end-dredge"]
 [[event.option]]
 label = "Fish the cut while the water is clean"
@@ -1021,7 +1049,8 @@ id = "dray-remembers"
 title = "Dray at the market"
 text = "Captain Ruan Dray stands at the market's edge with a crowd of dredgers, a battered hat and no barge. He has been told, or has guessed. He does not shout. He says your clan's name, plainly, as the people turn to see who it is."
 poi = ["trader"]
-weight = 8
+weight = 16
+draws = ["mark:q-dredgers-oath-end-sabotage"]
 needs = ["mark:q-dredgers-oath-end-sabotage"]
 [[event.option]]
 label = "Put coin on the table for his loss"
