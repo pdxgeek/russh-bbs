@@ -71,3 +71,22 @@ name = "A tiny geared servo"
 price = 9
 shop = "workshop"
 needs = ["rank:robotics>=2"]
+
+# Kept in the open by anyone who finds the right place; never sold (an empty shop).
+[[item]]
+id = "east_wing_key"
+name = "The East Wing key"
+price = 0
+shop = ""
+
+[[item]]
+id = "padlock"
+name = "A combination padlock"
+price = 3
+shop = "tuck"
+
+[[item]]
+id = "spare_card"
+name = "A spare timetable card"
+price = 2
+shop = "tuck"

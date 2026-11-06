@@ -57,8 +57,8 @@ fn the_shipped_content_loads_and_has_the_amount_this_slice_promises() {
     );
     assert_eq!(
         c.effects.len(),
-        5,
-        "four big schemes and one storyline ending"
+        14,
+        "four big schemes, one storyline ending, five endings of the east wing and four of the election"
     );
     assert!(c.twists.len() >= 6 && c.getaways.len() >= 6);
     assert!(c.endings.len() >= 5);
@@ -68,8 +68,13 @@ fn the_shipped_content_loads_and_has_the_amount_this_slice_promises() {
             end.effects
                 .contains(&russh_bbs_door_hallpass::effect::Eff::World(e.id.clone()))
         });
+        let by_verdict = c.mystery.verdicts.iter().any(|v| v.effect == e.id);
+        let by_election = c.social.runners.iter().any(|r| r.win == e.id)
+            || c.social.rules.player_win_effect == e.id;
         assert!(
             by_story
+                || by_verdict
+                || by_election
                 || c.methods
                     .iter()
                     .any(|m| m.effect.as_deref() == Some(e.id.as_str())),

@@ -843,3 +843,186 @@ effects = ["bond:wren:+5", "stand:ink_society:+3", "merit:paper:+2"]
 [[talk.node.choice]]
 label = "Say it was her paper, not yours"
 say = "'False modesty,' says Wren, 'but welcome.'"
+
+# ---------------------------------------------------------------- the east wing (H4)
+# Where the mystery's key comes from, and the end of it. The clues themselves are searches
+# (content/mystery.toml); these are the people who matter to it.
+
+[[talk]]
+id = "wing_fenn_key"
+npc = "fenn"
+title = "Mr. Fenn and the key on the nail"
+when = ["bond:fenn>=6"]
+arc = "the_wing"
+step = "key"
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Mr. Fenn is oiling a hinge that does not need it. He has seen the trunk's dust on your sleeves. 'If a person were to ask me for the wing's key,' he says, 'I would want to know why.'"
+[[talk.node.choice]]
+label = "Tell him about the locket"
+needs = ["know:ines_locket"]
+say = "He takes the locket out of your hand as though it were hot. After a time he gives you the key without a word."
+effects = ["item:east_wing_key", "arc:the_wing:wing", "bond:fenn:+4"]
+[[talk.node.choice]]
+label = "Say you only want to see the place"
+say = "'Wanting to see is the start of it,' says Mr. Fenn. He hangs the key on your belt anyway."
+effects = ["item:east_wing_key", "arc:the_wing:wing", "bond:fenn:+1"]
+[[talk.node.choice]]
+label = "Say it was nothing"
+say = "He nods slowly and goes back to the hinge."
+
+[[talk]]
+id = "wing_soames_key"
+npc = "soames"
+title = "Reverend Soames and the old door"
+when = ["know:soames_trust"]
+arc = "the_wing"
+step = "key"
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Reverend Soames closes the hymnal. 'You have been very quiet about the page I read for you, and very busy since. Tell me what you want, and I will not pretend not to know.'"
+[[talk.node.choice]]
+label = "Ask for the wing's key"
+say = "He opens a drawer and takes out a key on a faded ribbon. 'It was never locked against you,' he says, which is a strange thing to say."
+effects = ["item:east_wing_key", "arc:the_wing:wing", "bond:soames:+3"]
+[[talk.node.choice]]
+label = "Ask what happened in the wing"
+say = "'Not yet,' he says. 'Find it, and then ask me.'"
+effects = ["bond:soames:+1"]
+[[talk.node.choice]]
+label = "Say it was nothing"
+say = "He looks at you kindly and says nothing either."
+
+[[talk]]
+id = "wing_fenn_choice"
+npc = "fenn"
+title = "Tell Mr. Fenn what you found"
+when = ["day>=27", "bond:fenn>=8"]
+arc = "the_wing"
+step = "choice"
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Mr. Fenn looks up from a wheelbarrow. You have never seen him sit down, and now he does. 'Whatever it is,' he says, 'I would rather hear it from you.'"
+[[talk.node.choice]]
+label = "Show him the diary, the bolt and the report"
+needs = ["know:diary_page", "know:fire_report"]
+say = "He reads the last page of the diary standing up, and then he sits."
+effects = ["arc_end:the_wing:fenn"]
+[[talk.node.choice]]
+label = "Tell him all of it from memory"
+needs = ["know:bolt_outside"]
+say = "He listens to every word and asks you to say the last part again."
+effects = ["arc_end:the_wing:fenn"]
+[[talk.node.choice]]
+label = "Not yet"
+say = "'Whenever you are ready,' says Mr. Fenn."
+
+[[talk]]
+id = "wing_soames_choice"
+npc = "soames"
+title = "Tell Reverend Soames what you found"
+when = ["day>=27", "know:soames_trust"]
+arc = "the_wing"
+step = "choice"
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Reverend Soames is alone in the chapel with the lights off. 'I have been waiting for someone to bring me this,' he says, 'and hoping nobody would.'"
+[[talk.node.choice]]
+label = "Put the diary on the pew beside him"
+needs = ["know:diary_page"]
+say = "He does not touch it. He bows his head."
+effects = ["arc_end:the_wing:soames"]
+[[talk.node.choice]]
+label = "Ask him about the initials on the bolt"
+needs = ["know:bolt_outside"]
+say = "'W.S.,' he says. 'Yes.' And nothing else for a long minute."
+effects = ["arc_end:the_wing:soames"]
+[[talk.node.choice]]
+label = "Not yet"
+say = "'I am not going anywhere,' says Reverend Soames."
+
+[[talk]]
+id = "wing_vane_choice"
+npc = "vane"
+title = "Take it to the headmistress"
+when = ["day>=27", "file<=3", "not:trait:known_troublemaker"]
+arc = "the_wing"
+step = "choice"
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Dame Vane has been told you are coming, and has the tea ready. It is a bad sign for anyone else, but you have a clean enough file that she smiles."
+[[talk.node.choice]]
+label = "Give her the diary and the fire report"
+needs = ["know:diary_page", "know:fire_report"]
+say = "She puts on her glasses to read her own signature."
+effects = ["arc_end:the_wing:vane"]
+[[talk.node.choice]]
+label = "Ask her, plainly, about the bolt"
+needs = ["know:bolt_outside"]
+say = "'Sit down,' says Dame Vane. 'Let me tell you how these things look from here.'"
+effects = ["arc_end:the_wing:vane"]
+[[talk.node.choice]]
+label = "Say you came about your reports"
+say = "'Of course,' says Dame Vane, as though she had expected nothing else."
+
+[[talk]]
+id = "wing_wren_choice"
+npc = "wren"
+title = "Show Wren what you found"
+when = ["day>=27", "know:diary_page", "standing:ink_society>=6"]
+arc = "the_wing"
+step = "choice"
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Wren Okonjo has the press drawer open and a headline half-written. 'You have the look of someone with a front page in her pocket.'"
+[[talk.node.choice]]
+label = "Give her the diary"
+say = "She reads it standing up, and then she reads it again."
+effects = ["arc_end:the_wing:paper"]
+[[talk.node.choice]]
+label = "Say it can wait a day"
+say = "'The best stories never wait,' says Wren, 'but they will, for you.'"
+
+[[talk]]
+id = "wing_sol_choice"
+npc = "sol"
+title = "Show Sol the diary"
+when = ["day>=27", "know:diary_page"]
+arc = "the_wing"
+step = "choice"
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Sol Marchetti is sitting on a wall with a box of matches, doing nothing with them. 'That is the thinking face,' he says. 'What are we burning?'"
+[[talk.node.choice]]
+label = "The diary, and every page that mentions the wing"
+say = "He does not argue. He just looks at the matches for a moment and nods."
+effects = ["arc_end:the_wing:bonfire"]
+[[talk.node.choice]]
+label = "Nothing. Forget I said anything"
+say = "'Said what?' says Sol, which is the nicest thing he could have said."
+
+[[talk]]
+id = "wing_tilly_walk_away"
+npc = "tilly"
+title = "Sit with Tilly in the quad"
+when = ["day>=27", "know:clue_c10_diary"]
+arc = "the_wing"
+step = "choice"
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Tilly Brandt has found a spot in the sun and does not ask what is wrong. 'Some doors,' she says, 'are better as doors.'"
+[[talk.node.choice]]
+label = "Agree, and put the key away for good"
+say = "You sit there until the bell, and neither of you says anything about the East Wing again."
+effects = ["arc_end:the_wing:walk_away"]
+[[talk.node.choice]]
+label = "Say you are not ready to stop"
+say = "'Then you are not,' says Tilly, and offers you half a sandwich."

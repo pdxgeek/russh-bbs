@@ -57,8 +57,8 @@
 │                                  ││                            ││                                │
 │                                  ││                            ││                                │
 ╰──────────────────────────────────╯╰────────────────────────────╯╰────────────────────────────────╯
- g Go   l Loiter   t Talk   r Rest   p Schemes   c Clubs   f File   j Journal   n Paper   q Leave
-
+ g Go   l Loiter   t Talk   r Rest   p Schemes   c Clubs   f File   j Journal   n Paper   o Social
+ q Leave
  » Go somewhere                                                                up/down  Enter  Esc
 ===== map 100x30 unicode
  ♜ GREYWATER ACADEMY  · ann                                                  term 1 · Wed day 13/42
@@ -476,10 +476,10 @@
 │The light in the East~ ○○○○○                ││                                                    │
 │ Mr. Fenn has seen a light in the closed    ││                                                    │
 │ East Wing. Ask him about it.               ││                                                    │
-│                                            ││                                                    │
-│                                            ││                                                    │
-│                                            ││                                                    │
-│                                            ││                                                    │
+│What happened in the ~ ○○○○○○○              ││                                                    │
+│ The East Wing closed years ago and nobody  ││                                                    │
+│ will say why. Look for the torn page, and  ││                                                    │
+│ the places where the story is still told.  ││                                                    │
 │                                            ││                                                    │
 │                                            ││                                                    │
 │                                            ││                                                    │
@@ -587,6 +587,192 @@
 │                                                        ││                                        │
 ╰────────────────────────────────────────────────────────╯╰────────────────────────────────────────╯
  » Back to the paper                                                           up/down  Enter  Esc
+===== social 100x30 unicode
+ ♜ GREYWATER ACADEMY  · ann                                                  term 1 · Wed day 13/42
+   Hist       Maths      Lunch      ▐Art▌       Sci       Games      After       Eve       Night
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━▀▀▀▀▀▀▀▀▀▀▀┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄
+▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒███████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+╭ Social ──────────────────────────────────────╮╭ Among the pupils ────────────────────────────────╮
+│ c Classmates: play a scheme on one           ││Pupils at school: 3. You are open                 │
+│ r Rumours: start one                         ││                                                  │
+│ e The school election                        ││Pupils at school: 3. You are open                 │
+│ o Opt out of plots against you               ││to plots.                                         │
+│ b Back                                       ││Nothing here is typed at anyone:                  │
+│                                              ││every plot and rumour is chosen                   │
+│                                              ││from a list, and the school can                   │
+│                                              ││read all of it. Opting out stops                  │
+│                                              ││plots both ways.                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+╰──────────────────────────────────────────────╯╰──────────────────────────────────────────────────╯
+ » Classmates: play a scheme on one                                            up/down  Enter  Esc
+===== classmates 100x30 unicode
+ ♜ GREYWATER ACADEMY  · ann                                                  term 1 · Wed day 13/42
+   Hist       Maths      Lunch      ▐Art▌       Sci       Games      After       Eve       Night
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━▀▀▀▀▀▀▀▀▀▀▀┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄
+▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒███████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+╭ Classmates ──────────────────────────────────╮╭ The pupil ───────────────────────────────────────╮
+│ 1 Wick (38 legend)                           ││Who? (a name from the roster; you                 │
+│ b Back                                       ││                                                  │
+│                                              ││Who? (a name from the roster; you                 │
+│                                              ││cannot type one)                                  │
+│                                              ││Sol has opted out and cannot be                   │
+│                                              ││reached.                                          │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+╰──────────────────────────────────────────────╯╰──────────────────────────────────────────────────╯
+ » Wick (38 legend)                                                            up/down  Enter  Esc
+===== plots 100x30 unicode
+ ♜ GREYWATER ACADEMY  · ann                                                  term 1 · Wed day 13/42
+   Hist       Maths      Lunch      ▐Art▌       Sci       Games      After       Eve       Night
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━▀▀▀▀▀▀▀▀▀▀▀┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄
+▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒███████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+╭ A scheme on them ────────────────────────────╮╭ The scheme ──────────────────────────────────────╮
+│ 1 A fake note from a teacher (nerve 2)       ││A scheme on Wick, from the fixed                  │
+│ 2 Squeaky laces (nerve 1)                    ││                                                  │
+│ 3 A good word (nerve 1)                      ││A fake note from a teacher                        │
+│ 4 A pep talk (nerve 1)                       ││a mischief scheme on Wick                         │
+│ 5 Spare change (nerve 1)                     ││A note in a teacher's hand tells someone to report│
+│ b Back                                       ││to the library at once. They will arrive, puzzled.│
+│                                              ││costs 2 nerve; they can see it coming if they are │
+│                                              ││the sort who would                                │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+╰──────────────────────────────────────────────╯╰──────────────────────────────────────────────────╯
+ » A fake note from a teacher (nerve 2)                                        up/down  Enter  Esc
+===== rumours 100x30 unicode
+ ♜ GREYWATER ACADEMY  · ann                                                  term 1 · Wed day 13/42
+   Hist       Maths      Lunch      ▐Art▌       Sci       Games      After       Eve       Night
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━▀▀▀▀▀▀▀▀▀▀▀┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄
+▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒███████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+╭ Rumours ─────────────────────────────────────╮╭ The rumour ──────────────────────────────────────╮
+│ 1 They are the fairest in the school         ││Rumours going round:                              │
+│ 2 Seen raiding the biscuit tin               ││                                                  │
+│ 3 A secret admirer in the staff              ││Rumours going round:                              │
+│ 4 They are the ones to watch                 ││  - People are saying Tilly                       │
+│ 5 They think they are better than us         ││  Brandt is the fairest person at                 │
+│ 6 You swung from the bell rope               ││  Greywater.                                      │
+│ 7 You never panic                            ││                                                  │
+│ b Back                                       ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+╰──────────────────────────────────────────────╯╰──────────────────────────────────────────────────╯
+ » They are the fairest in the school                                          up/down  Enter  Esc
+===== rumour 100x30 unicode
+ ♜ GREYWATER ACADEMY  · ann                                                  term 1 · Wed day 13/42
+   Hist       Maths      Lunch      ▐Art▌       Sci       Games      After       Eve       Night
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━▀▀▀▀▀▀▀▀▀▀▀┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄
+▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒███████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+╭ About whom? ─────────────────────────────────╮╭ The subject ─────────────────────────────────────╮
+│ 1 Dame Ottoline Vane                         ││They are the fairest in the                       │
+│ 2 Mr. Quillon Marsh                          ││                                                  │
+│ 3 Mr. Hobart Pell                            ││They are the fairest in the school                │
+│ 4 Ms. Ines Orrin                             ││"People are saying Dame Ottoline Vane is the      │
+│ 5 Madame Delphine Thorne                     ││fairest person at Greywater."                     │
+│ 6 Mr. Wystan Alder                           ││a praise rumour; the whole school hears it        │
+│ 7 Ms. Pia Ruddock                            ││                                                  │
+│ 8 Mr. Abel Fenn                              ││                                                  │
+│ 9 Mrs. Hester Tarn                           ││                                                  │
+│ . More                                       ││                                                  │
+│ b Back                                       ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+╰──────────────────────────────────────────────╯╰──────────────────────────────────────────────────╯
+ » Dame Ottoline Vane                                                          up/down  Enter  Esc
+===== election 100x30 unicode
+ ♜ GREYWATER ACADEMY  · ann                                                  term 1 · Wed day 13/42
+   Hist       Maths      Lunch      ▐Art▌       Sci       Games      After       Eve       Night
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━▀▀▀▀▀▀▀▀▀▀▀┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄
+▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒███████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+╭ The election ────────────────────────────────╮╭ The ballot ──────────────────────────────────────╮
+│ 1 Stand for election                         ││Head of School. Votes from day                    │
+│ b Back                                       ││                                                  │
+│                                              ││Head of School. Votes from day                    │
+│                                              ││21, counted on day 28.                            │
+│                                              ││Tobias Bramley: More patrols and                  │
+│                                              ││tidier corridors.                                 │
+│                                              ││   backing 14, votes 0                            │
+│                                              ││Wren Okonjo: An open paper and a                  │
+│                                              ││longer lights-out.                                │
+│                                              ││   backing 11, votes 0                            │
+│                                              ││Rafe Hollis: Boats for everyone                   │
+│                                              ││and fewer lessons on Fridays.                     │
+│                                              ││   backing 9, votes 0                             │
+│                                              ││Wick: A pupil who thinks they                     │
+│                                              ││could do better.                                  │
+│                                              ││   backing 7, votes 0                             │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+│                                              ││                                                  │
+╰──────────────────────────────────────────────╯╰──────────────────────────────────────────────────╯
+ » Stand for election                                                          up/down  Enter  Esc
 ===== study 100x30 unicode
  ♜ GREYWATER ACADEMY  · ann                                                  term 1 · Wed day 13/42
    Hist       Maths     ▐Lunch▌      Art        Sci       Games      After       Eve       Night
@@ -625,9 +811,9 @@
 ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒███████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 ╭ For sale ────────────────────────────────────────────╮╭ Your pockets ────────────────────────────╮
 │ 1 A tin of cooking salt - 2 cash                     ││cash 18                                   │
-│ b Back                                               ││ 1x A tin of cooking salt                 │
-│                                                      ││                                          │
-│                                                      ││                                          │
+│ 2 A combination padlock - 3 cash                     ││ 1x A tin of cooking salt                 │
+│ 3 A spare timetable card - 2 cash                    ││                                          │
+│ b Back                                               ││                                          │
 │                                                      ││                                          │
 │                                                      ││                                          │
 │                                                      ││                                          │

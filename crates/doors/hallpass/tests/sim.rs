@@ -369,8 +369,8 @@ fn school_life_in_numbers_grades_club_ranks_and_storyline_endings() {
         "clubs are climbed: {ranks:?}"
     );
     assert!(
-        by_arc.len() == 2,
-        "both storylines begin for somebody: {by_arc:?}"
+        by_arc.len() == 3,
+        "every storyline begins for somebody: {by_arc:?}"
     );
     let finished: usize = by_arc
         .values()

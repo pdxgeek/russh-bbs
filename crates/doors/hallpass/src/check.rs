@@ -11,7 +11,7 @@ use crate::content::Content;
 use crate::effect::Eff;
 
 /// Items a lock asks for that no shop sells: the mystery (a later slice) hands them over.
-const ARRIVES_LATER: &[&str] = &["east_wing_key"];
+const ARRIVES_LATER: &[&str] = &[];
 
 impl Content {
     /// Problems with the conditions anywhere in the content.
@@ -57,7 +57,7 @@ impl Content {
         }
     }
 
-    fn eff_problems(&self, what: &str, effs: &[Eff], out: &mut Vec<String>) {
+    pub(crate) fn eff_problems(&self, what: &str, effs: &[Eff], out: &mut Vec<String>) {
         for e in effs {
             let mut missing = |kind: &str, id: &str| {
                 out.push(format!("{what}: effect names unknown {kind} `{id}`"));
@@ -120,6 +120,12 @@ impl Content {
     /// The flags something in the content can grant.
     fn granted_flags(&self) -> HashSet<String> {
         let mut out: HashSet<String> = self.grants.iter().map(|g| g.know.clone()).collect();
+        out.insert("won_election".to_owned());
+        out.extend(self.mystery.clues.iter().map(|c| format!("clue_{}", c.id)));
+        out.extend(self.mystery.clues.iter().flat_map(|c| c.effects.iter()).filter_map(|e| match e {
+            Eff::Know(k) => Some(k.clone()),
+            _ => None,
+        }));
         for n in &self.npcs {
             out.extend(n.ally.iter().flat_map(|a| a.grants.iter().cloned()));
         }
@@ -180,6 +186,11 @@ impl Content {
         for a in &self.arcs {
             for c in &a.start {
                 walk(&format!("arc `{}`", a.id), c, &mut out);
+            }
+        }
+        for c in &self.mystery.clues {
+            for cond in &c.needs {
+                walk(&format!("clue `{}`", c.id), cond, &mut out);
             }
         }
         out
@@ -333,6 +344,11 @@ impl Content {
                 }
             }
         }
+        for e in self.mystery.clues.iter().flat_map(|c| c.effects.iter()) {
+            if let Eff::Arc(a, step) = e {
+                entered.insert((a.clone(), step.clone()));
+            }
+        }
         for a in &self.arcs {
             let what = format!("storyline `{}`", a.id);
             self.cond_problems(&what, &a.start, &mut out);
@@ -346,10 +362,17 @@ impl Content {
                 if s.id != a.first && !entered.contains(&(a.id.clone(), s.id.clone())) {
                     out.push(format!("{what}: step `{}` can never be entered", s.id));
                 }
-                if !self.talks.iter().any(|t| {
-                    t.arc.as_deref() == Some(a.id.as_str())
-                        && t.step.as_deref() == Some(s.id.as_str())
-                }) {
+                let a_clue_waits_here = self.mystery.clues.iter().any(|c| {
+                    c.needs.iter().any(|n| {
+                        matches!(n, Cond::Arc { arc, step } if *arc == a.id && *step == s.id)
+                    })
+                });
+                if !a_clue_waits_here
+                    && !self.talks.iter().any(|t| {
+                        t.arc.as_deref() == Some(a.id.as_str())
+                            && t.step.as_deref() == Some(s.id.as_str())
+                    })
+                {
                     out.push(format!(
                         "{what}: step `{}` has no conversation to move it on",
                         s.id

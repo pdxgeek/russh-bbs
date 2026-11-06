@@ -391,6 +391,7 @@ impl Game {
             Eff::ArcEnd(arc, ending) => self.end_arc(arc, ending, depth),
             Eff::World(effect) => self.world_change(effect),
             Eff::Betray(who) => self.betray(who),
+            Eff::Verdict(id) => self.cast_verdict(id),
         }
     }
 
