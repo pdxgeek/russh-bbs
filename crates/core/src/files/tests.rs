@@ -242,7 +242,7 @@ fn tags_are_refused_not_rewritten() {
 // ---- the Files screens ----
 
 mod screens {
-    #![allow(clippy::unwrap_used)]
+    #![allow(clippy::unwrap_used, clippy::panic)]
 
     use super::super::keys;
     use super::super::screen::{FilesMode, FilesScreen, Request, Response};
@@ -320,8 +320,7 @@ mod screens {
             .lines
             .iter()
             .filter_map(|line| match line {
-                Line::Text(key) => Some(*key),
-                Line::Filled { key, .. } => Some(*key),
+                Line::Text(key) | Line::Filled { key, .. } => Some(*key),
                 _ => None,
             })
             .collect()

@@ -344,6 +344,10 @@ impl MemberFlow {
     }
 
     /// Handle one input.
+    #[allow(
+        clippy::too_many_lines,
+        reason = "the permission re-checks and the page dispatch, in order"
+    )]
     pub fn input(&mut self, input: MemberInput) -> MemberEffect {
         if input == MemberInput::Quit {
             return self.log_off();

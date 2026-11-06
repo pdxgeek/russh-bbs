@@ -329,7 +329,7 @@ impl Default for BlobsConfig {
 pub enum ScanBackend {
     /// No scanner: uploads are stored unscanned and labelled so.
     None,
-    /// A ClamAV daemon reached over a socket with the `INSTREAM` protocol.
+    /// A `ClamAV` daemon reached over a socket with the `INSTREAM` protocol.
     Clamd,
 }
 

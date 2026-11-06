@@ -77,6 +77,10 @@ pub(crate) struct HandlerParts<D> {
 /// It receives and refuses; the work a shell session causes (parsing keys, drawing, the founder
 /// claim) is done by the session's [`Shell`] task, which the handler feeds through an [`Inbox`]
 /// and a per-session budget (D49).
+#[allow(
+    clippy::struct_excessive_bools,
+    reason = "independent facts about one connection (shell started, sftp started, member, claim)"
+)]
 pub(crate) struct ClientHandler<D> {
     directory: Arc<D>,
     founder: Arc<Founder>,

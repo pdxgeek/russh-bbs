@@ -1,4 +1,4 @@
-//! The ClamAV adapter for the scan hook (M4-F2): the `INSTREAM` protocol of `clamd`, over TCP or
+//! The `ClamAV` adapter for the scan hook (M4-F2): the `INSTREAM` protocol of `clamd`, over TCP or
 //! a unix socket, behind `[files] scan = "clamd"`.
 //!
 //! Protocol (clamd(8), "INSTREAM"): send `zINSTREAM\0`, then the content as chunks, each a
@@ -131,7 +131,7 @@ impl ScanHook for ClamdScanner {
 pub enum Scanner {
     /// No scanner.
     None(NoScan),
-    /// ClamAV over a socket.
+    /// `ClamAV` over a socket.
     Clamd(ClamdScanner),
 }
 

@@ -62,7 +62,6 @@ def start_server(work):
         RUSSH_BBS_HOST_KEY=f"{work}/hostkey",
         RUSSH_BBS_DB=f"{work}/bbs.sqlite",
         RUSSH_BBS_BLOBS_DIR=f"{work}/blobs",
-        RUSSH_BBS_RATE_LIMITS="off",
     )
     log = open(f"{work}/server.log", "wb")
     proc = subprocess.Popen([f"{ROOT}/target/debug/russh-bbs-server"], env=env, stdout=log, stderr=log)
@@ -74,6 +73,14 @@ def start_server(work):
         if m:
             token = m.group(1)
             break
+    # The token is printed before the listener is up: wait for the port.
+    import socket
+    for _ in range(100):
+        try:
+            socket.create_connection(("127.0.0.1", PORT), timeout=0.5).close()
+            break
+        except OSError:
+            time.sleep(0.2)
     return proc, token
 
 
@@ -200,7 +207,8 @@ def main():
             snap(term, out, f"11-bob-area-{tag}")
             term.send("1", quiet=1.0)
             snap(term, out, f"12-bob-file-{tag}")
-            term.send("b", quiet=1.0)
+            if tag == "80x24":
+                term.send("b", quiet=1.0)  # once: a second press would take it off the list
             term.send("\x1b", quiet=0.6)
             term.send("l", quiet=1.0)
             snap(term, out, f"13-bob-download-list-{tag}")

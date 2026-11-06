@@ -1,4 +1,8 @@
 //! One SFTP session: the protocol handler. See the module docs of [`super`].
+#![allow(
+    clippy::unused_async_trait_impl,
+    reason = "the Handler trait's methods are all async; some of ours need no await"
+)]
 
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -164,7 +168,7 @@ struct WriteState {
 
 enum Open {
     Dir(DirState),
-    Read(ReadState),
+    Read(Box<ReadState>),
     Write(Box<WriteState>),
 }
 
@@ -368,20 +372,28 @@ impl<D: Backend> SftpSession<D> {
             warn!(%error, "a file's bytes could not be opened");
             SftpError::failure("the file could not be read")
         })?;
-        Ok(Open::Read(ReadState {
+        Ok(Open::Read(Box::new(ReadState {
             key: target.key,
             size: read.size,
             pos: 0,
             reader: tokio::sync::Mutex::new(read.reader),
-        }))
+        })))
     }
 
-    async fn open_write(&mut self, parsed: VPath) -> Result<Open, SftpError> {
+    async fn open_write(&mut self, parsed: VPath, raw: &str) -> Result<Open, SftpError> {
         let (VPath::AreaEntry(area, entry) | VPath::PendingEntry(area, entry)) = parsed else {
             return Err(SftpError::denied("files can only be uploaded into an area"));
         };
-        let Entry::Name(name) = entry else {
-            return Err(SftpError::denied("a file cannot be overwritten"));
+        // A name that starts like an id (`2026-notes.txt`) is still a new file's name when it is
+        // written: an upload never replaces anything, so the last component is taken as sent.
+        let name = match entry {
+            Entry::Name(name) => name,
+            Entry::Id(_) => raw
+                .trim_end_matches('/')
+                .rsplit('/')
+                .next()
+                .unwrap_or_default()
+                .to_owned(),
         };
         let snapshot = self.access().await?;
         let plan =
@@ -536,7 +548,7 @@ impl<D: Backend> Handler for SftpSession<D> {
                     "files are written in one pass, from the start",
                 ));
             }
-            self.open_write(parsed).await?
+            self.open_write(parsed, &filename).await?
         } else if pflags.contains(OpenFlags::READ) {
             self.open_read(parsed).await?
         } else {

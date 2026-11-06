@@ -8,6 +8,10 @@
     clippy::expect_used,
     clippy::panic,
     clippy::too_many_lines,
+    clippy::similar_names,
+    clippy::unused_async_trait_impl,
+    clippy::doc_markdown,
+    unreachable_pub,
     missing_docs
 )]
 
@@ -590,11 +594,20 @@ async fn scenario(blobs: Blobs) {
         format!("ln -s /etc/passwd {docs_dir}/link"),
         format!("chmod 777 {docs_dir}/{hello_name}"),
         format!("rmdir {docs_dir}"),
-        format!("put peek.txt {docs_dir}/{hello_name}"),
     ] {
         let (ok, out) = rig.sftp(&bob, &bob_dir, &[&line]).await;
         assert!(!ok, "`{line}` should be refused: {out}");
     }
+    // An upload never replaces a file: writing to an existing file's listed name makes a new
+    // file with that name, and the original is untouched.
+    let (ok, out) = rig
+        .sftp(
+            &bob,
+            &bob_dir,
+            &[&format!("put peek.txt {docs_dir}/{hello_name}")],
+        )
+        .await;
+    assert!(ok, "{out}");
     // Nothing changed.
     let (_, out) = rig
         .sftp(

@@ -386,26 +386,21 @@ impl FilesScreen {
             return;
         };
         let (queue, manage) = (*queue, *manage);
-        match key {
-            ScreenKey::Char(c) => {
-                if let Some(area) = digit_index(c).and_then(|i| areas.get(i)) {
-                    let area = area.id;
-                    self.ask(Request::Area { area, page: 0 });
-                } else if matches!(c, 'q' | 'Q') && queue {
-                    self.ask(Request::Queue { page: 0 });
-                } else if matches!(c, 'n' | 'N')
-                    && manage
-                    && access.allows(Permission::FilesManageAreas)
-                {
-                    self.area_form = Some(NewArea {
-                        name: String::new(),
-                        auto: false,
-                        restricted: false,
-                    });
-                    self.typing = Typing::AreaName(String::new());
-                }
-            }
-            _ => {}
+        let ScreenKey::Char(c) = key else {
+            return;
+        };
+        if let Some(area) = digit_index(c).and_then(|i| areas.get(i)) {
+            let area = area.id;
+            self.ask(Request::Area { area, page: 0 });
+        } else if matches!(c, 'q' | 'Q') && queue {
+            self.ask(Request::Queue { page: 0 });
+        } else if matches!(c, 'n' | 'N') && manage && access.allows(Permission::FilesManageAreas) {
+            self.area_form = Some(NewArea {
+                name: String::new(),
+                auto: false,
+                restricted: false,
+            });
+            self.typing = Typing::AreaName(String::new());
         }
     }
 
@@ -417,24 +412,22 @@ impl FilesScreen {
             return;
         };
         let current = page.page;
-        match key {
-            ScreenKey::Char(c) => {
-                if let Some(file) = digit_index(c).and_then(|i| page.files.get(i)) {
-                    let id = file.id;
-                    self.ask(Request::File(id));
-                } else if matches!(c, 'n' | 'N') && page.more {
-                    self.ask(Request::Area {
-                        area,
-                        page: current + 1,
-                    });
-                } else if matches!(c, 'p' | 'P') && current > 0 {
-                    self.ask(Request::Area {
-                        area,
-                        page: current - 1,
-                    });
-                }
-            }
-            _ => {}
+        let ScreenKey::Char(c) = key else {
+            return;
+        };
+        if let Some(file) = digit_index(c).and_then(|i| page.files.get(i)) {
+            let id = file.id;
+            self.ask(Request::File(id));
+        } else if matches!(c, 'n' | 'N') && page.more {
+            self.ask(Request::Area {
+                area,
+                page: current + 1,
+            });
+        } else if matches!(c, 'p' | 'P') && current > 0 {
+            self.ask(Request::Area {
+                area,
+                page: current - 1,
+            });
         }
     }
 
@@ -646,6 +639,10 @@ impl FilesScreen {
 
     /// What a layout draws.
     #[must_use]
+    #[allow(
+        clippy::too_many_lines,
+        reason = "one arm per screen, in the order they are reached"
+    )]
     pub fn view(&self, access: &dyn PermissionCheck) -> ScreenView {
         let _ = access;
         let mut lines = Vec::new();
@@ -697,6 +694,7 @@ impl FilesScreen {
             }
             Mode::Area(page) => {
                 footer = keys::FOOTER_AREA;
+                lines.push(Line::Heading(keys::HEADING_AREA));
                 if let Some(area) = &page.area {
                     lines.push(Line::Filled {
                         key: keys::AREA_TITLE,
@@ -709,14 +707,15 @@ impl FilesScreen {
                 }
                 file_rows(&mut lines, &page.files, keys::FILE_ROW);
                 page_lines(&mut lines, page);
-                if page.can_upload && self.files == FilesMode::Sftp {
-                    if let Some(area) = &page.area {
-                        lines.push(Line::Blank);
-                        lines.push(Line::Filled {
-                            key: keys::HINT_UPLOAD,
-                            values: vec![("path", format!("/{}/", area.dir))],
-                        });
-                    }
+                if page.can_upload
+                    && self.files == FilesMode::Sftp
+                    && let Some(area) = &page.area
+                {
+                    lines.push(Line::Blank);
+                    lines.push(Line::Filled {
+                        key: keys::HINT_UPLOAD,
+                        values: vec![("path", format!("/{}/", area.dir))],
+                    });
                 }
                 lines.push(Line::Blank);
                 lines.push(Line::Text(self.mode_note()));
@@ -737,6 +736,7 @@ impl FilesScreen {
             }
             Mode::Search { query, page } => {
                 footer = keys::FOOTER_AREA;
+                lines.push(Line::Heading(keys::HEADING_SEARCH));
                 lines.push(Line::Filled {
                     key: keys::SEARCH_TITLE,
                     values: vec![("query", query.clone())],
@@ -790,6 +790,7 @@ impl FilesScreen {
 
     fn file_lines(&self, lines: &mut Vec<Line>, view: &FileView) {
         let file = &view.file;
+        lines.push(Line::Heading(keys::HEADING_FILE));
         lines.push(Line::Filled {
             key: keys::FILE_TITLE,
             values: vec![("name", file.name.clone())],

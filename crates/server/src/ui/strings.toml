@@ -563,6 +563,11 @@ row = "[{key}] {name}  ({files} files)"
 flag_restricted = "      (by invitation only)"
 flag_auto = "      (new files go live after a clean scan)"
 
+[files.heading]
+area = "Files"
+file = "File"
+search = "File search"
+
 [files.area]
 title = "{name}"
 empty = "No files here yet."

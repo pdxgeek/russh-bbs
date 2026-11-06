@@ -5,7 +5,9 @@
     clippy::unwrap_used,
     clippy::panic,
     clippy::assert_is_empty,
-    clippy::too_many_lines
+    clippy::too_many_lines,
+    clippy::many_single_char_names,
+    clippy::too_many_arguments
 )]
 
 use russh_bbs_core::access::{Permission, Slug, Snapshot};
@@ -1057,10 +1059,8 @@ pub(crate) async fn the_database_refuses_bad_file_rows<H: Harness>() {
     assert!(h.raw(&ok.replace(&"0".repeat(64), "XYZ")).await.is_err());
     assert!(h.raw(&ok.replace("1, '0", "-1, '0")).await.is_err());
     assert!(
-        h.raw(&format!(
-            "INSERT INTO file_tag (file_id, tag) VALUES (1, 'Bad Tag')"
-        ))
-        .await
-        .is_err()
+        h.raw("INSERT INTO file_tag (file_id, tag) VALUES (1, 'Bad Tag')")
+            .await
+            .is_err()
     );
 }
