@@ -87,8 +87,8 @@
 │            ⊘ Candles───⊘ Cellars───∙ Old Wing──⊘ East Wing             ││Crouch  Gymnasium       │
 │                                   ╱ │        ╲                         ││Marchetti  The Quad     │
 │                                  ╱  │         ╲                        ││Lund  Library           │
-│                        ⊘ Paper     ∙ Detention ∙ Workshop              ││Also: Admin to Classes, │
-│                                                                        ││Quad to Grounds.        │
+│                        ⊘ Paper     ∙ Detention ∙ Workshop              ││Hale  Staff car park    │
+│                                                                        ││Also: Admin to Classes, │
 ╰ ◉you ●reach ○open ∙shut ⊘locked †staff ────────────────────────────────╯╰────────────────────────╯
  » The Quad                                                           arrows choose  Enter go  Esc
 ===== map-moved 100x30 unicode
@@ -118,8 +118,8 @@
 │            ⊘ Candles───⊘ Cellars───∙ Old Wing──⊘ East Wing             ││Crouch  Gymnasium       │
 │                                   ╱ │        ╲                         ││Marchetti  The Quad     │
 │                                  ╱  │         ╲                        ││Lund  Library           │
-│                        ⊘ Paper     ∙ Detention ∙ Workshop              ││Also: Admin to Classes, │
-│                                                                        ││Quad to Grounds.        │
+│                        ⊘ Paper     ∙ Detention ∙ Workshop              ││Hale  Staff car park    │
+│                                                                        ││Also: Admin to Classes, │
 ╰ ◉you ●reach ○open ∙shut ⊘locked †staff ────────────────────────────────╯╰────────────────────────╯
  » Fenwick dormitory                                                  arrows choose  Enter go  Esc
 ===== schemes 100x30 unicode
@@ -196,11 +196,11 @@
 │ 4 Plant a stink bomb                         ││Every cup of tea in the staffroom, a surprise.    │
 │ 5 Rig the dining-hall tannoy                 ││hard   ████████████████████░░░░░░░░░░░░░░░░░░░░ 20│
 │ 6 Slip a headline into the paper             ││legend ██████▏░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 6│
-│ b Back                                       ││heat   ████████▏░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 6│
-│                                              ││needs A tin of cooking salt                       │
-│                                              ││                                                  │
-│                                              ││                                                  │
-│                                              ││                                                  │
+│ 7 Plant a whoopee cushion                    ││heat   ████████▏░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 6│
+│ 8 Fill the pigeonholes with marbles          ││needs A tin of cooking salt                       │
+│ 9 Send a memo in vanishing ink               ││                                                  │
+│ . More                                       ││                                                  │
+│ b Back                                       ││                                                  │
 │                                              ││                                                  │
 │                                              ││                                                  │
 │                                              ││                                                  │
@@ -813,9 +813,9 @@
 │ 1 A tin of cooking salt - 2 cash                     ││cash 18                                   │
 │ 2 A combination padlock - 3 cash                     ││ 1x A tin of cooking salt                 │
 │ 3 A spare timetable card - 2 cash                    ││                                          │
+│ 4 A rubber whoopee cushion - 3 cash                  ││                                          │
+│ 5 A bag of glass marbles - 2 cash                    ││                                          │
 │ b Back                                               ││                                          │
-│                                                      ││                                          │
-│                                                      ││                                          │
 │                                                      ││                                          │
 │                                                      ││                                          │
 │                                                      ││                                          │

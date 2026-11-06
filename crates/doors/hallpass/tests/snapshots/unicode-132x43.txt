@@ -112,13 +112,13 @@
 │             ╱ │                         ╱             ╱ │                          ││Crouch  Gymnasium                           │
 │            ╱  │                        ╱             ╱  │                          ││Marchetti  The Quad                         │
 │           ╱   │                       ╱             ╱   │                          ││Lund  Library                               │
-│⊘ Quarters    ∙ Staffroom   ⊘ Tunnels─────∙ Boathouse   ∙ Shed                      ││Also: Admin to Classes, Quad to Grounds.    │
-│                         ╲   │                         ╱                            ││                                            │
-│                          ╲  │                        ╱                             ││                                            │
-│                           ╲ │                       ╱                              ││                                            │
-│              ⊘ Candles─────⊘ Cellars─────∙ Old Wing────⊘ East Wing                 ││                                            │
-│                                         ╱ │         ╲                              ││                                            │
-│                                        ╱  │          ╲                             ││                                            │
+│⊘ Quarters    ∙ Staffroom   ⊘ Tunnels─────∙ Boathouse   ∙ Shed                      ││Hale  Staff car park                        │
+│                         ╲   │                         ╱                            ││Fairweather  Admin corridor                 │
+│                          ╲  │                        ╱                             ││Varga  Staff car park                       │
+│                           ╲ │                       ╱                              ││Mercer  Staff car park                      │
+│              ⊘ Candles─────⊘ Cellars─────∙ Old Wing────⊘ East Wing                 ││Venkat  Admin corridor                      │
+│                                         ╱ │         ╲                              ││Ashby  Staff car park                       │
+│                                        ╱  │          ╲                             ││Also: Admin to Classes, Quad to Grounds.    │
 │                                       ╱   │           ╲                            ││                                            │
 │                            ⊘ Paper       ∙ Detention   ∙ Workshop                  ││                                            │
 │                                                                                    ││                                            │
@@ -156,13 +156,13 @@
 │             ╱ │                         ╱             ╱ │                          ││Crouch  Gymnasium                           │
 │            ╱  │                        ╱             ╱  │                          ││Marchetti  The Quad                         │
 │           ╱   │                       ╱             ╱   │                          ││Lund  Library                               │
-│⊘ Quarters    ∙ Staffroom   ⊘ Tunnels─────∙ Boathouse   ∙ Shed                      ││Also: Admin to Classes, Quad to Grounds.    │
-│                         ╲   │                         ╱                            ││                                            │
-│                          ╲  │                        ╱                             ││                                            │
-│                           ╲ │                       ╱                              ││                                            │
-│              ⊘ Candles─────⊘ Cellars─────∙ Old Wing────⊘ East Wing                 ││                                            │
-│                                         ╱ │         ╲                              ││                                            │
-│                                        ╱  │          ╲                             ││                                            │
+│⊘ Quarters    ∙ Staffroom   ⊘ Tunnels─────∙ Boathouse   ∙ Shed                      ││Hale  Staff car park                        │
+│                         ╲   │                         ╱                            ││Fairweather  Admin corridor                 │
+│                          ╲  │                        ╱                             ││Varga  Staff car park                       │
+│                           ╲ │                       ╱                              ││Mercer  Staff car park                      │
+│              ⊘ Candles─────⊘ Cellars─────∙ Old Wing────⊘ East Wing                 ││Venkat  Admin corridor                      │
+│                                         ╱ │         ╲                              ││Ashby  Staff car park                       │
+│                                        ╱  │          ╲                             ││Also: Admin to Classes, Quad to Grounds.    │
 │                                       ╱   │           ╲                            ││                                            │
 │                            ⊘ Paper       ∙ Detention   ∙ Workshop                  ││                                            │
 │                                                                                    ││                                            │
@@ -274,11 +274,11 @@
 │ 4 Plant a stink bomb                                        ││Every cup of tea in the staffroom, a surprise.                     │
 │ 5 Rig the dining-hall tannoy                                ││hard   ████████████████████████████▌░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 20│
 │ 6 Slip a headline into the paper                            ││legend ████████▋░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 6│
-│ b Back                                                      ││heat   ███████████▌░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 6│
-│                                                             ││needs A tin of cooking salt                                        │
-│                                                             ││                                                                   │
-│                                                             ││                                                                   │
-│                                                             ││                                                                   │
+│ 7 Plant a whoopee cushion                                   ││heat   ███████████▌░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 6│
+│ 8 Fill the pigeonholes with marbles                         ││needs A tin of cooking salt                                        │
+│ 9 Send a memo in vanishing ink                              ││                                                                   │
+│ . More                                                      ││                                                                   │
+│ b Back                                                      ││                                                                   │
 │                                                             ││                                                                   │
 │                                                             ││                                                                   │
 │                                                             ││                                                                   │
@@ -1151,9 +1151,9 @@
 │ 1 A tin of cooking salt - 2 cash                                       ││cash 18                                                 │
 │ 2 A combination padlock - 3 cash                                       ││ 1x A tin of cooking salt                               │
 │ 3 A spare timetable card - 2 cash                                      ││                                                        │
+│ 4 A rubber whoopee cushion - 3 cash                                    ││                                                        │
+│ 5 A bag of glass marbles - 2 cash                                      ││                                                        │
 │ b Back                                                                 ││                                                        │
-│                                                                        ││                                                        │
-│                                                                        ││                                                        │
 │                                                                        ││                                                        │
 │                                                                        ││                                                        │
 │                                                                        ││                                                        │

@@ -48,8 +48,8 @@ fn the_shipped_content_loads_and_has_the_amount_this_slice_promises() {
     assert_eq!(c.subjects.len(), 6);
     assert_eq!(c.cliques.len(), 6);
     assert!(c.places.len() >= 25, "{}", c.places.len());
-    assert!(c.npcs.len() >= 18, "{}", c.npcs.len());
-    assert!(c.methods.iter().filter(|m| !m.big).count() >= 9);
+    assert!(c.npcs.len() >= 26, "{}", c.npcs.len());
+    assert!(c.methods.iter().filter(|m| !m.big).count() >= 23);
     assert_eq!(
         c.methods.iter().filter(|m| m.big).count(),
         4,
@@ -259,7 +259,7 @@ fn the_shipped_school_life_content_has_the_amount_this_slice_promises() {
     let c = Content::embedded().unwrap();
     assert!(c.subjects.len() >= 6, "{}", c.subjects.len());
     assert!(c.clubs.len() >= 4, "{}", c.clubs.len());
-    assert!(c.talks.len() >= 20, "{}", c.talks.len());
+    assert!(c.talks.len() >= 70, "{}", c.talks.len());
     assert!(c.arcs.len() >= 2, "{}", c.arcs.len());
     // Every subject has its own kind of puzzle.
     let kinds: std::collections::BTreeSet<&str> =

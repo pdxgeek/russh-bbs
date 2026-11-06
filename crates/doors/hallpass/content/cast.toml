@@ -540,3 +540,168 @@ place = "dorm"
 role = "cover"
 needs = ["standing:strays>=6"]
 cost = 0
+
+# ---- More students (content pass) ----
+
+[[npc]]
+id = "imogen"
+name = "Imogen Hale"
+role = "student"
+clique = "rowing_eight"
+title = "Cox of the Eight"
+home = "boathouse"
+watchful = 0
+prankable = false
+blurb = "The smallest person in the boat and by far the loudest."
+[[npc.schedule]]
+when = "class"
+place = "car_park"
+[[npc.schedule]]
+when = "after"
+place = "boathouse"
+[[npc.schedule]]
+when = "lunch"
+place = "main_hall"
+[[npc.schedule]]
+when = "evening"
+place = "common_room"
+[[npc.schedule]]
+when = "night"
+place = "dorm"
+
+[[npc]]
+id = "jonty"
+name = "Jonty Fairweather"
+role = "student"
+clique = "ink_society"
+title = "Cartoonist for the paper"
+home = "library"
+watchful = 0
+prankable = false
+blurb = "Draws everybody exactly as they fear they look."
+[[npc.schedule]]
+when = "class"
+place = "admin_corridor"
+[[npc.schedule]]
+when = "free"
+place = "library"
+[[npc.schedule]]
+when = "after"
+place = "library"
+[[npc.schedule]]
+when = "evening"
+place = "common_room"
+[[npc.schedule]]
+when = "lunch"
+place = "quad"
+[[npc.schedule]]
+when = "night"
+place = "dorm"
+
+[[npc]]
+id = "kit"
+name = "Kit Varga"
+role = "student"
+clique = "the_bench"
+title = "Has a note for everything"
+home = "quad"
+watchful = 0
+prankable = false
+blurb = "Has been excused from more lessons than most people have attended."
+[[npc.schedule]]
+when = "class"
+place = "car_park"
+[[npc.schedule]]
+when = "free"
+place = "quad"
+[[npc.schedule]]
+when = "lunch"
+place = "quad"
+[[npc.schedule]]
+when = "after"
+place = "grounds"
+[[npc.schedule]]
+when = "night"
+place = "dorm"
+
+[[npc]]
+id = "dot"
+name = "Dorothy Mercer"
+role = "student"
+clique = "the_bench"
+title = "Runs the dormitory black market"
+home = "common_room"
+watchful = 0
+prankable = false
+blurb = "Goes by Dot. Everything has a price, usually two biscuits."
+[[npc.schedule]]
+when = "class"
+place = "car_park"
+[[npc.schedule]]
+when = "free"
+place = "common_room"
+[[npc.schedule]]
+when = "after"
+place = "tuck_shop"
+[[npc.schedule]]
+when = "evening"
+place = "common_room"
+[[npc.schedule]]
+when = "night"
+place = "dorm"
+[[npc.ally]]
+role = "distraction"
+needs = ["standing:the_bench>=10", "not:trait:teachers_pet"]
+cost = 3
+
+[[npc]]
+id = "priya"
+name = "Priya Venkat"
+role = "student"
+clique = "lamplighters"
+title = "Junior prefect"
+home = "common_room"
+watchful = 0
+prankable = false
+blurb = "Newly badged, and not sure the badge fits."
+[[npc.schedule]]
+when = "class"
+place = "admin_corridor"
+[[npc.schedule]]
+when = "lunch"
+place = "main_hall"
+[[npc.schedule]]
+when = "free"
+place = "library"
+[[npc.schedule]]
+when = "evening"
+place = "common_room"
+[[npc.schedule]]
+when = "night"
+place = "dorm"
+
+[[npc]]
+id = "nell"
+name = "Nell Ashby"
+role = "student"
+clique = "workshop"
+title = "Solders things, and sometimes her sleeve"
+home = "workshop"
+watchful = 0
+prankable = false
+blurb = "Will lend you a screwdriver and a lecture about using it."
+[[npc.schedule]]
+when = "class"
+place = "car_park"
+[[npc.schedule]]
+when = "free"
+place = "workshop"
+[[npc.schedule]]
+when = "after"
+place = "workshop"
+[[npc.schedule]]
+when = "lunch"
+place = "main_hall"
+[[npc.schedule]]
+when = "night"
+place = "dorm"
