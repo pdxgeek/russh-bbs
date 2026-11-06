@@ -1,0 +1,24 @@
+┌───────────────────────────────── russh-bbs ──────────────────────────────────┐
+│Saltmarch                                                                     │
+│                                                                              │
+│ ⌂ founder  day 1 of season 1            turns ██████████ 30/30  ◈ 40 tallies │
+│ ≈ TIDE ██████████░┃░░░░  66 ↓ low in 3h44 (9)  spring tides  ▲ HIGH WATER ▲  │
+│╭ The Tidecourt ─────────────────────────────────────────────────────────────╮│
+││            ·       ·        ··                     *         ·          ·  ││
+││▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁·▁▁▁▁·▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁●▁▁▁▁▁·▁▁·▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁*▁▁·▁││
+││████       ████       ████       ████       ████       ████       ████      ││
+││≈~≈~≈~≈~≈≈≈≈≈≈≈≈≈≈≈≈≈~≈≈≈≈≈≈~≈≈~≈~≈≈≈≈≈≈≈~≈~~~≈≈≈≈≈~≈≈≈≈≈~≈~≈≈≈~≈≈≈~~≈≈~≈≈≈≈││
+│╰────────────────────────────────────────────────────────────────────────────╯│
+│╭ Where to ───────────────────────────╮╭ Notices ────────────────────────────╮│
+││ a The market: prices, sales and p~  ││The Tidecourt stands on stilts where ││
+││ b The exchange: trade with other ~  ││no tide has ever reached it.         ││
+││ c The gate: send a raid             ││The market is quiet: prices are where││
+││ d Pacts and diplomacy               ││they were yesterday.                 ││
+││ e The boards: contracts and stand~  ││1 hold is registered this season; you││
+││ f The journal: the chains you hav~  ││stand 1st.                           ││
+││ g Causeway toll: 2 tallies (press~  ││                                     ││
+││ h The post: letters and notices     ││                                     ││
+││ i The league table                  ││                                     ││
+│╰─────────────────────────────────1/11╯╰─────────────────────────────────────╯│
+│ » The market: prices, sales and purchases               up/down  Enter  Esc  │
+└──────────────────────────────────────────────────────────────────────────────┘

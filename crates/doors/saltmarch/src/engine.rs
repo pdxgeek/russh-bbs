@@ -157,6 +157,20 @@ pub enum Action {
         /// Where they mean to go.
         target: Option<(u8, u8)>,
     },
+    /// Set the toll the clan charges on the causeways it lays from now on (0 to 5).
+    SetToll {
+        /// Tallies.
+        toll: u8,
+    },
+    /// Take a contract from today's board.
+    TakeContract {
+        /// The contract template's id.
+        id: String,
+    },
+    /// Hand the contract in hand back.
+    GiveBackContract,
+    /// Hand over the goods a delivery contract asks for.
+    DeliverContract,
     /// Do something on the expedition.
     Go(TripAction),
 }
@@ -472,6 +486,17 @@ pub fn apply(
         Action::Depart { party, kit, target } => {
             trip::depart(env, clan, &party, kit, target, rng, &mut events)?;
         }
+        Action::SetToll { toll } => {
+            if toll > crate::story::TOLL_MAX {
+                return Err(ActionError::BadAmount);
+            }
+            clan.story.toll = toll;
+        }
+        Action::TakeContract { id } => {
+            crate::board::take(env.cat, clan, env.map.seed, env.day, &id, &mut events)?;
+        }
+        Action::GiveBackContract => crate::board::give_back(env.cat, clan, &mut events)?,
+        Action::DeliverContract => crate::board::deliver(env.cat, clan, rng, &mut events)?,
         Action::Go(act) => return trip::apply(env, clan, act),
         Action::Sluice { level } => {
             if !clan.hold.built(env.cat).any(|(_, b)| b.is_sluice()) {
@@ -1097,6 +1122,8 @@ fn night_output(env: &Env<'_>, clan: &Clan, plot: u8, trade: Trade) -> i32 {
 fn night(env: &Env<'_>, clan: &mut Clan, day: i64, rng: &mut DoorRng, events: &mut Vec<Event>) {
     let cat = env.cat;
     events.push(Event::Night { day });
+    // A contract past its last day lapses with the night.
+    crate::board::expire(cat, clan, day, events);
     // Production.
     let works: Vec<(u8, String)> = clan
         .hold

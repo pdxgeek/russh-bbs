@@ -1,0 +1,126 @@
+# Hand-written chains for the Rakers' Guild. A chain is data over marks: a step is done when
+# the clan holds its mark, and the scenes in events-quests-a.toml set them.
+
+[[quest]]
+id = "brine-ledger"
+faction = "rakers"
+title = "The Brine Ledger"
+intro = "A guild ledger lies in a drowned counting house, and the pan-wives say Master Odo Vane has been shaving their weights for years. Nobody has seen the book. Somebody should."
+
+[[quest.step]]
+mark = "q-brine-ledger-one"
+text = "You found a tarred ledger in the drowned counting house. Master Vane's seal is on every page."
+
+[[quest.step]]
+mark = "q-brine-ledger-two"
+text = "Old Hesk, keeper of a Guild pan, swears the figures are false: his salt was weighed light for eleven years."
+
+[[quest.step]]
+mark = "q-brine-ledger-three"
+text = "The last page was missing. An eel-wife on the reedbeds had wrapped her catch in it, and you have it now."
+
+[[quest.end]]
+mark = "q-brine-ledger-end-expose"
+text = "You read the ledger out at the Tidecourt toll-post. Vane was fined. The Guild remembers who did it."
+
+[[quest.end]]
+mark = "q-brine-ledger-end-bury"
+text = "The ledger burned in a pan fire. The Guild keeps its master and its good name, and owes you for both."
+
+[[quest.end]]
+mark = "q-brine-ledger-end-sell"
+text = "You sold the ledger back to Master Vane at a fair price. Neither side thinks well of you."
+
+[[quest]]
+id = "last-pan"
+faction = "rakers"
+title = "The Last Pan"
+intro = "Tolliver's Pan is the oldest on the coast, and its crust has gone grey and bitter. Pan-wife Maren Tolliver cannot say why. She would pay in salt to find out, and in grudges if the answer is a bad one."
+
+[[quest.step]]
+mark = "q-last-pan-one"
+text = "You walked Tolliver's Pan with Maren. The crust is grey, the brine bitter, and the old brass sluice-wheel does not turn."
+
+[[quest.step]]
+mark = "q-last-pan-two"
+text = "The feeder channel is choked with silt to the brim. You cleared enough to see that something was driven into it."
+
+[[quest.step]]
+mark = "q-last-pan-three"
+text = "Surveyors' stakes from a Tidecourt syndicate stand in the flats. They have been moving the sluice stones."
+
+[[quest.end]]
+mark = "q-last-pan-end-sluice"
+text = "You rebuilt the sluice and the brine ran clean. Tolliver's Pan makes white salt again, and the Guild knows whose work it was."
+
+[[quest.end]]
+mark = "q-last-pan-end-sell"
+text = "You sold Tolliver's rights to the syndicate. Maren will not look at you, and the Court is pleased."
+
+[[quest.end]]
+mark = "q-last-pan-end-reeds"
+text = "You cut the dike and let the reeds have the pan. The Reed-folk sing about it. The Guild does not."
+
+[[quest]]
+id = "smiths-debt"
+faction = "rakers"
+title = "The Smith's Debt"
+intro = "Hobb Ketterell is dead, and the iron-factors Marrow and Vess have called in his debt against the last forge on the coast. His apprentice sits on the cold anvil and says nothing. Somebody could settle it, or take the forge."
+
+[[quest.step]]
+mark = "q-smiths-debt-one"
+text = "You stood at Ketterell's cold forge. A lead lien-tag hangs on the chain across the door, stamped by Marrow and Vess."
+
+[[quest.step]]
+mark = "q-smiths-debt-two"
+text = "In a drowned shop you found Ketterell's account book. Half the debt was paid, but the factors never wrote it down."
+
+[[quest.step]]
+mark = "q-smiths-debt-three"
+text = "Ketterell's last cask of iron lay in a wreck. It is worth part of the debt, whoever ends up owning it."
+
+[[quest.step]]
+mark = "q-smiths-debt-four"
+text = "Marrow and Vess's collector met you on the causeway. The assize sits in three days, and the lien-tag goes to it."
+
+[[quest.end]]
+mark = "q-smiths-debt-end-pay"
+text = "You paid what was owed and the lien-tag came off the chain. The forge is lit, and the Guild toasts you."
+
+[[quest.end]]
+mark = "q-smiths-debt-end-take"
+text = "You took the forge by right of salvage and its iron with it. The Guild calls it theft with a licence."
+
+[[quest.end]]
+mark = "q-smiths-debt-end-break"
+text = "You broke the lien before the assize. The Court is pleased, and the factors are not."
+
+[[quest]]
+id = "rakes-and-wrecks"
+faction = "rakers"
+title = "Rakes and Wrecks"
+intro = "A field of wrecks has surfaced at low water, and two gangs are camped on it. Guild rakers want it stripped by the rule. Wreckers, under Captain Sorrel Dunmore, want it left to whoever is quickest. Somebody will bleed."
+
+[[quest.step]]
+mark = "q-rakes-and-wrecks-one"
+text = "You walked the wreck field between two camps. Foreman Ansel Pike's rakers hold one end, Dunmore's wreckers the other."
+
+[[quest.step]]
+mark = "q-rakes-and-wrecks-two"
+text = "A green-shaded lantern was lighting boats onto the wrecks. You found it, and it was one of Pike's lamps."
+
+[[quest.step]]
+mark = "q-rakes-and-wrecks-three"
+text = "You sat at Captain Dunmore's table. Her grievance is real: the Guild burned her boat and called it an accident."
+
+[[quest.end]]
+mark = "q-rakes-and-wrecks-end-peace"
+text = "You brokered a peace. The field is split by lot, and both camps send you salt."
+
+[[quest.end]]
+mark = "q-rakes-and-wrecks-end-wreck"
+text = "You stood with the wreckers. Dunmore holds the field, and Pike's rakers will not forget it."
+
+[[quest.end]]
+mark = "q-rakes-and-wrecks-end-guild"
+text = "You stood with the Guild. Pike's rakers strip the field by the rule, and the wreckers have scattered."
