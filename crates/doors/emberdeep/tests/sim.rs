@@ -1135,6 +1135,7 @@ async fn a_season_of_eighteen_delvers() {
 
 /// The numbers the pull request reports: by calling, the economy, the social layer and the
 /// questlines.
+#[allow(clippy::cast_precision_loss, clippy::too_many_lines)]
 fn balance_report(
     labels: &[(&str, &str)],
     summaries: &[Summary],

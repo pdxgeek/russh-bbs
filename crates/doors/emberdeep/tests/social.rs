@@ -190,7 +190,7 @@ async fn a_stranger_carries_a_fallen_hero_home_and_is_thanked_once() {
     let key = key_for(&screen, "Carry ann home");
     b.press(&mut bo, &key).await;
     assert_eq!(b.hero(2).await.rescues.0, 1);
-    assert!(b.world().await.carried_home == 1);
+    assert_eq!(b.world().await.carried_home, 1);
     // The night passes. Ann wakes at home and pays her thanks out of her own purse.
     b.next_day().await;
     let (mut ann, env) = b.open(1, "ann").await;

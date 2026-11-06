@@ -482,10 +482,10 @@ impl Session {
                     Err(why) => self.absorb(vec![Event::Say(Tone::Dim, why.to_string())]),
                 }
             }
-            DoorKey::Char(ch) if !ch.is_control() => {
-                if buf.chars().count() < crate::social::EPITAPH_MAX {
-                    buf.push(ch);
-                }
+            DoorKey::Char(ch)
+                if !ch.is_control() && buf.chars().count() < crate::social::EPITAPH_MAX =>
+            {
+                buf.push(ch);
             }
             _ => {}
         }

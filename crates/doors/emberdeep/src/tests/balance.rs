@@ -127,7 +127,7 @@ fn every_quest_flag_pair_closes_a_door() {
 /// bot felled the Cold Furnace in a season.)
 #[test]
 fn the_endings_are_all_reachable_under_random_seasons() {
-    use crate::endings::{ENDINGS, VERDICTS, collective};
+    use crate::endings::{VERDICTS, collective};
     use russh_bbs_door::DoorRng;
     let c = content();
     let mut rng = DoorRng::from_seed(11);

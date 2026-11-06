@@ -17,7 +17,7 @@ const LISTED: usize = 6;
 
 impl Session {
     /// The company: who rides with the hero, who has invited them, and who could be invited.
-    pub(super) fn company_body(&self, game: &Game) -> (Vec<Line>, Vec<Entry>) {
+    pub(super) fn company_body(game: &Game) -> (Vec<Line>, Vec<Entry>) {
         let c = &game.world.commons;
         let me = game.hero.name.as_str();
         let mut head: Vec<Line> = Vec::new();
@@ -95,7 +95,7 @@ impl Session {
     }
 
     /// The duel ring: opt-in, capped, with a ladder.
-    pub(super) fn ring_body(&self, game: &Game) -> (Vec<Line>, Vec<Entry>) {
+    pub(super) fn ring_body(game: &Game) -> (Vec<Line>, Vec<Entry>) {
         let c = &game.world.commons;
         let me = game.hero.name.as_str();
         let s = &game.hero.social;
@@ -231,7 +231,7 @@ impl Session {
     }
 
     /// The Cold Furnace asks the one who felled its guardian.
-    pub(super) fn verdict_body(&self, game: &Game) -> (Vec<Line>, Vec<Entry>) {
+    pub(super) fn verdict_body(game: &Game) -> (Vec<Line>, Vec<Entry>) {
         let mut head: Vec<Line> = Vec::new();
         let mut menu = Menu::default();
         if !game.hero.story.verdict_due {
@@ -269,10 +269,10 @@ impl Session {
     /// What the social place shows (no title, no purse, no keys) and what it offers.
     pub(super) fn social_body(&self, game: &Game, spot: Spot) -> (Vec<Line>, Vec<Entry>) {
         let (lines, entries) = match spot {
-            Spot::Company => self.company_body(game),
-            Spot::Ring => self.ring_body(game),
+            Spot::Company => Self::company_body(game),
+            Spot::Ring => Self::ring_body(game),
             Spot::Journal => self.journal_body(game),
-            _ => self.verdict_body(game),
+            _ => Self::verdict_body(game),
         };
         // Every line fits the board's box.
         let lines = lines

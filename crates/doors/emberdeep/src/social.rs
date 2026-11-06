@@ -249,11 +249,11 @@ impl Commons {
             .count()
     }
 
-    pub(crate) fn thanks_note(rescued: &str, rescuer: &str, day: i64, amount: u32) -> Note {
+    pub(crate) fn thanks_note(from: &str, to: &str, day: i64, amount: u32) -> Note {
         Note {
-            id: format!("t:{rescued}:{day}"),
-            to: rescuer.to_owned(),
-            from: rescued.to_owned(),
+            id: format!("t:{from}:{day}"),
+            to: to.to_owned(),
+            from: from.to_owned(),
             kind: NoteKind::Thanks,
             amount,
             day,
@@ -261,6 +261,7 @@ impl Commons {
     }
 
     /// Apply a change. Idempotent. Returns a line for the board's news, if it is news.
+    #[allow(clippy::too_many_lines, reason = "one arm per kind of change")]
     pub(crate) fn apply(&mut self, change: &SocialChange) -> Option<String> {
         match change {
             SocialChange::Roster(m) => {
@@ -389,7 +390,6 @@ impl Commons {
                 self.parties[at].members.push(name.to_owned());
                 true
             }
-            Some(_) => false,
             None if self.parties.len() < PARTIES_MAX => {
                 self.parties.push(Party {
                     leader: leader.to_owned(),
@@ -402,7 +402,7 @@ impl Commons {
                 });
                 true
             }
-            None => false,
+            Some(_) | None => false,
         };
         self.invites.retain(|i| i.to != name);
         ok.then(|| format!("{name} joined {leader}'s company."))
@@ -464,9 +464,10 @@ impl Commons {
     }
 
     fn bump(&mut self, name: &str, won: bool) {
-        let at = match self.ladder.iter().position(|r| r.name == name) {
-            Some(i) => i,
-            None => {
+        let at = if let Some(i) = self.ladder.iter().position(|r| r.name == name) {
+            i
+        } else {
+            {
                 if self.ladder.len() >= LADDER_MAX {
                     // The bottom of the ladder is dropped to make room.
                     if let Some(low) = self
@@ -626,6 +627,10 @@ impl Commons {
         }
     }
 
+    #[allow(
+        clippy::too_many_lines,
+        reason = "one block per list, read in the order written"
+    )]
     pub(crate) fn decode(r: &mut Reader<'_>) -> Option<Self> {
         let mut c = Self::default();
         let n = r.count()?;
