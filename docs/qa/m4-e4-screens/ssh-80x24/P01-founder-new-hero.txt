@@ -1,0 +1,24 @@
+┌───────────────────────────────── russh-bbs ──────────────────────────────────┐
+│Emberdeep                                                                     │
+│                                                                              │
+│◆ EMBERDEEP · A new hero · 1 of 3: choose a calling ━━━━━━━━━━━━━━━━━━━━━━━━━━│
+│╭ Callings ──────────╮╭──────────────────────────────────────────────────────╮│
+││▸ [1] Warden        ││Holds the line with halberd and grit, and carries more││
+││  [2] Cutthroat     ││home than anyone.                                     ││
+││  [3] Ember-Priest  ││                                                      ││
+││  [4] Runesmith     ││Might    ███████████████████████████████▌░░░░░░░░░░ 12││
+││  [5] Wanderer      ││Finesse  ████████████████████████▎░░░░░░░░░░░░░░░░░░ 9││
+││  [6] Duelist       ││Wits     █████████████████████▌░░░░░░░░░░░░░░░░░░░░░ 8││
+││                    ││Spirit   ████████████████████████▎░░░░░░░░░░░░░░░░░░ 9││
+││                    ││38 hit points                                         ││
+││                    ││Iron Halberd, Ringmail                                ││
+││                    ││Moves: Shield Bash, Hold the Line                     ││
+││                    ││Knacks: brawn                                         ││
+││                    ││First skills: Iron Skin, Broad Back, Grim Resolve     ││
+││                    ││                                                      ││
+││                    ││                                                      ││
+│╰────────────────────╯╰──────────────────────────────────────────────────────╯│
+│                                                                              │
+│                                                                              │
+│[1-6] choose  [Up/Down] browse  [Enter] pick  [Esc] leave                     │
+└──────────────────────────────────────────────────────────────────────────────┘

@@ -1,0 +1,2686 @@
+# Story arcs: six chains of scenes (ordinary transit events with family "arc"), each with
+# branches that close doors later and several endings. The order of the arcs is the order of their
+# ending codes in saves (arc * 8 + ending): gates, league, union, free, guild, church. Scenes are
+# appended to the event table after transit.toml; append new ones at the end of this file only.
+
+[[arc]]
+id = "gates"
+title = "The Gate Song"
+hint = "Pilgrims, scholars and old miners all say the song from the dead gates has gone flat. Someone is listening."
+blurb = "The gates were never broken, only locked, and every faction wants the key or wants it lost. You have to decide who hears the last note."
+branches = ["scored", "vow", "ringore", "ledger", "charts", "warded", "leaguekey", "blood", "truth"]
+
+[[arc.ending]]
+id = "open"
+title = "The Gates Open"
+text = "The note holds. Every dead gate wakes at once and a thousand hulls turn to look at each other. Prices fall, borders blur, and the lanes you knew belong to somebody else's maps."
+gates = true
+
+[[arc.ending]]
+id = "shut"
+title = "The Lock Holds"
+text = "The song settles into its low, patient note and the Church takes the vigil for good. The gates stay dark by choice now, not by accident. The frontier goes on being a frontier, and you are the reason."
+gates = true
+
+[[arc.ending]]
+id = "burn"
+title = "The Loom Burns"
+text = "The charge goes up, the core sings once, very high, and stops. Nothing will ever jump again. Some cheer. The pilgrims keep a silence the whole frontier can hear."
+gates = true
+
+[[arc.ending]]
+id = "crown"
+title = "One Hand on the Key"
+text = "The gates wake on one faction's terms, and the tariff is posted before the song fades. You made it happen, and you will read the toll board for the rest of your life."
+gates = true
+
+[[arc.ending]]
+id = "walk"
+title = "You Walk Away"
+text = "You leave the song to the next ship. The gates stay dark, the arguments go on, and sooner or later someone less careful than you comes to Anchorage."
+
+[[arc]]
+id = "league"
+title = "The Long Patrol"
+faction = "league"
+hint = "The League is stringing a patrol line across the frontier and needs hulls it can trust, or at least afford."
+blurb = "You ride the Long Patrol for the Station League. The line is long, the pay is real and not every order is clean."
+branches = ["oath", "strict", "mercy", "evidence", "truce", "warned", "bribed"]
+
+[[arc.ending]]
+id = "commission"
+title = "The Officer's Pin"
+text = "Commodore Varga pins grey cloth to your collar in front of the whole picket yard. You have a rank, a pension and a leash. The lanes are safer and a little smaller."
+
+[[arc.ending]]
+id = "charter"
+title = "The Warden's Charter"
+text = "The League gives you a patch of lane to keep and no one to report to. Haulers wave as they pass. The League gets quiet, the Union gets a fair hearing, and you get a long, uneven peace."
+
+[[arc.ending]]
+id = "reckoning"
+title = "The Reckoning"
+text = "The aide who sold the schedules is stripped of rank in front of the picket yard. The League owes you a debt it will never admit to, and the Free Captains remember the name on the file."
+
+[[arc.ending]]
+id = "dark"
+title = "Gone Dark"
+text = "You leave the League's service with the ship, the pay stub and whatever you learned on the way. Nobody comes after you. That is its own kind of message."
+
+[[arc]]
+id = "union"
+title = "The Deep Strike"
+faction = "miners"
+hint = "The Miners' Union is bleeding wages and talking strike. They need ships that can keep a camp fed."
+blurb = "The deep strike is on. The camps need food, the stewards need friends, and the Company has a better offer than either."
+branches = ["committee", "ran", "sabotage", "hardline", "parley", "informer"]
+
+[[arc.ending]]
+id = "charter"
+title = "The Miners' Charter"
+text = "The Company folds. The Union gets two seats on the board and the fever ward reopens on Deep Nine. For one season, the ore comes up at a fair price and everyone eats."
+
+[[arc.ending]]
+id = "settlement"
+title = "A Settlement"
+text = "Pay rises a little, safety rules a little less. Neither side is happy and both sign. The strike ends, the camps eat, and you are remembered kindly by the half who liked the deal."
+
+[[arc.ending]]
+id = "ashes"
+title = "Ashes in the Shaft"
+text = "The charges go off at Deep Nine. The Company stops mining there. The Union stops being the kind of Union that sits down at tables. The camps eat, for a while, from what is left."
+
+[[arc.ending]]
+id = "bought"
+title = "The Company's Man"
+text = "The Company pays on time and the Union never forgives. You carry a purse and a reputation, and the stewards turn their backs when you come into the hall."
+
+[[arc]]
+id = "free"
+title = "The Black Ledger"
+faction = "free"
+hint = "Havens whisper about a book of debts that lost its keeper, and a captain who wants it delivered."
+blurb = "Dray Orsk's Black Ledger holds every debt of honour the Free Captains ever swore. You are carrying it, and someone wants it."
+branches = ["reader", "blood", "oath", "handed", "turncoat"]
+
+[[arc.ending]]
+id = "burned"
+title = "Ashes of the Ledger"
+text = "The Black Ledger is ash and every debt of honour with it. The Free Captains owe nobody anything, and are finding out what that is worth."
+
+[[arc.ending]]
+id = "sold"
+title = "The Ledger Sold"
+text = "You sold the book. The League arrests the captains it names one at a time, over years, and every haven remembers who held the pen."
+
+[[arc.ending]]
+id = "keeper"
+title = "The Reckoner"
+text = "You sit in the Reckoner's chair. The book is yours to keep square, and the Free Captains pay their debts to a name now, not a flag."
+
+[[arc.ending]]
+id = "passed"
+title = "The Ledger Moves On"
+text = "You left the book to the moot. It finds another keeper, and another ledger of what you did not do."
+
+[[arc]]
+id = "guild"
+title = "The Blank Charts"
+faction = "guild"
+hint = "Guild surveyors mutter about a chart that has no business existing, in a hand that should be dead."
+blurb = "A dead surveyor's chart shows a system nobody ever sold. The Guild would like it forgotten. You would like to know."
+branches = ["copy", "report", "ally", "buried", "silence"]
+
+[[arc.ending]]
+id = "published"
+title = "The Open Chart"
+text = "You pushed the chart to every beacon on the lane. The blank on the map is filled in, the Cartographer-General is looking for work, and the Church is not speaking to you."
+
+[[arc.ending]]
+id = "sold"
+title = "The Chart Sold"
+text = "You sold the coordinates to the havens. The Guild's surveyors never forgave you, and the Free Captains are in places the maps still call empty."
+
+[[arc.ending]]
+id = "sealed"
+title = "The Chart Sealed"
+text = "The Church put the chart in a reliquary under a candle. It is safe, and nobody will ever read it, and you carried it there."
+
+[[arc.ending]]
+id = "filed"
+title = "The Chart Filed"
+text = "The chart sits in a drawer, where the Guild argues about it politely. A blank on a map is a promise nobody has to keep."
+
+[[arc]]
+id = "church"
+title = "The Quiet Vigil"
+faction = "church"
+hint = "The Quiet Church wants someone to sit a vigil at a gate that will not wake. Some of its flock want it woken."
+blurb = "Mother Quill keeps a vigil at a gate that will not wake. Brother Wren says it is only asleep. You are the one with a ship."
+branches = ["vigil", "heresy", "informer", "key", "heard"]
+
+[[arc.ending]]
+id = "kept"
+title = "The Gate Kept"
+text = "The candle burned down in your hands. The Reach stayed dark, the wardens slept, and the Church counted another generation of closed gate."
+
+[[arc.ending]]
+id = "opened"
+title = "The Gate Woken"
+text = "The lamps in the Reach went out for a long second. The Church calls it a catastrophe. The Opened call it a prayer. You carried the key."
+
+[[arc.ending]]
+id = "answered"
+title = "The Gate Answered"
+text = "You sang the phrase back and the gate answered once, then slept. Nobody agrees what it said. Everyone agrees you were there."
+
+[[arc.ending]]
+id = "unwatched"
+title = "The Unwatched Night"
+text = "You walked away from the ring. The candle guttered, or it did not. You never learned which, and the Church never asked you to."
+
+[[season_ending]]
+id = "tycoon"
+title = "Tycoon"
+text = "You ended the season among the richest."
+[[season_ending]]
+id = "solvent"
+title = "Solvent"
+text = "You paid what you owed and kept the ship."
+[[season_ending]]
+id = "pirate_king"
+title = "Pirate King"
+text = "Your name made haulers change course."
+[[season_ending]]
+id = "folk_hero"
+title = "Folk Hero"
+text = "The lanes remember who stood in the way."
+[[season_ending]]
+id = "cartographer"
+title = "Cartographer"
+text = "Your charts will outlast the frontier."
+[[season_ending]]
+id = "bankrupt"
+title = "Bankrupt"
+text = "The lender took what was left."
+[[season_ending]]
+id = "drifter"
+title = "Drifter"
+text = "You got through the season. That was something."
+
+[[event]]
+id = "gates_1_flat"
+family = "arc"
+title = "A Note Out of Tune"
+text = "At the research dock a Guild clerk catches your sleeve. Her instruments have logged the gate song for forty years, and for six weeks it has been sliding flat. She wants it recorded properly before it slides off the scale."
+weight = 2000
+arc = "gates"
+step = 1
+when = [{ kind = "arc_at", arc = "gates", step = 1 }, { kind = "economy", economy = "research" }]
+
+[[event.options]]
+label = "Have the scientist record the full score"
+req = [{ kind = "role", role = "scientist", min = 2 }]
+needs = "a scientist of skill 2 or better"
+[[event.options.outcomes]]
+weight = 80
+text = "Three nights of headphones and a very good pencil. Your scientist hands you the whole score, every bar, with a Guild stamp on the first page."
+effects = [{ kind = "arc_branch", arc = "gates", branch = "scored" }, { kind = "standing", faction = "guild", amount = 3 }, { kind = "xp", skill = "survey", amount = 8 }, { kind = "arc_step", arc = "gates" }]
+[[event.options.outcomes]]
+weight = 20
+text = "The signal slides while you record it. You get half a score and an apology."
+effects = [{ kind = "standing", faction = "guild", amount = 1 }, { kind = "arc_step", arc = "gates" }]
+
+[[event.options]]
+label = "Sweep the band with your scanner"
+req = [{ kind = "scanner", min = 1 }]
+needs = "a working scanner"
+[[event.options.outcomes]]
+weight = 60
+text = "The scanner holds the carrier long enough to log it end to end. It is not pretty, but it is complete."
+effects = [{ kind = "arc_branch", arc = "gates", branch = "scored" }, { kind = "xp", skill = "survey", amount = 4 }, { kind = "arc_step", arc = "gates" }]
+[[event.options.outcomes]]
+weight = 40
+text = "The scan returns static and a headache. The clerk thanks you for trying."
+effects = [{ kind = "arc_step", arc = "gates" }]
+
+[[event.options]]
+label = "Buy her notes for 400 credits"
+req = [{ kind = "cash", min = 400 }]
+needs = "400 credits"
+[[event.options.outcomes]]
+weight = 100
+text = "Her notes are a thick pile of figures you will never read. She pockets the money and looks at you as though you have been rude to a hymn."
+effects = [{ kind = "credits", amount = -400 }, { kind = "standing", faction = "guild", amount = 2 }, { kind = "arc_step", arc = "gates" }]
+
+[[event.options]]
+label = "Tell her you are not a chorister"
+[[event.options.outcomes]]
+weight = 100
+text = "She lets go of your sleeve. 'Somebody will have to listen,' she says, to nobody in particular."
+effects = [{ kind = "arc_step", arc = "gates" }]
+
+# ----
+
+[[event]]
+id = "gates_2_vigil"
+family = "arc"
+title = "The Vigil-Keeper's Request"
+text = "A Church vigil-keeper comes aboard at the next dock, lamp in hand, hood back. Keeper Aldous tends a dead gate called Anchorage, and says the song there has changed. He wants fuel, company and, he admits, a witness who is not of the faith."
+weight = 2000
+arc = "gates"
+step = 2
+when = [{ kind = "arc_at", arc = "gates", step = 2 }, { kind = "arc_wait", arc = "gates", days = 1 }]
+
+[[event.options]]
+label = "Take the vow of the lamp"
+req = [{ kind = "standing", faction = "church", min = 10 }]
+needs = "Church standing 10 or better"
+[[event.options.outcomes]]
+weight = 100
+text = "You hold the lamp and say the old words. It weighs less than you expected and asks more. Aldous marks your forehead with ash, and the pilgrims at the dock make room for you."
+effects = [{ kind = "credits", amount = -250 }, { kind = "standing", faction = "church", amount = 6 }, { kind = "arc_branch", arc = "gates", branch = "vow" }, { kind = "arc_step", arc = "gates" }]
+
+[[event.options]]
+label = "Sell him the score you recorded"
+req = [{ kind = "arc_branch", arc = "gates", branch = "scored" }]
+needs = "the gate score you recorded"
+[[event.options.outcomes]]
+weight = 100
+text = "He reads it with his lips moving, then closes his eyes. 'Bar nine is wrong,' he says. 'It was always wrong, and we kept singing it.' He pays what the vigil has."
+effects = [{ kind = "credits", amount = 700 }, { kind = "standing", faction = "church", amount = 4 }, { kind = "standing", faction = "guild", amount = -2 }, { kind = "arc_step", arc = "gates" }]
+
+[[event.options]]
+label = "Give him fuel for the road"
+[[event.options.outcomes]]
+weight = 70
+text = "He thanks you in three sentences and a blessing. The Church remembers fuel."
+effects = [{ kind = "fuel", amount = -12 }, { kind = "standing", faction = "church", amount = 3 }, { kind = "arc_step", arc = "gates" }]
+[[event.options.outcomes]]
+weight = 30
+text = "He takes the fuel and says nothing about the song. You are a donor, not a witness."
+effects = [{ kind = "fuel", amount = -12 }, { kind = "standing", faction = "church", amount = 1 }, { kind = "arc_step", arc = "gates" }]
+
+[[event.options]]
+label = "Say you keep a schedule"
+[[event.options.outcomes]]
+weight = 100
+text = "He smiles with great patience and leaves the lamp's smell in your cabin."
+effects = [{ kind = "standing", faction = "church", amount = -2 }, { kind = "arc_step", arc = "gates" }]
+
+# ----
+
+[[event]]
+id = "gates_3_ore"
+family = "arc"
+title = "The Steward's Quiet Cargo"
+text = "At the mining dock a Union steward, Dunmore, walks you past three guards to a locked shed. Inside are crates of a pale, ringing metal. Ten years of Union wages are built on it, he says, and a certain dead gate is thinner than it was."
+weight = 2000
+arc = "gates"
+step = 3
+when = [{ kind = "arc_at", arc = "gates", step = 3 }, { kind = "arc_wait", arc = "gates", days = 1 }, { kind = "economy", economy = "mining" }]
+
+[[event.options]]
+label = "Haul a crate to the refinery, no questions"
+req = [{ kind = "not", req = { kind = "arc_branch", arc = "gates", branch = "vow" } }]
+needs = "you have not taken the vow of the lamp"
+[[event.options.outcomes]]
+weight = 100
+text = "The crate rings against the bulkhead all the way to the refinery, a note you cannot place. Dunmore pays cash and does not meet your eye."
+effects = [{ kind = "credits", amount = 900 }, { kind = "standing", faction = "miners", amount = 6 }, { kind = "standing", faction = "church", amount = -3 }, { kind = "arc_branch", arc = "gates", branch = "ringore" }, { kind = "arc_step", arc = "gates" }]
+
+[[event.options]]
+label = "Have the engineer assay a sample"
+req = [{ kind = "role", role = "engineer", min = 2 }]
+needs = "an engineer of skill 2 or better"
+[[event.options.outcomes]]
+weight = 85
+text = "Your engineer holds a sliver to the lamp and goes quiet. 'That's coil,' she says. 'Gate coil. Somebody is eating a gate.' Dunmore pays you to keep it between friends."
+effects = [{ kind = "credits", amount = 500 }, { kind = "standing", faction = "miners", amount = 3 }, { kind = "arc_branch", arc = "gates", branch = "ringore" }, { kind = "arc_step", arc = "gates" }]
+[[event.options.outcomes]]
+weight = 15
+text = "The sliver bites your engineer's hand and the sample bag screams. Dunmore has to pull you both out of the shed, and then he pays you to forget it."
+effects = [{ kind = "hurt", who = "engineer", days = 3 }, { kind = "credits", amount = 500 }, { kind = "arc_branch", arc = "gates", branch = "ringore" }, { kind = "arc_step", arc = "gates" }]
+
+[[event.options]]
+label = "Tell the vigil-keepers what you saw"
+req = [{ kind = "arc_branch", arc = "gates", branch = "vow" }]
+needs = "the vow of the lamp"
+[[event.options.outcomes]]
+weight = 100
+text = "Aldous goes white and then very still. He asks only that you show him the shed. By the next shift the Union has a new problem called the Church."
+effects = [{ kind = "standing", faction = "church", amount = 6 }, { kind = "standing", faction = "miners", amount = -8 }, { kind = "arc_step", arc = "gates" }]
+
+[[event.options]]
+label = "Refuse and go back to your ship"
+[[event.options.outcomes]]
+weight = 100
+text = "Dunmore shrugs. The guards walk you to the dock as if it was their idea."
+effects = [{ kind = "standing", faction = "miners", amount = -3 }, { kind = "arc_step", arc = "gates" }]
+
+# ----
+
+[[event]]
+id = "gates_4_ledger"
+family = "arc"
+title = "A Log in a Red Scarf"
+text = "In a haven bar, a Free Captain in a red scarf slides a data stick across the table without looking at it. Sable Quill says it is the override log of the League convoy that was pushed through the gates the night they failed. She wants it gone from her pocket, and she wants paying."
+weight = 2000
+arc = "gates"
+step = 4
+when = [{ kind = "arc_at", arc = "gates", step = 4 }, { kind = "arc_wait", arc = "gates", days = 2 }, { kind = "economy", economy = "haven" }]
+
+[[event.options]]
+label = "Pay her 1500 for the stick"
+req = [{ kind = "cash", min = 1500 }]
+needs = "1500 credits"
+[[event.options.outcomes]]
+weight = 100
+text = "She counts it twice, once for greed and once for fear. The stick is warm, as if someone had been holding it a long time."
+effects = [{ kind = "credits", amount = -1500 }, { kind = "standing", faction = "free", amount = 3 }, { kind = "arc_branch", arc = "gates", branch = "ledger" }, { kind = "arc_step", arc = "gates" }]
+
+[[event.options]]
+label = "Call in a favour"
+req = [{ kind = "standing", faction = "free", min = 15 }]
+needs = "Free Captains standing 15 or better"
+[[event.options.outcomes]]
+weight = 100
+text = "'You've stood by Free hulls,' Quill says. 'So you get a discount. Nothing, and a debt.' The stick is yours, and so is the debt."
+effects = [{ kind = "standing", faction = "free", amount = -3 }, { kind = "arc_branch", arc = "gates", branch = "ledger" }, { kind = "arc_step", arc = "gates" }]
+
+[[event.options]]
+label = "Lift it while she drinks"
+req = [{ kind = "skill", skill = "stealth", min = 3 }]
+needs = "stealth of 3 or better"
+[[event.options.outcomes]]
+weight = 65
+text = "Her hand never leaves her cup. Yours leaves with the stick. The bar is loud and so are you, in a quiet way."
+effects = [{ kind = "xp", skill = "stealth", amount = 8 }, { kind = "standing", faction = "free", amount = -4 }, { kind = "arc_branch", arc = "gates", branch = "ledger" }, { kind = "arc_step", arc = "gates" }]
+[[event.options.outcomes]]
+weight = 35
+text = "Quill's hand closes on your wrist, kindly. Two of her crew walk you to the dock, and one of them charges for the courtesy."
+effects = [{ kind = "credits", amount = -300 }, { kind = "standing", faction = "free", amount = -6 }, { kind = "arc_step", arc = "gates" }]
+
+[[event.options]]
+label = "Trade her a hold of contraband"
+req = [{ kind = "contraband", tons = 6 }]
+needs = "6 t of contraband aboard"
+[[event.options.outcomes]]
+weight = 100
+text = "She does the sum with a smile and her crew empty your hold in nine minutes. The stick lands in your hand like a coin."
+effects = [{ kind = "lose_contraband", pct = 100 }, { kind = "standing", faction = "free", amount = 4 }, { kind = "arc_branch", arc = "gates", branch = "ledger" }, { kind = "arc_step", arc = "gates" }]
+
+[[event.options]]
+label = "Say it is none of your business"
+[[event.options.outcomes]]
+weight = 100
+text = "Quill pockets the stick and orders another round. 'Somebody's business, then,' she says."
+effects = [{ kind = "arc_step", arc = "gates" }]
+
+# ----
+
+[[event]]
+id = "gates_5_override"
+family = "arc"
+title = "The Commander's Table"
+text = "Commander Hask of the Station League asks you aboard his picket. He has heard you have been asking about the convoy that went through the gates. He pours two cups of something that is not coffee, and says the Navy is not the villain of this story, though it may be in the room."
+weight = 2000
+arc = "gates"
+step = 5
+when = [{ kind = "arc_at", arc = "gates", step = 5 }, { kind = "arc_wait", arc = "gates", days = 1 }, { kind = "economy", economy = "military" }]
+
+[[event.options]]
+label = "Lay the ledger on his table"
+req = [{ kind = "arc_branch", arc = "gates", branch = "ledger" }]
+needs = "the Free Captains' override log"
+[[event.options.outcomes]]
+weight = 70
+text = "Hask reads for a long time. Then he opens a drawer and takes out a plain steel key. 'The override,' he says. 'Take it where I cannot be asked about it.' A cheque comes out of the same drawer."
+effects = [{ kind = "credits", amount = 1500 }, { kind = "standing", faction = "league", amount = -6 }, { kind = "arc_branch", arc = "gates", branch = "leaguekey" }, { kind = "arc_step", arc = "gates" }]
+bonus = [{ req = { kind = "role", role = "face", min = 2 }, add = 20 }]
+[[event.options.outcomes]]
+weight = 30
+text = "Hask reads, nods and presses a button. Two marines walk you to a cell for the better part of a week. You get your ship back. You do not get the log."
+effects = [{ kind = "days", amount = 3 }, { kind = "credits", amount = -400 }, { kind = "standing", faction = "league", amount = -10 }, { kind = "arc_step", arc = "gates" }]
+
+[[event.options]]
+label = "Accept a League commission"
+req = [{ kind = "standing", faction = "league", min = 15 }]
+needs = "League standing 15 or better"
+[[event.options.outcomes]]
+weight = 100
+text = "Hask takes your hand in both of his. The key is in a velvet pouch, which he treats as a joke and does not laugh at. 'Hold it,' he says. 'Do not use it.'"
+effects = [{ kind = "credits", amount = 600 }, { kind = "standing", faction = "league", amount = 6 }, { kind = "arc_branch", arc = "gates", branch = "leaguekey" }, { kind = "arc_step", arc = "gates" }]
+
+[[event.options]]
+label = "Take the key by force"
+req = [{ kind = "weapons", min = 4 }]
+needs = "weapons power 4 or better"
+[[event.options.outcomes]]
+weight = 60
+text = "The scuffle is short. By the time the picket's marines know the key is gone you are in the dark with it in your fist and a gun at your back."
+effects = [{ kind = "standing", faction = "league", amount = -12 }, { kind = "arc_branch", arc = "gates", branch = "leaguekey" }, { kind = "arc_branch", arc = "gates", branch = "blood" }, { kind = "combat", enemy = "picket" }, { kind = "arc_step", arc = "gates" }]
+[[event.options.outcomes]]
+weight = 40
+text = "Hask is faster than he looks. The picket cuts you off and you fight your way to open space with nothing to show for it."
+effects = [{ kind = "standing", faction = "league", amount = -12 }, { kind = "arc_branch", arc = "gates", branch = "blood" }, { kind = "combat", enemy = "picket" }, { kind = "arc_step", arc = "gates" }]
+
+[[event.options]]
+label = "Offer to serve as a civilian witness"
+[[event.options.outcomes]]
+weight = 100
+text = "Hask nods like a man hearing a bell he had hoped not to hear. He sends you off with a letter of passage and the feeling of having been weighed."
+effects = [{ kind = "credits", amount = 200 }, { kind = "standing", faction = "league", amount = 2 }, { kind = "arc_step", arc = "gates" }]
+
+# ----
+
+[[event]]
+id = "gates_6_charts"
+family = "arc"
+title = "The Sealed Shelf"
+text = "At a Guild archive, Archivist Pell leads you to a shelf behind glass. The original tuning charts for the gate network sit there, withheld under a rule older than she is. Someone worked out what the charts could do, she says, and was frightened."
+weight = 2000
+arc = "gates"
+step = 6
+when = [{ kind = "arc_at", arc = "gates", step = 6 }, { kind = "arc_wait", arc = "gates", days = 1 }, { kind = "economy", economy = "research" }]
+
+[[event.options]]
+label = "Rebuild the tuning from your score"
+req = [{ kind = "arc_branch", arc = "gates", branch = "scored" }, { kind = "role", role = "scientist", min = 2 }]
+needs = "the gate score and a scientist of skill 2"
+[[event.options.outcomes]]
+weight = 85
+text = "Your scientist lays the score beside the Guild's indexes and works until the numbers begin to answer back. By dawn you hold a chart in your own hand and your own words, which the rule does not cover."
+effects = [{ kind = "standing", faction = "guild", amount = 5 }, { kind = "xp", skill = "survey", amount = 10 }, { kind = "arc_branch", arc = "gates", branch = "charts" }, { kind = "arc_step", arc = "gates" }]
+[[event.options.outcomes]]
+weight = 15
+text = "The numbers answer back wrongly, and a clerk finds you at dawn with a chart that will not hold. Pell tears it in half, kindly."
+effects = [{ kind = "standing", faction = "guild", amount = 1 }, { kind = "arc_step", arc = "gates" }]
+
+[[event.options]]
+label = "Ask the Guild for access"
+req = [{ kind = "standing", faction = "guild", min = 20 }]
+needs = "Guild standing 20 or better"
+[[event.options.outcomes]]
+weight = 100
+text = "Pell unlocks the glass herself. 'Copy, do not take,' she says, and closes the room while you work."
+effects = [{ kind = "standing", faction = "guild", amount = 2 }, { kind = "arc_branch", arc = "gates", branch = "charts" }, { kind = "arc_step", arc = "gates" }]
+
+[[event.options]]
+label = "Board the archive barge by night"
+[[event.options.outcomes]]
+weight = 60
+text = "The archive barge is quiet in the way of locked rooms. You go in, with all that implies."
+effects = [{ kind = "standing", faction = "guild", amount = -6 }, { kind = "arc_branch", arc = "gates", branch = "charts" }, { kind = "board", derelict = "guild_archive" }, { kind = "arc_step", arc = "gates" }]
+[[event.options.outcomes]]
+weight = 40
+text = "A lamp comes on in the archive's dock before you reach the barge. The Guild fines you for loitering and thanks you for not doing worse."
+effects = [{ kind = "credits", amount = -500 }, { kind = "standing", faction = "guild", amount = -8 }, { kind = "arc_step", arc = "gates" }]
+
+[[event.options]]
+label = "Sell the Guild your score"
+req = [{ kind = "arc_branch", arc = "gates", branch = "scored" }]
+needs = "the gate score you recorded"
+[[event.options.outcomes]]
+weight = 100
+text = "Pell reads it standing and her face does something complicated. The Guild pays well for a thing it will lock in the same shelf you came to rob."
+effects = [{ kind = "credits", amount = 1800 }, { kind = "standing", faction = "guild", amount = 6 }, { kind = "arc_step", arc = "gates" }]
+
+[[event.options]]
+label = "Leave the shelf sealed"
+[[event.options.outcomes]]
+weight = 100
+text = "Pell locks the glass with a small sigh. 'Some doors are kinder shut,' she says. She does not sound as though she believes it."
+effects = [{ kind = "arc_step", arc = "gates" }]
+
+# ----
+
+[[event]]
+id = "gates_7_wardens"
+family = "arc"
+title = "The Wardens of Anchorage"
+text = "Anchorage lies where the lane runs thin: a dead gate, its ring half in shadow and half in white light. Three bright points detach from the ring and settle before your bow. The wardens do not hail. They wait, and the song in the speakers goes very quiet."
+weight = 2000
+arc = "gates"
+step = 7
+when = [{ kind = "arc_at", arc = "gates", step = 7 }, { kind = "arc_wait", arc = "gates", days = 2 }, { kind = "not", req = { kind = "hazard", hazard = "none" } }]
+
+[[event.options]]
+label = "Sing the full score"
+req = [{ kind = "arc_branch", arc = "gates", branch = "scored" }]
+needs = "the gate score you recorded"
+[[event.options.outcomes]]
+weight = 85
+text = "You key the score into the comm and the wardens lean in to listen. At bar nine they tilt, as if to correct you. You correct it. They bow, and the ring lets you through."
+effects = [{ kind = "standing", faction = "church", amount = 3 }, { kind = "xp", skill = "survey", amount = 6 }, { kind = "arc_branch", arc = "gates", branch = "warded" }, { kind = "arc_step", arc = "gates" }]
+[[event.options.outcomes]]
+weight = 15
+text = "Bar nine comes out wrong. The wardens' light turns white and the ring answers."
+effects = [{ kind = "scare", amount = 2 }, { kind = "combat", enemy = "gate_warden" }, { kind = "arc_step", arc = "gates" }]
+
+[[event.options]]
+label = "Kneel under the vow of the lamp"
+req = [{ kind = "arc_branch", arc = "gates", branch = "vow" }]
+needs = "the vow of the lamp"
+[[event.options.outcomes]]
+weight = 100
+text = "Aldous's lamp, hung in your cabin, comes on by itself. The wardens bow to it, and then to you. 'Keeper,' one says, in a voice like a cold bell."
+effects = [{ kind = "standing", faction = "church", amount = 4 }, { kind = "arc_branch", arc = "gates", branch = "warded" }, { kind = "arc_step", arc = "gates" }]
+
+[[event.options]]
+label = "Hold the League key up to the lights"
+req = [{ kind = "arc_branch", arc = "gates", branch = "leaguekey" }]
+needs = "the League override key"
+[[event.options.outcomes]]
+weight = 40
+text = "The lights flinch from the key and stop. They remember who silenced them. For a long moment they weigh it, and then they let you pass, because the alternative is a conversation they do not want."
+effects = [{ kind = "standing", faction = "church", amount = -3 }, { kind = "arc_branch", arc = "gates", branch = "warded" }, { kind = "arc_step", arc = "gates" }]
+[[event.options.outcomes]]
+weight = 60
+text = "They remember the key. They remember the night. They come at you."
+effects = [{ kind = "standing", faction = "church", amount = -6 }, { kind = "scare", amount = 2 }, { kind = "combat", enemy = "gate_warden" }, { kind = "arc_step", arc = "gates" }]
+
+[[event.options]]
+label = "Run the gauntlet of the ring"
+[[event.options.outcomes]]
+weight = 30
+text = "The ring opens a hand's width as you cross the lamp-line. The wardens do not forgive, but they do not follow."
+effects = [{ kind = "hull", amount = -8 }, { kind = "xp", skill = "pilot", amount = 8 }, { kind = "arc_step", arc = "gates" }]
+bonus = [{ req = { kind = "role", role = "pilot", min = 3 }, add = 50 }]
+[[event.options.outcomes]]
+weight = 70
+text = "The ring clips you as you cross the lamp-line. The paint, the plating and a piece of your night's rest do not come through."
+effects = [{ kind = "hull", amount = -22 }, { kind = "scare", amount = 1 }, { kind = "arc_step", arc = "gates" }]
+
+[[event.options]]
+label = "Open fire first"
+req = [{ kind = "weapons", min = 3 }]
+needs = "weapons power 3 or better"
+[[event.options.outcomes]]
+weight = 100
+text = "You fire on the lights. The ring answers in the only language it has left."
+effects = [{ kind = "standing", faction = "church", amount = -8 }, { kind = "scare", amount = 1 }, { kind = "arc_branch", arc = "gates", branch = "blood" }, { kind = "combat", enemy = "gate_warden" }, { kind = "arc_step", arc = "gates" }]
+
+# ----
+
+[[event]]
+id = "gates_8_loom"
+family = "arc"
+title = "The Loom at the Heart"
+text = "Beyond the ring, the old gate's core is a room of glass and humming copper. A voice you cannot place says the gates were never broken. They were locked, from inside, by a design that fails safe. It is waiting for someone to sing them open."
+weight = 2000
+arc = "gates"
+step = 8
+when = [{ kind = "arc_at", arc = "gates", step = 8 }, { kind = "arc_wait", arc = "gates", days = 1 }]
+
+[[event.options]]
+label = "Listen to the whole song"
+req = [{ kind = "arc_branch", arc = "gates", branch = "warded" }]
+needs = "peace with the wardens"
+[[event.options.outcomes]]
+weight = 100
+text = "The wardens hold the room quiet while the Loom sings. It takes all night. At the end you understand the lock and the price: one true note, sung by a singer who stays, or never. You also understand it is a choice, and not yours alone."
+effects = [{ kind = "standing", faction = "church", amount = 3 }, { kind = "arc_branch", arc = "gates", branch = "truth" }, { kind = "arc_step", arc = "gates" }]
+
+[[event.options]]
+label = "Read the Guild's charts against the core"
+req = [{ kind = "arc_branch", arc = "gates", branch = "charts" }]
+needs = "the Guild's tuning charts"
+[[event.options.outcomes]]
+weight = 100
+text = "Chart and core agree to the third decimal. The Guild's secret was never a weapon. It was a price list: the note, the singer, the cost. You copy it down with hands that are not quite steady."
+effects = [{ kind = "xp", skill = "survey", amount = 10 }, { kind = "standing", faction = "guild", amount = 3 }, { kind = "arc_branch", arc = "gates", branch = "truth" }, { kind = "arc_step", arc = "gates" }]
+
+[[event.options]]
+label = "Check the League's log against the core"
+req = [{ kind = "arc_branch", arc = "gates", branch = "ledger" }]
+needs = "the Free Captains' override log"
+[[event.options.outcomes]]
+weight = 100
+text = "The log's timestamps match the core's own to the second. A League convoy, pushed through on override at three times rated load, and the Loom shut every gate it could reach. It is not a conspiracy so much as a bill."
+effects = [{ kind = "xp", skill = "survey", amount = 6 }, { kind = "standing", faction = "league", amount = -4 }, { kind = "arc_branch", arc = "gates", branch = "truth" }, { kind = "arc_step", arc = "gates" }]
+
+[[event.options]]
+label = "Strip a coil for ring-ore"
+req = [{ kind = "arc_branch", arc = "gates", branch = "ringore" }]
+needs = "the Union's ring-ore secret"
+[[event.options.outcomes]]
+weight = 75
+text = "The coil comes away with a sound like a sob. Your hold fills with pale metal worth more than your ship. Somewhere in the core, the lock is a little heavier."
+effects = [{ kind = "credits", amount = 2500 }, { kind = "standing", faction = "miners", amount = 6 }, { kind = "standing", faction = "church", amount = -6 }, { kind = "wear", amount = 20 }, { kind = "arc_step", arc = "gates" }]
+[[event.options.outcomes]]
+weight = 25
+text = "The coil bites. You get it out, and a piece of your deck with it."
+effects = [{ kind = "credits", amount = 1200 }, { kind = "hull", amount = -18 }, { kind = "standing", faction = "church", amount = -6 }, { kind = "arc_step", arc = "gates" }]
+
+[[event.options]]
+label = "Take what is loose and go"
+[[event.options.outcomes]]
+weight = 100
+text = "A few relic plates, a coil housing, a vase of something old. The Loom watches you take it, and says nothing."
+effects = [{ kind = "cargo", good = "gate_relics", tons = 2 }, { kind = "standing", faction = "church", amount = -2 }, { kind = "arc_step", arc = "gates" }]
+
+# ----
+
+[[event]]
+id = "gates_9_flags"
+family = "arc"
+title = "Five Flags at Anchorage"
+text = "When you come back into range, everyone has arrived. A League gunboat sits in the lane. A Union enforcer idles behind it. Free hulls loiter at the edge of the scope, and a Guild survey ship runs its lamps in a ring. The wardens say nothing. Somebody will do something. It had better not be all of them."
+weight = 2000
+arc = "gates"
+step = 9
+when = [{ kind = "arc_at", arc = "gates", step = 9 }, { kind = "arc_wait", arc = "gates", days = 2 }]
+
+[[event.options]]
+label = "Help the Free Captains set their charge"
+req = [{ kind = "arc_branch", arc = "gates", branch = "ledger" }, { kind = "standing", faction = "free", min = 10 }]
+needs = "the override log and Free Captains standing 10"
+[[event.options.outcomes]]
+weight = 85
+text = "Quill's people have the charge in a crate and the hands to place it. You clear the lane for them. The Loom sings once, very high, and the gates are done."
+effects = [{ kind = "credits", amount = 3000 }, { kind = "standing", faction = "free", amount = 10 }, { kind = "standing", faction = "church", amount = -12 }, { kind = "standing", faction = "league", amount = -8 }, { kind = "ending", arc = "gates", ending = "burn" }]
+[[event.options.outcomes]]
+weight = 15
+text = "The charge fizzles, and Quill curses in two languages. Everyone leaves the lane at once, before anyone thinks to start a fight."
+effects = [{ kind = "standing", faction = "free", amount = 3 }, { kind = "standing", faction = "church", amount = -3 }, { kind = "arc_step", arc = "gates" }]
+
+[[event.options]]
+label = "Talk them all down"
+req = [{ kind = "role", role = "face", min = 3 }]
+needs = "a face of skill 3 or better"
+[[event.options.outcomes]]
+weight = 70
+text = "Your face works the comm like a priest works a congregation. By the third hour the gunboat has gone to idle, the enforcer has a steward on the line, and the Free hulls have found business elsewhere."
+effects = [{ kind = "standing", faction = "church", amount = 2 }, { kind = "standing", faction = "guild", amount = 2 }, { kind = "standing", faction = "league", amount = 2 }, { kind = "standing", faction = "miners", amount = 2 }, { kind = "arc_step", arc = "gates" }]
+[[event.options.outcomes]]
+weight = 30
+text = "The Union enforcer hears something it does not like. A warning shot opens a seam in your plating, and the talking starts over."
+effects = [{ kind = "hull", amount = -16 }, { kind = "standing", faction = "miners", amount = -2 }, { kind = "arc_step", arc = "gates" }]
+
+[[event.options]]
+label = "Stand with the League gunboat"
+req = [{ kind = "arc_branch", arc = "gates", branch = "leaguekey" }]
+needs = "the League override key"
+[[event.options.outcomes]]
+weight = 70
+text = "The gunboat's captain nods at your key and keeps station off your wing. The Free hulls, seeing a navy cutter and a captain with the key, remember business elsewhere."
+effects = [{ kind = "standing", faction = "league", amount = 8 }, { kind = "standing", faction = "free", amount = -8 }, { kind = "arc_step", arc = "gates" }]
+[[event.options.outcomes]]
+weight = 30
+text = "The Free hulls do not remember business elsewhere. They remember how little they like the League."
+effects = [{ kind = "standing", faction = "league", amount = 8 }, { kind = "standing", faction = "free", amount = -10 }, { kind = "combat", enemy = "raider" }, { kind = "arc_step", arc = "gates" }]
+
+[[event.options]]
+label = "Stand with the Union steward"
+req = [{ kind = "arc_branch", arc = "gates", branch = "ringore" }, { kind = "standing", faction = "miners", min = 10 }]
+needs = "the ring-ore secret and Union standing 10"
+[[event.options.outcomes]]
+weight = 100
+text = "Dunmore brings the enforcer alongside and takes your hand on the open band. 'Not for the ore,' he says. 'Not only.' The Free hulls leave, then the gunboat. The lane belongs to those who stayed."
+effects = [{ kind = "standing", faction = "miners", amount = 8 }, { kind = "standing", faction = "league", amount = -6 }, { kind = "arc_step", arc = "gates" }]
+
+[[event.options]]
+label = "Park your hull between the core and the rest"
+[[event.options.outcomes]]
+weight = 65
+text = "A freighter is a poor shield and a very good argument. No one wants to fire through a tramp. The standoff narrows to a single question, and it is yours."
+effects = [{ kind = "hull", amount = -20 }, { kind = "standing", faction = "church", amount = 4 }, { kind = "standing", faction = "guild", amount = 3 }, { kind = "arc_step", arc = "gates" }]
+[[event.options.outcomes]]
+weight = 35
+text = "Somebody does fire through a tramp, to see what happens. Your crew find out."
+effects = [{ kind = "hull", amount = -35 }, { kind = "hurt", who = "random", days = 4 }, { kind = "standing", faction = "church", amount = 4 }, { kind = "standing", faction = "guild", amount = 3 }, { kind = "arc_step", arc = "gates" }]
+
+# ----
+
+[[event]]
+id = "gates_10_song"
+family = "arc"
+title = "The Last Bar"
+text = "Dawn at Anchorage. The core hums, the wardens hold, and the lane is yours to close or open. Everyone with a claim is in range of a message. The Loom does not rush you. It has waited a generation."
+weight = 2000
+arc = "gates"
+step = 10
+when = [{ kind = "arc_at", arc = "gates", step = 10 }, { kind = "arc_wait", arc = "gates", days = 1 }]
+
+[[event.options]]
+label = "Sing the true note"
+req = [{ kind = "arc_branch", arc = "gates", branch = "truth" }]
+needs = "the truth of the lock"
+[[event.options.outcomes]]
+weight = 45
+text = "The note goes out clean. Every gate on the frontier wakes at once, and a thousand hulls turn to look at each other. You are the last person to hear it as a song and not a toll."
+effects = [{ kind = "credits", amount = 2500 }, { kind = "standing", faction = "church", amount = 8 }, { kind = "standing", faction = "guild", amount = 6 }, { kind = "standing", faction = "free", amount = -6 }, { kind = "standing", faction = "miners", amount = -6 }, { kind = "ending", arc = "gates", ending = "open" }]
+bonus = [{ req = { kind = "arc_branch", arc = "gates", branch = "warded" }, add = 25 }, { req = { kind = "arc_branch", arc = "gates", branch = "charts" }, add = 25 }]
+[[event.options.outcomes]]
+weight = 35
+text = "The note holds, but it takes a toll. The core burns a plate off your hull and the strain puts a hand of your crew in a bunk for a week. Every gate wakes anyway."
+effects = [{ kind = "hull", amount = -28 }, { kind = "hurt", who = "random", days = 6 }, { kind = "credits", amount = 1500 }, { kind = "standing", faction = "church", amount = 8 }, { kind = "standing", faction = "guild", amount = 6 }, { kind = "ending", arc = "gates", ending = "open" }]
+[[event.options.outcomes]]
+weight = 20
+text = "Your voice breaks on the last bar. The Loom slams every door it has, with a sound that every ship on the frontier will remember. It will not open again."
+effects = [{ kind = "standing", faction = "church", amount = -4 }, { kind = "ending", arc = "gates", ending = "shut" }]
+
+[[event.options]]
+label = "Close the gates for good, for the Church"
+req = [{ kind = "arc_branch", arc = "gates", branch = "vow" }, { kind = "not", req = { kind = "arc_branch", arc = "gates", branch = "blood" } }]
+needs = "the vow of the lamp, with clean hands"
+[[event.options.outcomes]]
+weight = 100
+text = "Aldous's lamp is your witness. You speak the closing words and the Loom takes them. The wardens fold into the ring, the song settles, and the Church takes the vigil forever. The frontier will not thank you."
+effects = [{ kind = "credits", amount = 1200 }, { kind = "standing", faction = "church", amount = 12 }, { kind = "standing", faction = "free", amount = 4 }, { kind = "days", amount = 2 }, { kind = "ending", arc = "gates", ending = "shut" }]
+
+[[event.options]]
+label = "Give the League the key"
+req = [{ kind = "arc_branch", arc = "gates", branch = "leaguekey" }, { kind = "standing", faction = "league", min = 15 }]
+needs = "the override key and League standing 15"
+[[event.options.outcomes]]
+weight = 100
+text = "You press the steel key into Hask's palm. He does not look at it. The gates wake under a navy tariff, and every dock on the frontier learns what a toll costs."
+effects = [{ kind = "credits", amount = 3500 }, { kind = "standing", faction = "league", amount = 15 }, { kind = "standing", faction = "free", amount = -10 }, { kind = "standing", faction = "church", amount = -8 }, { kind = "ending", arc = "gates", ending = "crown" }]
+
+[[event.options]]
+label = "Give the Union the core"
+req = [{ kind = "arc_branch", arc = "gates", branch = "ringore" }, { kind = "standing", faction = "miners", min = 15 }]
+needs = "the ring-ore secret and Union standing 15"
+[[event.options.outcomes]]
+weight = 100
+text = "Dunmore takes the coil and a brass tag. 'Union-run,' he says. The gates wake, and every ore load on the frontier pays a tithe to the Union, and a few of its friends."
+effects = [{ kind = "credits", amount = 3000 }, { kind = "standing", faction = "miners", amount = 15 }, { kind = "standing", faction = "league", amount = -8 }, { kind = "standing", faction = "church", amount = -10 }, { kind = "ending", arc = "gates", ending = "crown" }]
+
+[[event.options]]
+label = "Turn the ship and walk away"
+[[event.options.outcomes]]
+weight = 100
+text = "The wardens let you pass. Behind you, the song carries on, alone, and a little more flat."
+effects = [{ kind = "ending", arc = "gates", ending = "walk" }]
+[[event]]
+id = "league_1_muster"
+family = "arc"
+title = "Muster at the Picket Yard"
+text = "Commodore Ines Varga stands in the picket yard with a map the size of a door. The Long Patrol, she says, is a chain of beacons and cutters from the core to the rim, and the League is short of hulls and long on lanes. She needs auxiliaries. She has noticed that you pay your dock fees."
+weight = 2000
+arc = "league"
+step = 1
+when = [{ kind = "arc_at", arc = "league", step = 1 }, { kind = "standing", faction = "league", min = 10 }, { kind = "economy", economy = "military" }]
+
+[[event.options]]
+label = "Swear the League oath"
+req = [{ kind = "standing", faction = "league", min = 15 }]
+needs = "League standing 15 or better"
+[[event.options.outcomes]]
+weight = 100
+text = "You say the words with a hand on the chart. The commodore pins a strip of grey cloth to your sleeve and a quartermaster hands you a ration card. It feels like a hull plate laid over your name."
+effects = [{ kind = "credits", amount = 500 }, { kind = "standing", faction = "league", amount = 6 }, { kind = "arc_branch", arc = "league", branch = "oath" }, { kind = "arc_step", arc = "league" }]
+
+[[event.options]]
+label = "Haggle terms as a contractor"
+req = [{ kind = "role", role = "face", min = 2 }]
+needs = "a face of skill 2 or better"
+[[event.options.outcomes]]
+weight = 70
+text = "Your face takes the commodore through four rounds of rates and comes out with a better one, and a clause you did not know you wanted."
+effects = [{ kind = "credits", amount = 900 }, { kind = "standing", faction = "league", amount = 2 }, { kind = "arc_step", arc = "league" }]
+[[event.options.outcomes]]
+weight = 30
+text = "She hears you out, nods, and pays what she would have paid anyway, which is not nothing."
+effects = [{ kind = "credits", amount = 450 }, { kind = "arc_step", arc = "league" }]
+
+[[event.options]]
+label = "Sign on at the standard rate"
+[[event.options.outcomes]]
+weight = 100
+text = "A page of small print and a signature. The rate is the rate."
+effects = [{ kind = "credits", amount = 400 }, { kind = "standing", faction = "league", amount = 3 }, { kind = "arc_step", arc = "league" }]
+
+# ----
+
+[[event]]
+id = "league_2_beat"
+family = "arc"
+title = "A Hauler With Medicine"
+text = "Your first beat: stop and search a Union-bound hauler on the Karst lane. Under the declared ore are forty crates of medicine with no customs stamp. The master says they are for a camp where the fever has started. Your orders say seize all unmarked cargo."
+weight = 2000
+arc = "league"
+step = 2
+when = [{ kind = "arc_at", arc = "league", step = 2 }, { kind = "arc_wait", arc = "league", days = 1 }]
+
+[[event.options]]
+label = "Seize it by the book"
+[[event.options.outcomes]]
+weight = 100
+text = "You seize it. The master watches you load it with a flat face. The commodore signs for the crates at the next dock and does not say what becomes of them."
+effects = [{ kind = "standing", faction = "league", amount = 5 }, { kind = "standing", faction = "miners", amount = -6 }, { kind = "arc_branch", arc = "league", branch = "strict" }, { kind = "arc_step", arc = "league" }]
+
+[[event.options]]
+label = "Stamp it cleared and look away"
+[[event.options.outcomes]]
+weight = 70
+text = "Your stamp comes down on the manifest. Nobody checks. The hauler goes on to the camp and a clinic opens a week early."
+effects = [{ kind = "standing", faction = "miners", amount = 4 }, { kind = "standing", faction = "league", amount = -2 }, { kind = "arc_branch", arc = "league", branch = "mercy" }, { kind = "arc_step", arc = "league" }]
+[[event.options.outcomes]]
+weight = 30
+text = "A comm officer notes the irregular stamp. The commodore says nothing, and the fine comes out of your next pay."
+effects = [{ kind = "credits", amount = -200 }, { kind = "standing", faction = "league", amount = -6 }, { kind = "standing", faction = "miners", amount = 3 }, { kind = "arc_branch", arc = "league", branch = "mercy" }, { kind = "arc_step", arc = "league" }]
+
+[[event.options]]
+label = "Have the medic check the crates"
+req = [{ kind = "role", role = "medic", min = 2 }]
+needs = "a medic of skill 2 or better"
+[[event.options.outcomes]]
+weight = 100
+text = "The medic reads the lot numbers. Real, in date, and unstamped only because the office that stamps them burned in the winter. You file it as an exemption and the master takes his hat off."
+effects = [{ kind = "standing", faction = "miners", amount = 4 }, { kind = "standing", faction = "league", amount = 1 }, { kind = "arc_branch", arc = "league", branch = "mercy" }, { kind = "arc_step", arc = "league" }]
+
+[[event.options]]
+label = "Charge a toll and look away"
+req = [{ kind = "not", req = { kind = "arc_branch", arc = "league", branch = "oath" } }]
+needs = "you have not sworn the League oath"
+[[event.options.outcomes]]
+weight = 100
+text = "The master pays what he has, which is more than he would like. You count it twice and forget the count."
+effects = [{ kind = "credits", amount = 700 }, { kind = "standing", faction = "league", amount = -4 }, { kind = "standing", faction = "miners", amount = 2 }, { kind = "arc_branch", arc = "league", branch = "bribed" }, { kind = "arc_step", arc = "league" }]
+
+# ----
+
+[[event]]
+id = "league_3_blockade"
+family = "arc"
+title = "A Union Blockade"
+text = "The Union has parked two tugs across the only lane into a League refinery and declared a stoppage. The refinery wants it cleared. The stewards want a hearing. Your cutter is the nearest hull, and the commodore's order is one line long: open the lane."
+weight = 2000
+arc = "league"
+step = 3
+when = [{ kind = "arc_at", arc = "league", step = 3 }, { kind = "arc_wait", arc = "league", days = 1 }, { kind = "economy", economy = "mining" }]
+
+[[event.options]]
+label = "Break the line by force"
+req = [{ kind = "weapons", min = 3 }]
+needs = "weapons power 3 or better"
+[[event.options.outcomes]]
+weight = 70
+text = "The enforcer behind the tugs does not wait for the argument to finish. It comes through the line, guns first."
+effects = [{ kind = "standing", faction = "league", amount = 6 }, { kind = "standing", faction = "miners", amount = -8 }, { kind = "arc_branch", arc = "league", branch = "strict" }, { kind = "combat", enemy = "enforcer" }, { kind = "arc_step", arc = "league" }]
+[[event.options.outcomes]]
+weight = 30
+text = "The tugs scatter after the first warning burst, grumbling in four languages. The lane is open and nobody has died, yet."
+effects = [{ kind = "standing", faction = "league", amount = 4 }, { kind = "standing", faction = "miners", amount = -5 }, { kind = "arc_branch", arc = "league", branch = "strict" }, { kind = "arc_step", arc = "league" }]
+
+[[event.options]]
+label = "Meet the stewards and parley"
+[[event.options.outcomes]]
+weight = 50
+text = "The stewards agree to open the lane at dawn if the League sends a clerk to hear the grievances. It is a start. It may even be a thing."
+effects = [{ kind = "standing", faction = "miners", amount = 6 }, { kind = "standing", faction = "league", amount = 2 }, { kind = "arc_branch", arc = "league", branch = "truce" }, { kind = "arc_step", arc = "league" }]
+bonus = [{ req = { kind = "arc_branch", arc = "league", branch = "mercy" }, add = 30 }, { req = { kind = "role", role = "face", min = 2 }, add = 20 }]
+[[event.options.outcomes]]
+weight = 50
+text = "The steward spits on your boots. The stoppage holds, and you lose two days watching it."
+effects = [{ kind = "days", amount = 2 }, { kind = "standing", faction = "league", amount = -3 }, { kind = "arc_step", arc = "league" }]
+
+[[event.options]]
+label = "Run the cordon with the refinery's cargo"
+req = [{ kind = "role", role = "pilot", min = 2 }]
+needs = "a pilot of skill 2 or better"
+[[event.options.outcomes]]
+weight = 70
+text = "Your pilot threads between the tugs with a metre to spare on each side. The refinery gets its feed, and the Union gets a story."
+effects = [{ kind = "standing", faction = "league", amount = 4 }, { kind = "standing", faction = "miners", amount = -5 }, { kind = "xp", skill = "pilot", amount = 6 }, { kind = "arc_step", arc = "league" }]
+[[event.options.outcomes]]
+weight = 30
+text = "A tug's cable rakes your hull as you pass. The refinery still gets its feed."
+effects = [{ kind = "hull", amount = -15 }, { kind = "standing", faction = "league", amount = 2 }, { kind = "standing", faction = "miners", amount = -5 }, { kind = "arc_step", arc = "league" }]
+
+# ----
+
+[[event]]
+id = "league_4_cadet"
+family = "arc"
+title = "A Cadet With Pages"
+text = "A frightened cadet catches you in the mess. Someone in the commodore's office, she whispers, has been selling picket schedules to the Free Captains for months. She has a copy of the pages. She does not trust anyone with a braid."
+weight = 2000
+arc = "league"
+step = 4
+when = [{ kind = "arc_at", arc = "league", step = 4 }, { kind = "arc_wait", arc = "league", days = 2 }]
+
+[[event.options]]
+label = "Take the pages to safe keeping"
+req = [{ kind = "not", req = { kind = "arc_branch", arc = "league", branch = "bribed" } }]
+needs = "you have not taken a toll on the beat"
+[[event.options.outcomes]]
+weight = 100
+text = "You copy them and hide the copy where a League man would not look: inside a cheap sensor housing. The cadet breathes out for the first time in a week."
+effects = [{ kind = "xp", skill = "stealth", amount = 6 }, { kind = "arc_branch", arc = "league", branch = "evidence" }, { kind = "arc_step", arc = "league" }]
+
+[[event.options]]
+label = "Trace the leak with a sweep"
+req = [{ kind = "scanner", min = 2 }]
+needs = "a scanner of grade 2 or better"
+[[event.options.outcomes]]
+weight = 65
+text = "The sweep finds a relay in the aide's own quarters, tuned to a Free band. You log the frequency and the hour of every burst."
+effects = [{ kind = "xp", skill = "survey", amount = 6 }, { kind = "arc_branch", arc = "league", branch = "evidence" }, { kind = "arc_step", arc = "league" }]
+[[event.options.outcomes]]
+weight = 35
+text = "The sweep trips an alarm. Nobody says anything about it, which is worse."
+effects = [{ kind = "standing", faction = "league", amount = -4 }, { kind = "arc_step", arc = "league" }]
+
+[[event.options]]
+label = "Ask the cadet to burn the pages"
+req = [{ kind = "arc_branch", arc = "league", branch = "bribed" }]
+needs = "a toll you would rather stay quiet about"
+[[event.options.outcomes]]
+weight = 100
+text = "She stares at you, then burns them in the sink, one page at a time. Her eyes follow you out of the mess. You are not sure which of you was saved."
+effects = [{ kind = "standing", faction = "league", amount = -2 }, { kind = "scare", amount = 1 }, { kind = "arc_step", arc = "league" }]
+
+[[event.options]]
+label = "Tell the commodore at once"
+[[event.options.outcomes]]
+weight = 100
+text = "Varga listens with her hands flat on the desk. 'Leave it with me,' she says. Nothing happens, and the cadet looks at you as though you had sold her."
+effects = [{ kind = "standing", faction = "league", amount = 2 }, { kind = "arc_step", arc = "league" }]
+
+# ----
+
+[[event]]
+id = "league_5_haven"
+family = "arc"
+title = "Orders for Port Ochre"
+text = "The line wants the haven at Ochre closed: crews, black market and a few honest people who live above them. The order is a landing, a week of fighting. You have been asked to lead the screen. You have also noticed the haven has been ready for days."
+weight = 2000
+arc = "league"
+step = 5
+when = [{ kind = "arc_at", arc = "league", step = 5 }, { kind = "arc_wait", arc = "league", days = 1 }, { kind = "economy", economy = "haven" }]
+
+[[event.options]]
+label = "Lead the screen, as ordered"
+req = [{ kind = "weapons", min = 3 }]
+needs = "weapons power 3 or better"
+[[event.options.outcomes]]
+weight = 55
+text = "The haven's raiders come out to meet you in good order. It is a fair fight, which is the best thing you can say about it."
+effects = [{ kind = "standing", faction = "league", amount = 6 }, { kind = "standing", faction = "free", amount = -8 }, { kind = "arc_branch", arc = "league", branch = "strict" }, { kind = "combat", enemy = "raider" }, { kind = "arc_step", arc = "league" }]
+[[event.options.outcomes]]
+weight = 45
+text = "The haven has been busy: a corsair meets you at the lane with a boarding crew in the lock."
+effects = [{ kind = "standing", faction = "league", amount = 6 }, { kind = "standing", faction = "free", amount = -8 }, { kind = "arc_branch", arc = "league", branch = "strict" }, { kind = "combat", enemy = "corsair" }, { kind = "arc_step", arc = "league" }]
+
+[[event.options]]
+label = "Send a warning to the haven"
+req = [{ kind = "not", req = { kind = "arc_branch", arc = "league", branch = "oath" } }]
+needs = "you have not sworn the League oath"
+[[event.options.outcomes]]
+weight = 100
+text = "A short message on a band the haven's relay catches: 'Tuesday, dawn.' When the marines land there is nobody to fight. You are not thanked, which suits everyone."
+effects = [{ kind = "standing", faction = "free", amount = 6 }, { kind = "standing", faction = "league", amount = -8 }, { kind = "arc_branch", arc = "league", branch = "warned" }, { kind = "arc_step", arc = "league" }]
+
+[[event.options]]
+label = "Fault the cutter's coil in a quiet way"
+req = [{ kind = "role", role = "engineer", min = 2 }]
+needs = "an engineer of skill 2 or better"
+[[event.options.outcomes]]
+weight = 70
+text = "Your engineer introduces a fault in a coil nobody else knows how to find. The landing goes in a day late, and the haven is empty."
+effects = [{ kind = "standing", faction = "league", amount = -3 }, { kind = "standing", faction = "free", amount = 3 }, { kind = "arc_branch", arc = "league", branch = "warned" }, { kind = "arc_step", arc = "league" }]
+[[event.options.outcomes]]
+weight = 30
+text = "The fault is traced to your engineer's bench. Varga wants a word. She decides to like you anyway, and bills you for the coil."
+effects = [{ kind = "credits", amount = -300 }, { kind = "standing", faction = "league", amount = -6 }, { kind = "arc_step", arc = "league" }]
+
+[[event.options]]
+label = "Refuse the order"
+[[event.options.outcomes]]
+weight = 100
+text = "'On whose authority?' 'Mine.' The commodore looks at you for a long time and appoints a man who will do it. The haven burns in a quiet way."
+effects = [{ kind = "standing", faction = "league", amount = -6 }, { kind = "arc_branch", arc = "league", branch = "mercy" }, { kind = "arc_step", arc = "league" }]
+
+# ----
+
+[[event]]
+id = "league_6_inquiry"
+family = "arc"
+title = "The Court of Inquiry"
+text = "The League convenes a court of inquiry at the picket yard. The schedules were sold, and someone must answer. The court has called you because you were on the beat, at the blockade and at Ochre, and because auxiliaries are easy to blame."
+weight = 2000
+arc = "league"
+step = 6
+when = [{ kind = "arc_at", arc = "league", step = 6 }, { kind = "arc_wait", arc = "league", days = 1 }, { kind = "economy", economy = "military" }]
+
+[[event.options]]
+label = "Lay the evidence before the court"
+req = [{ kind = "arc_branch", arc = "league", branch = "evidence" }]
+needs = "the cadet's pages or the aide's relay"
+[[event.options.outcomes]]
+weight = 75
+text = "The court reads the pages, matches the relay, and sits very quiet. The aide is taken away within the hour. The commodore, who did not know, is told that she should have."
+effects = [{ kind = "standing", faction = "league", amount = 10 }, { kind = "credits", amount = 800 }, { kind = "arc_step", arc = "league" }]
+[[event.options.outcomes]]
+weight = 25
+text = "The court calls the evidence incomplete. The aide's friends make a note of your name."
+effects = [{ kind = "standing", faction = "league", amount = -4 }, { kind = "arc_step", arc = "league" }]
+
+[[event.options]]
+label = "Testify for the commodore"
+req = [{ kind = "arc_branch", arc = "league", branch = "oath" }]
+needs = "the League oath"
+[[event.options.outcomes]]
+weight = 100
+text = "You say what you saw: the commodore was always at her post. It is true, and it is exactly what the court wanted to hear."
+effects = [{ kind = "standing", faction = "league", amount = 6 }, { kind = "credits", amount = 300 }, { kind = "arc_step", arc = "league" }]
+
+[[event.options]]
+label = "Confess to taking a toll"
+req = [{ kind = "arc_branch", arc = "league", branch = "bribed" }]
+needs = "a toll you took on the beat"
+[[event.options.outcomes]]
+weight = 70
+text = "It is easier than it should be. The court fines you and marks your file. Not hanged, not praised, merely written down."
+effects = [{ kind = "credits", amount = -800 }, { kind = "standing", faction = "league", amount = -8 }, { kind = "arc_step", arc = "league" }]
+[[event.options.outcomes]]
+weight = 30
+text = "The court cannot spare an example, and you are the example. Fined, held for the better part of a week, and let go with a sentence that sounds like a promise."
+effects = [{ kind = "credits", amount = -1500 }, { kind = "days", amount = 3 }, { kind = "standing", faction = "league", amount = -14 }, { kind = "arc_step", arc = "league" }]
+
+[[event.options]]
+label = "Argue the line must be held"
+req = [{ kind = "arc_branch", arc = "league", branch = "strict" }]
+needs = "a hard line held on the beat"
+[[event.options.outcomes]]
+weight = 100
+text = "You tell the court the line was held because someone held it. Three officers nod. The fourth writes something down, and you are not sure it is good."
+effects = [{ kind = "standing", faction = "league", amount = 5 }, { kind = "credits", amount = 400 }, { kind = "standing", faction = "miners", amount = -4 }, { kind = "arc_step", arc = "league" }]
+
+[[event.options]]
+label = "Say nothing useful"
+[[event.options.outcomes]]
+weight = 100
+text = "You answer every question with a sentence of exactly the right length. The court lets you go with a nod and a pen-mark."
+effects = [{ kind = "standing", faction = "league", amount = -1 }, { kind = "arc_step", arc = "league" }]
+
+# ----
+
+[[event]]
+id = "league_7_flare"
+family = "arc"
+title = "The Flare at Beacon Nine"
+text = "A radiation flare rolls over Beacon Nine, the last link of the Long Patrol. Two ships are in the glare: a League picket with a failing shield and a Union tug that tried the shortcut for its own reasons. You can reach one of them before the flare peaks."
+weight = 2000
+arc = "league"
+step = 7
+when = [{ kind = "arc_at", arc = "league", step = 7 }, { kind = "arc_wait", arc = "league", days = 2 }, { kind = "not", req = { kind = "hazard", hazard = "none" } }]
+
+[[event.options]]
+label = "Reach the picket first"
+[[event.options.outcomes]]
+weight = 100
+text = "The picket's crew come across the lock in suits that tick like clocks. The tug's steward watches you go. You are not forgiven for it."
+effects = [{ kind = "standing", faction = "league", amount = 8 }, { kind = "standing", faction = "miners", amount = -6 }, { kind = "hull", amount = -6 }, { kind = "arc_step", arc = "league" }]
+
+[[event.options]]
+label = "Reach the Union tug"
+req = [{ kind = "arc_branch", arc = "league", branch = "truce" }]
+needs = "the stewards' trust from the blockade"
+[[event.options.outcomes]]
+weight = 100
+text = "The stewards come across with a stretcher and four children from the tug's school. They took the shortcut out of fear for them. The picket makes it on its own, mostly, and writes you up for the delay."
+effects = [{ kind = "standing", faction = "miners", amount = 10 }, { kind = "standing", faction = "league", amount = -4 }, { kind = "treat", amount = 2 }, { kind = "arc_step", arc = "league" }]
+
+[[event.options]]
+label = "Go for both, medic and engineer"
+req = [{ kind = "role", role = "medic", min = 2 }, { kind = "role", role = "engineer", min = 2 }]
+needs = "a medic and an engineer, both skill 2"
+[[event.options.outcomes]]
+weight = 55
+text = "Medic and engineer, one ship each, you at the lock between them. Both crews live, and nobody asks who gave the orders."
+effects = [{ kind = "standing", faction = "league", amount = 6 }, { kind = "standing", faction = "miners", amount = 6 }, { kind = "hurt", who = "random", days = 3 }, { kind = "arc_step", arc = "league" }]
+[[event.options.outcomes]]
+weight = 45
+text = "You get most of them out. The picket's shield collapses before the second lock is clear."
+effects = [{ kind = "hull", amount = -20 }, { kind = "scare", amount = 1 }, { kind = "standing", faction = "league", amount = 3 }, { kind = "standing", faction = "miners", amount = 3 }, { kind = "arc_step", arc = "league" }]
+
+[[event.options]]
+label = "Hold at range and relay both calls"
+[[event.options.outcomes]]
+weight = 60
+text = "You keep clear and relay both distress calls, as the rulebook demands. Both ships limp home on luck and the flare's temper."
+effects = [{ kind = "standing", faction = "league", amount = 1 }, { kind = "arc_step", arc = "league" }]
+[[event.options.outcomes]]
+weight = 40
+text = "The picket's captain and the tug's steward both remember where you were."
+effects = [{ kind = "standing", faction = "league", amount = -3 }, { kind = "standing", faction = "miners", amount = -3 }, { kind = "arc_step", arc = "league" }]
+
+# ----
+
+[[event]]
+id = "league_8_colours"
+family = "arc"
+title = "The Colours or the Door"
+text = "The Long Patrol is complete: beacons from core to rim, and a commodore who wants to know where you stand. The League offers three futures. A pin. A charter. Or whatever the inquiry makes of you. The lanes are quiet tonight. They will not be tomorrow."
+weight = 2000
+arc = "league"
+step = 8
+when = [{ kind = "arc_at", arc = "league", step = 8 }, { kind = "arc_wait", arc = "league", days = 2 }]
+
+[[event.options]]
+label = "Take the officer's pin"
+req = [{ kind = "arc_branch", arc = "league", branch = "oath" }, { kind = "standing", faction = "league", min = 30 }]
+needs = "the League oath and League standing 30"
+[[event.options.outcomes]]
+weight = 100
+text = "Varga pins the grey cloth to your collar in front of the whole yard. Your name goes on the muster roll under hers. You will never be entirely off duty again."
+effects = [{ kind = "credits", amount = 3000 }, { kind = "standing", faction = "league", amount = 10 }, { kind = "standing", faction = "miners", amount = -6 }, { kind = "ending", arc = "league", ending = "commission" }]
+
+[[event.options]]
+label = "Take an independent warden's charter"
+req = [{ kind = "arc_branch", arc = "league", branch = "truce" }]
+needs = "the truce you made with the stewards"
+[[event.options.outcomes]]
+weight = 60
+text = "The charter is a single sheet and a stamp. A patch of lane is yours to keep, Union and League both willing. Haulers dip their lamps as they pass."
+effects = [{ kind = "credits", amount = 2200 }, { kind = "standing", faction = "league", amount = 4 }, { kind = "standing", faction = "miners", amount = 6 }, { kind = "ending", arc = "league", ending = "charter" }]
+bonus = [{ req = { kind = "arc_branch", arc = "league", branch = "mercy" }, add = 40 }]
+[[event.options.outcomes]]
+weight = 40
+text = "The charter comes with strings: a quarterly report, a League clerk aboard, and a clause on contraband. It is still a patch of lane, and it is still yours."
+effects = [{ kind = "credits", amount = 1200 }, { kind = "standing", faction = "league", amount = 3 }, { kind = "standing", faction = "miners", amount = 3 }, { kind = "ending", arc = "league", ending = "charter" }]
+
+[[event.options]]
+label = "Carry the inquiry to the admiralty"
+req = [{ kind = "arc_branch", arc = "league", branch = "evidence" }]
+needs = "the evidence from the cadet or the relay"
+[[event.options.outcomes]]
+weight = 70
+text = "The admiralty reads the file standing up. The aide is stripped of rank in front of the yard, and a signed letter lands on your table with a seal you have only seen on posters."
+effects = [{ kind = "credits", amount = 2000 }, { kind = "standing", faction = "league", amount = 8 }, { kind = "standing", faction = "free", amount = -4 }, { kind = "ending", arc = "league", ending = "reckoning" }]
+[[event.options.outcomes]]
+weight = 30
+text = "The admiralty buries the file. You leave the yard with a warrant in your wake and a head start of half a day."
+effects = [{ kind = "credits", amount = 500 }, { kind = "standing", faction = "league", amount = -18 }, { kind = "standing", faction = "free", amount = 3 }, { kind = "ending", arc = "league", ending = "dark" }]
+
+[[event.options]]
+label = "Slip your lines and go dark"
+[[event.options.outcomes]]
+weight = 100
+text = "You leave quietly with the ship and the pay stub. A Free Captain's courier finds you at the next dock with an offer and a bottle."
+effects = [{ kind = "credits", amount = 2000 }, { kind = "standing", faction = "free", amount = 10 }, { kind = "standing", faction = "league", amount = -20 }, { kind = "ending", arc = "league", ending = "dark" }]
+bonus = [{ req = { kind = "arc_branch", arc = "league", branch = "warned" }, add = 200 }]
+[[event.options.outcomes]]
+weight = 100
+text = "You leave quietly with the ship and the pay stub, and nobody offers you anything at the next dock but a drink."
+effects = [{ kind = "credits", amount = 300 }, { kind = "standing", faction = "league", amount = -12 }, { kind = "ending", arc = "league", ending = "dark" }]
+[[event]]
+id = "union_1_hall"
+family = "arc"
+title = "The Hall on Karst Rock"
+text = "Steward Dunmore stands on a crate in the shaft hall with a hand-lettered list: wages cut twice, the fever ward shut, fuel tariffs doubled. The strike vote carries on six hundred hands. The Union needs ships that can keep a camp fed while the ore stops."
+weight = 2000
+arc = "union"
+step = 1
+when = [{ kind = "arc_at", arc = "union", step = 1 }, { kind = "standing", faction = "miners", min = 10 }, { kind = "economy", economy = "mining" }]
+
+[[event.options]]
+label = "Join the strike committee"
+req = [{ kind = "standing", faction = "miners", min = 20 }]
+needs = "Union standing 20 or better"
+[[event.options.outcomes]]
+weight = 100
+text = "Dunmore reads your name off the list and six hundred hands bang the benches once. Dues are a day's pay a week. You are a committee member, which means you are now someone to be blamed."
+effects = [{ kind = "credits", amount = -300 }, { kind = "standing", faction = "miners", amount = 6 }, { kind = "arc_branch", arc = "union", branch = "committee" }, { kind = "arc_step", arc = "union" }]
+
+[[event.options]]
+label = "Offer your hold for the camps"
+[[event.options.outcomes]]
+weight = 100
+text = "Dunmore writes your hull number on the supply list and pays you in strike scrip, which is worth something to the people who accept it."
+effects = [{ kind = "credits", amount = 200 }, { kind = "standing", faction = "miners", amount = 3 }, { kind = "arc_step", arc = "union" }]
+
+[[event.options]]
+label = "Offer your face to the stewards"
+req = [{ kind = "role", role = "face", min = 2 }]
+needs = "a face of skill 2 or better"
+[[event.options.outcomes]]
+weight = 100
+text = "The stewards need someone who can talk to a League clerk without shouting. Your face takes the job and a purse from the hardship fund."
+effects = [{ kind = "credits", amount = 300 }, { kind = "standing", faction = "miners", amount = 4 }, { kind = "arc_step", arc = "union" }]
+
+[[event.options]]
+label = "Say you haul for pay, not for causes"
+[[event.options.outcomes]]
+weight = 100
+text = "'Pay is a fine thing to haul for,' Dunmore says, in a voice that is not fine at all. A runner takes your hull number anyway."
+effects = [{ kind = "credits", amount = 400 }, { kind = "standing", faction = "miners", amount = -2 }, { kind = "arc_step", arc = "union" }]
+
+# ----
+
+[[event]]
+id = "union_2_supply"
+family = "arc"
+title = "Grain for Karst Rock"
+text = "The camp on Karst has three days of food. The League has declared the lane 'under review', which means a customs hawk on the only approach. Dunmore wants you to carry grain and water through. He asked a freighter and not a stranger with a stripe."
+weight = 2000
+arc = "union"
+step = 2
+when = [{ kind = "arc_at", arc = "union", step = 2 }, { kind = "arc_wait", arc = "union", days = 1 }]
+
+[[event.options]]
+label = "Carry 8 t of grain through the hawk"
+req = [{ kind = "good", good = "grain", tons = 8 }]
+needs = "8 t of grain aboard"
+[[event.options.outcomes]]
+weight = 60
+text = "The hawk's pilot reads your manifest, reads it again, and remembers a prior engagement. The camp eats."
+effects = [{ kind = "cargo", good = "grain", tons = -8 }, { kind = "standing", faction = "miners", amount = 8 }, { kind = "arc_branch", arc = "union", branch = "ran" }, { kind = "arc_step", arc = "union" }]
+[[event.options.outcomes]]
+weight = 40
+text = "The hawk is not amused. A boarding crew goes through your hold, the grain goes into the League's hold, and your name goes onto the League's list."
+effects = [{ kind = "cargo", good = "grain", tons = -8 }, { kind = "standing", faction = "league", amount = -6 }, { kind = "standing", faction = "miners", amount = 3 }, { kind = "arc_step", arc = "union" }]
+
+[[event.options]]
+label = "Hide supplies in the water tank"
+req = [{ kind = "role", role = "quartermaster", min = 2 }]
+needs = "a quartermaster of skill 2 or better"
+[[event.options.outcomes]]
+weight = 75
+text = "Your quartermaster builds a false wall in the water tank in under an hour. The hawk's scanner looks at the tank, sees water, and is bored."
+effects = [{ kind = "standing", faction = "miners", amount = 8 }, { kind = "xp", skill = "stealth", amount = 6 }, { kind = "arc_branch", arc = "union", branch = "ran" }, { kind = "arc_step", arc = "union" }]
+[[event.options.outcomes]]
+weight = 25
+text = "The hawk finds the false wall and a fifth of what was behind it."
+effects = [{ kind = "lose_cargo", pct = 20 }, { kind = "standing", faction = "league", amount = -4 }, { kind = "standing", faction = "miners", amount = 3 }, { kind = "arc_step", arc = "union" }]
+
+[[event.options]]
+label = "Run the hawk's approach at full burn"
+req = [{ kind = "skill", skill = "pilot", min = 3 }]
+needs = "your own piloting at 3 or better"
+[[event.options.outcomes]]
+weight = 60
+text = "You come in hot enough to blister the paint. The hawk turns to follow and the camp's gunners wave you down onto the pad."
+effects = [{ kind = "hull", amount = -6 }, { kind = "fuel", amount = -6 }, { kind = "standing", faction = "miners", amount = 6 }, { kind = "arc_branch", arc = "union", branch = "ran" }, { kind = "arc_step", arc = "union" }]
+[[event.options.outcomes]]
+weight = 40
+text = "The hawk lands a hit before you clear its range. You reach the camp holed and late."
+effects = [{ kind = "hull", amount = -20 }, { kind = "standing", faction = "miners", amount = 3 }, { kind = "arc_step", arc = "union" }]
+
+[[event.options]]
+label = "Say you have no room"
+[[event.options.outcomes]]
+weight = 100
+text = "Dunmore's runner nods once and writes something on the back of his hand."
+effects = [{ kind = "standing", faction = "miners", amount = -4 }, { kind = "arc_step", arc = "union" }]
+
+# ----
+
+[[event]]
+id = "union_3_scab"
+family = "arc"
+title = "The Company Hauler"
+text = "A Company hauler is moving ore off a struck rock under League escort, loaded with the work of people who put down their picks. Dunmore's runners say it carries the strike's death sentence. They ask you to stop it, any way you can."
+weight = 2000
+arc = "union"
+step = 3
+when = [{ kind = "arc_at", arc = "union", step = 3 }, { kind = "arc_wait", arc = "union", days = 1 }]
+
+[[event.options]]
+label = "Foul her drive in the dock"
+req = [{ kind = "role", role = "engineer", min = 2 }]
+needs = "an engineer of skill 2 or better"
+[[event.options.outcomes]]
+weight = 80
+text = "Your engineer goes aboard in a repair-crew badge and is out again in twenty minutes. The hauler's drive coughs once and goes cold. She will sit at the dock for a week."
+effects = [{ kind = "standing", faction = "miners", amount = 6 }, { kind = "standing", faction = "league", amount = -4 }, { kind = "arc_branch", arc = "union", branch = "sabotage" }, { kind = "arc_step", arc = "union" }]
+[[event.options.outcomes]]
+weight = 20
+text = "Dock police catch the work. Your engineer is questioned for six hours. Nothing sticks, and the hauler is back in service by morning."
+effects = [{ kind = "hurt", who = "engineer", days = 2 }, { kind = "standing", faction = "miners", amount = 1 }, { kind = "standing", faction = "league", amount = -3 }, { kind = "arc_step", arc = "union" }]
+
+[[event.options]]
+label = "Hail her master and talk"
+req = [{ kind = "role", role = "face", min = 2 }]
+needs = "a face of skill 2 or better"
+[[event.options.outcomes]]
+weight = 60
+text = "The master is a Union son by blood and a Company hauler by rent. You talk about his mother's rock until he decides, loudly, that his drive has a problem."
+effects = [{ kind = "standing", faction = "miners", amount = 5 }, { kind = "arc_branch", arc = "union", branch = "parley" }, { kind = "arc_step", arc = "union" }]
+[[event.options.outcomes]]
+weight = 40
+text = "He hears you out, thanks you politely and files the call with the League escort."
+effects = [{ kind = "standing", faction = "league", amount = 2 }, { kind = "standing", faction = "miners", amount = -2 }, { kind = "arc_step", arc = "union" }]
+
+[[event.options]]
+label = "Fire across her bow"
+req = [{ kind = "weapons", min = 3 }]
+needs = "weapons power 3 or better"
+[[event.options.outcomes]]
+weight = 100
+text = "A warning burst, and the hauler's master turns for the dock. The escort cutter does not."
+effects = [{ kind = "standing", faction = "miners", amount = 5 }, { kind = "standing", faction = "league", amount = -8 }, { kind = "arc_branch", arc = "union", branch = "hardline" }, { kind = "combat", enemy = "cutter" }, { kind = "arc_step", arc = "union" }]
+
+[[event.options]]
+label = "Say you do not fight the Company's rent"
+[[event.options.outcomes]]
+weight = 100
+text = "Dunmore's runner nods once and leaves. The hauler goes out on the evening tide."
+effects = [{ kind = "standing", faction = "miners", amount = -4 }, { kind = "arc_step", arc = "union" }]
+
+# ----
+
+[[event]]
+id = "union_4_shaft"
+family = "arc"
+title = "The Shaft at Deep Nine"
+text = "A shaft collapses at Deep Nine on the third day of the strike. Eleven are trapped, among them the camp's medic. The Company calls it Union sabotage. The Union calls it a Company shortcut. There is no time to find out who is lying."
+weight = 2000
+arc = "union"
+step = 4
+when = [{ kind = "arc_at", arc = "union", step = 4 }, { kind = "arc_wait", arc = "union", days = 1 }]
+
+[[event.options]]
+label = "Send your medic down"
+req = [{ kind = "role", role = "medic", min = 2 }]
+needs = "a medic of skill 2 or better"
+[[event.options.outcomes]]
+weight = 70
+text = "Your medic goes down on a rope with a bag and comes up eight hours later with four people who owe her their lives."
+effects = [{ kind = "standing", faction = "miners", amount = 8 }, { kind = "treat", amount = 2 }, { kind = "arc_step", arc = "union" }]
+[[event.options.outcomes]]
+weight = 30
+text = "A second fall pins your medic for an hour. Two live because of her, and she is carried up on a door."
+effects = [{ kind = "hurt", who = "medic", days = 6 }, { kind = "standing", faction = "miners", amount = 6 }, { kind = "arc_step", arc = "union" }]
+
+[[event.options]]
+label = "Cut the rubble with your engineer"
+req = [{ kind = "role", role = "engineer", min = 2 }]
+needs = "an engineer of skill 2 or better"
+[[event.options.outcomes]]
+weight = 70
+text = "Your engineer rigs a coil-cutter off the ship's power and the rock gives. Nine of the eleven walk out."
+effects = [{ kind = "wear", amount = 15 }, { kind = "standing", faction = "miners", amount = 10 }, { kind = "arc_step", arc = "union" }]
+[[event.options.outcomes]]
+weight = 30
+text = "A second slide. Seven walk out, and your engineer comes back grey-faced."
+effects = [{ kind = "hurt", who = "engineer", days = 4 }, { kind = "standing", faction = "miners", amount = 6 }, { kind = "arc_step", arc = "union" }]
+
+[[event.options]]
+label = "Call the League inspector as witness"
+req = [{ kind = "standing", faction = "league", min = 10 }]
+needs = "League standing 10 or better"
+[[event.options.outcomes]]
+weight = 100
+text = "The inspector reads the shoring log in the dust and writes 'Company negligence' in her own hand. It is the first time the Company has lost a ruling on this rock."
+effects = [{ kind = "standing", faction = "league", amount = 3 }, { kind = "standing", faction = "miners", amount = 6 }, { kind = "arc_branch", arc = "union", branch = "parley" }, { kind = "arc_step", arc = "union" }]
+
+[[event.options]]
+label = "Haul the wounded to the nearest clinic"
+[[event.options.outcomes]]
+weight = 100
+text = "Six stretchers in the cargo bay and a long burn to the nearest hospital dock. You do not dig, but you do not leave."
+effects = [{ kind = "fuel", amount = -10 }, { kind = "days", amount = 2 }, { kind = "standing", faction = "miners", amount = 5 }, { kind = "arc_step", arc = "union" }]
+
+# ----
+
+[[event]]
+id = "union_5_offer"
+family = "arc"
+title = "The Company's Better Offer"
+text = "A Company factor in a good coat finds you at the dock. He is not unpleasant. He wants to know what the committee will decide before the committee decides it, and he pays by the question. 'Tell me when they vote,' he says. 'I will tell you when to fly clear.'"
+weight = 2000
+arc = "union"
+step = 5
+when = [{ kind = "arc_at", arc = "union", step = 5 }, { kind = "arc_wait", arc = "union", days = 2 }]
+
+[[event.options]]
+label = "Sell him the date of the vote for 1800"
+[[event.options.outcomes]]
+weight = 100
+text = "You tell him the date. He pays in clean notes. You tell yourself it is only a date."
+effects = [{ kind = "credits", amount = 1800 }, { kind = "standing", faction = "miners", amount = -3 }, { kind = "standing", faction = "league", amount = 2 }, { kind = "arc_branch", arc = "union", branch = "informer" }, { kind = "arc_step", arc = "union" }]
+
+[[event.options]]
+label = "Tell Dunmore about the offer"
+[[event.options.outcomes]]
+weight = 100
+text = "Dunmore thanks you, then lies awake for a week wondering who else was offered."
+effects = [{ kind = "standing", faction = "miners", amount = 6 }, { kind = "arc_step", arc = "union" }]
+
+[[event.options]]
+label = "String him along with false dates"
+req = [{ kind = "role", role = "face", min = 2 }]
+needs = "a face of skill 2 or better"
+[[event.options.outcomes]]
+weight = 65
+text = "Your face sells him three false dates for the price of one true one. The factor writes them all down."
+effects = [{ kind = "credits", amount = 1200 }, { kind = "standing", faction = "miners", amount = 5 }, { kind = "arc_step", arc = "union" }]
+[[event.options.outcomes]]
+weight = 35
+text = "The factor checks his dates against a plain source. He is not pleasant any more, and he leaves with a refund."
+effects = [{ kind = "credits", amount = -400 }, { kind = "standing", faction = "miners", amount = -4 }, { kind = "standing", faction = "league", amount = -3 }, { kind = "arc_step", arc = "union" }]
+
+[[event.options]]
+label = "Report him to the League inspector"
+req = [{ kind = "standing", faction = "league", min = 10 }]
+needs = "League standing 10 or better"
+[[event.options.outcomes]]
+weight = 100
+text = "The inspector files a formal complaint. The factor's shipping line does not forget it, and neither does the Union."
+effects = [{ kind = "standing", faction = "league", amount = 3 }, { kind = "standing", faction = "miners", amount = 2 }, { kind = "credits", amount = 200 }, { kind = "arc_step", arc = "union" }]
+
+# ----
+
+[[event]]
+id = "union_6_vote"
+family = "arc"
+title = "The Vote at the Shaft Hall"
+text = "The committee meets to vote on the League's offer: a pay rise with no safety ruling, or hold out for both. Dunmore wants the hold-out. The younger stewards want something louder. A vote that goes the wrong way ends the strike. A vote that goes the other way ends something else."
+weight = 2000
+arc = "union"
+step = 6
+when = [{ kind = "arc_at", arc = "union", step = 6 }, { kind = "arc_wait", arc = "union", days = 1 }, { kind = "economy", economy = "mining" }]
+
+[[event.options]]
+label = "Speak for the hold-out"
+req = [{ kind = "arc_branch", arc = "union", branch = "committee" }]
+needs = "a seat on the strike committee"
+[[event.options.outcomes]]
+weight = 80
+text = "Your voice carries because you have paid dues in this hall. The hold-out wins by eleven hands."
+effects = [{ kind = "standing", faction = "miners", amount = 8 }, { kind = "arc_step", arc = "union" }]
+[[event.options.outcomes]]
+weight = 20
+text = "The hold-out wins, but a mob outside has other ideas and breaks the glass in your cabin before the stewards clear them."
+effects = [{ kind = "standing", faction = "miners", amount = 8 }, { kind = "hull", amount = -10 }, { kind = "arc_step", arc = "union" }]
+
+[[event.options]]
+label = "Speak for the old words and the charge"
+req = [{ kind = "arc_branch", arc = "union", branch = "hardline" }]
+needs = "blood already spilled for the strike"
+[[event.options.outcomes]]
+weight = 100
+text = "You say the old words about the rock that eats the careful. The young stewards roar. Dunmore does not look up."
+effects = [{ kind = "standing", faction = "miners", amount = 5 }, { kind = "standing", faction = "league", amount = -6 }, { kind = "arc_step", arc = "union" }]
+
+[[event.options]]
+label = "Read the cave-in ruling aloud"
+req = [{ kind = "arc_branch", arc = "union", branch = "parley" }]
+needs = "a ruling or a parley won earlier"
+[[event.options.outcomes]]
+weight = 100
+text = "You read the inspector's ruling slowly, letting each word land. The room goes quiet and then the hold-out has a reason."
+effects = [{ kind = "standing", faction = "miners", amount = 8 }, { kind = "standing", faction = "league", amount = 3 }, { kind = "arc_step", arc = "union" }]
+
+[[event.options]]
+label = "Sell the committee's line to the Company"
+req = [{ kind = "arc_branch", arc = "union", branch = "informer" }]
+needs = "the factor's money already taken"
+[[event.options.outcomes]]
+weight = 100
+text = "The vote goes against you in the hall and for the Company in the dock. The factor pays on time."
+effects = [{ kind = "credits", amount = 1500 }, { kind = "standing", faction = "miners", amount = -10 }, { kind = "arc_step", arc = "union" }]
+
+[[event.options]]
+label = "Sit at the back and keep quiet"
+[[event.options.outcomes]]
+weight = 50
+text = "The vote goes the way it goes. The hold-out wins narrowly, and nobody thanks the people who watched."
+effects = [{ kind = "standing", faction = "miners", amount = 2 }, { kind = "arc_step", arc = "union" }]
+[[event.options.outcomes]]
+weight = 50
+text = "The vote goes the way it goes. The offer carries narrowly, and the hall empties without a word."
+effects = [{ kind = "standing", faction = "miners", amount = -2 }, { kind = "arc_step", arc = "union" }]
+
+# ----
+
+[[event]]
+id = "union_7_cordon"
+family = "arc"
+title = "The Cordon at Karst Gate"
+text = "The strike reaches its hinge. League cutters hold the Karst lane. Union tugs hold the other end. Free Captains from the haven down the lane offer fire support for a cut of the next ore. Dunmore looks at you: 'Whose hull do you stand on, ours or anyone's?'"
+weight = 2000
+arc = "union"
+step = 7
+when = [{ kind = "arc_at", arc = "union", step = 7 }, { kind = "arc_wait", arc = "union", days = 2 }]
+
+[[event.options]]
+label = "Break the cordon with Free guns beside you"
+req = [{ kind = "arc_branch", arc = "union", branch = "hardline" }]
+needs = "blood already spilled for the strike"
+[[event.options.outcomes]]
+weight = 65
+text = "Free guns and your own keep the cutters busy. The tugs reach the cordon's edge and cut the lane open. It is loud, and it will be remembered."
+effects = [{ kind = "standing", faction = "miners", amount = 10 }, { kind = "standing", faction = "free", amount = 6 }, { kind = "standing", faction = "league", amount = -12 }, { kind = "combat", enemy = "cutter" }, { kind = "arc_step", arc = "union" }]
+[[event.options.outcomes]]
+weight = 35
+text = "A gunboat joins the cutters. You make it out, and the cordon holds."
+effects = [{ kind = "standing", faction = "miners", amount = 4 }, { kind = "standing", faction = "league", amount = -12 }, { kind = "combat", enemy = "gunboat" }, { kind = "arc_step", arc = "union" }]
+
+[[event.options]]
+label = "Stand in the lane and call a halt"
+req = [{ kind = "arc_branch", arc = "union", branch = "parley" }]
+needs = "a ruling or a parley won earlier"
+[[event.options.outcomes]]
+weight = 100
+text = "You hold the lane open on a neutral band while two enemies trade insults over the comm. Nobody wants to fire on a freighter. By dusk the cordon has an offer on the table."
+effects = [{ kind = "standing", faction = "miners", amount = 6 }, { kind = "standing", faction = "league", amount = 6 }, { kind = "arc_step", arc = "union" }]
+
+[[event.options]]
+label = "Run grain through the cordon again"
+req = [{ kind = "arc_branch", arc = "union", branch = "ran" }]
+needs = "a supply run you made earlier"
+[[event.options.outcomes]]
+weight = 100
+text = "The hawk's pilot who let you pass last time is on the cordon again, and does a poor job of looking. The grain gets in."
+effects = [{ kind = "standing", faction = "miners", amount = 8 }, { kind = "standing", faction = "league", amount = -4 }, { kind = "arc_step", arc = "union" }]
+
+[[event.options]]
+label = "Cut the cordon's relay buoy"
+req = [{ kind = "arc_branch", arc = "union", branch = "sabotage" }]
+needs = "sabotage already done for the strike"
+[[event.options.outcomes]]
+weight = 70
+text = "Your engineer reaches the relay buoy under cover of a Union feint. The cordon goes deaf for an hour, which is all the tugs need."
+effects = [{ kind = "standing", faction = "miners", amount = 10 }, { kind = "standing", faction = "league", amount = -8 }, { kind = "arc_step", arc = "union" }]
+[[event.options.outcomes]]
+weight = 30
+text = "The buoy has a watcher. You get the cut made and a burst through your plating for your trouble."
+effects = [{ kind = "hull", amount = -14 }, { kind = "standing", faction = "miners", amount = 6 }, { kind = "standing", faction = "league", amount = -6 }, { kind = "arc_step", arc = "union" }]
+
+[[event.options]]
+label = "Pay your dues and keep your hull clear"
+[[event.options.outcomes]]
+weight = 100
+text = "You pay your dues, you keep clear, and you watch the cordon on the scope like everyone else."
+effects = [{ kind = "credits", amount = -300 }, { kind = "standing", faction = "miners", amount = -4 }, { kind = "arc_step", arc = "union" }]
+
+# ----
+
+[[event]]
+id = "union_8_strike"
+family = "arc"
+title = "Day Sixty"
+text = "Day sixty of the strike. The Company's money is thin, the League's patience is thinner, and the camp's food is thinnest of all. In the shaft hall, Dunmore asks for your last word. The Union will do what the room decides, and you have a ship and the name of everyone who ever trusted you with a secret."
+weight = 2000
+arc = "union"
+step = 8
+when = [{ kind = "arc_at", arc = "union", step = 8 }, { kind = "arc_wait", arc = "union", days = 2 }]
+
+[[event.options]]
+label = "Hold out for the charter"
+req = [{ kind = "arc_branch", arc = "union", branch = "committee" }]
+needs = "a seat on the strike committee"
+[[event.options.outcomes]]
+weight = 50
+text = "The Company folds in the night. The Union gets two seats on the board and the ward at Deep Nine reopens. Dunmore weeps openly, and no one mentions it."
+effects = [{ kind = "credits", amount = 2500 }, { kind = "standing", faction = "miners", amount = 12 }, { kind = "standing", faction = "league", amount = -6 }, { kind = "ending", arc = "union", ending = "charter" }]
+bonus = [{ req = { kind = "arc_branch", arc = "union", branch = "ran" }, add = 25 }, { req = { kind = "arc_branch", arc = "union", branch = "sabotage" }, add = 15 }]
+[[event.options.outcomes]]
+weight = 50
+text = "The Company holds a week longer than the camps. The hold-out ends in a weak deal, signed on the last day of the larder. You get what the committee gets."
+effects = [{ kind = "credits", amount = 900 }, { kind = "standing", faction = "miners", amount = 4 }, { kind = "ending", arc = "union", ending = "settlement" }]
+
+[[event.options]]
+label = "Broker the settlement"
+req = [{ kind = "arc_branch", arc = "union", branch = "parley" }]
+needs = "a ruling or a parley won earlier"
+[[event.options.outcomes]]
+weight = 80
+text = "You walk both sides into a room and keep the door shut until they sign. The pay rises, the safety rules half-rise, and the camps eat on Friday."
+effects = [{ kind = "credits", amount = 1800 }, { kind = "standing", faction = "miners", amount = 6 }, { kind = "standing", faction = "league", amount = 6 }, { kind = "ending", arc = "union", ending = "settlement" }]
+[[event.options.outcomes]]
+weight = 20
+text = "The settlement is signed and then quietly ignored. The camps eat for a month, and then they do not."
+effects = [{ kind = "credits", amount = 800 }, { kind = "standing", faction = "miners", amount = -3 }, { kind = "ending", arc = "union", ending = "settlement" }]
+
+[[event.options]]
+label = "Set the charges at Deep Nine"
+req = [{ kind = "arc_branch", arc = "union", branch = "hardline" }]
+needs = "blood already spilled for the strike"
+[[event.options.outcomes]]
+weight = 100
+text = "The charges go off at dusk. The Company will not mine Deep Nine again, and the League will not forget who stood with the stewards on the lane. The younger Union watches you as if you had hung the moon."
+effects = [{ kind = "credits", amount = 1000 }, { kind = "standing", faction = "miners", amount = 4 }, { kind = "standing", faction = "league", amount = -20 }, { kind = "hull", amount = -10 }, { kind = "ending", arc = "union", ending = "ashes" }]
+
+[[event.options]]
+label = "Tell the Company the Union's last card"
+req = [{ kind = "arc_branch", arc = "union", branch = "informer" }]
+needs = "the factor's money already taken"
+[[event.options.outcomes]]
+weight = 100
+text = "You tell him what the larder holds and when it empties. He folds the paper without reading it twice. The strike ends in a week. You are paid in full and cut dead in the shaft hall."
+effects = [{ kind = "credits", amount = 4000 }, { kind = "standing", faction = "miners", amount = -40 }, { kind = "standing", faction = "league", amount = 8 }, { kind = "ending", arc = "union", ending = "bought" }]
+
+[[event.options]]
+label = "Take your pay and leave before the vote"
+[[event.options.outcomes]]
+weight = 100
+text = "You say your goodbyes in the hall and go. The strike settles a week later without you. The terms are not the ones you would have fought for."
+effects = [{ kind = "credits", amount = 400 }, { kind = "standing", faction = "miners", amount = -4 }, { kind = "ending", arc = "union", ending = "settlement" }]
+
+[[event]]
+id = "free_1_debt"
+family = "arc"
+title = "A book with no keeper"
+text = "In the haven's back room Captain Dray Orsk of the Fat Mercy lays a scuffed book on the table. The Black Ledger: every debt of honour the Free Captains ever swore. Its keeper is dead. 'Carry it to the Reckoner at Brindle's Rest,' Orsk says. 'I'd go myself, but I'm watched.'"
+weight = 2000
+arc = "free"
+step = 1
+when = [{ kind = "arc_at", arc = "free", step = 1 }, { kind = "standing", faction = "free", min = 10 }, { kind = "economy", economy = "haven" }]
+[[event.options]]
+label = "Swear to carry it"
+[[event.options.outcomes]]
+weight = 100
+text = "You put your hand on the cover. Orsk nods like a man who has bought a ship. 'Mind the margins,' he says, and does not explain."
+effects = [{ kind = "standing", faction = "free", amount = 3 }, { kind = "arc_step", arc = "free" }]
+[[event.options]]
+label = "Read it before you swear"
+req = [{ kind = "role", role = "quartermaster", min = 2 }]
+needs = "a quartermaster of skill 2 or better"
+[[event.options.outcomes]]
+weight = 75
+text = "Your quartermaster reads upside down and fast: debts, names, dates, and some entries inked in a hand that is not the keeper's. You swear anyway, and say nothing."
+effects = [{ kind = "arc_branch", arc = "free", branch = "reader" }, { kind = "arc_step", arc = "free" }]
+[[event.options.outcomes]]
+weight = 25
+text = "Orsk catches the cover lifting. 'Manners,' he says, and he is not smiling. You swear; the room cools."
+effects = [{ kind = "standing", faction = "free", amount = -3 }, { kind = "arc_branch", arc = "free", branch = "reader" }, { kind = "arc_step", arc = "free" }]
+[[event.options]]
+label = "Take his coin first"
+[[event.options.outcomes]]
+weight = 100
+text = "Orsk pays 400 without a quibble and writes it in his own pocketbook. Honour, it turns out, has an advance rate."
+effects = [{ kind = "credits", amount = 400 }, { kind = "standing", faction = "free", amount = -2 }, { kind = "arc_step", arc = "free" }]
+
+[[event]]
+id = "free_2_toll"
+family = "arc"
+title = "A flag across the lane"
+text = "Three Marrow Hand skiffs hold the lane at Gallows Reach, their leader Ysolde Bright on open comm. 'Free Captains pay no toll to Free Captains,' she says. 'But a ledger-runner for Orsk is not a captain, is it? Open your hold.'"
+weight = 2000
+arc = "free"
+step = 2
+when = [{ kind = "arc_at", arc = "free", step = 2 }, { kind = "arc_wait", arc = "free", days = 1 }]
+[[event.options]]
+label = "Show Orsk's seal"
+req = [{ kind = "standing", faction = "free", min = 20 }]
+needs = "standing 20 with the Free Captains"
+[[event.options.outcomes]]
+weight = 90
+text = "The seal is a thumbprint in wax. Bright looks at it a long moment and waves you through with a salute that feels like a threat."
+effects = [{ kind = "standing", faction = "free", amount = 2 }, { kind = "arc_step", arc = "free" }]
+[[event.options.outcomes]]
+weight = 10
+text = "Bright knows the seal is a year out of date. It costs you 200 credits to be reminded."
+effects = [{ kind = "credits", amount = -200 }, { kind = "arc_step", arc = "free" }]
+[[event.options]]
+label = "Pay the toll"
+req = [{ kind = "cash", min = 500 }]
+needs = "500 credits in the purse"
+[[event.options.outcomes]]
+weight = 100
+text = "Bright counts it twice. 'Pleasure,' she says, and means the opposite."
+effects = [{ kind = "credits", amount = -500 }, { kind = "arc_step", arc = "free" }]
+[[event.options]]
+label = "Open fire on the lead skiff"
+req = [{ kind = "weapons", min = 2 }]
+needs = "weapons of power 2"
+[[event.options.outcomes]]
+weight = 100
+text = "You fire first, and the lane goes to knives."
+effects = [{ kind = "arc_branch", arc = "free", branch = "blood" }, { kind = "combat", enemy = "raider" }, { kind = "arc_step", arc = "free" }]
+[[event.options]]
+label = "Talk your way through"
+[[event.options.outcomes]]
+weight = 45
+text = "Bright lets you talk until she is bored, then lets you pass, a little lighter in the purse and not in the hold."
+effects = [{ kind = "credits", amount = -150 }, { kind = "arc_step", arc = "free" }]
+bonus = [{ req = { kind = "role", role = "face", min = 2 }, add = 40 }]
+[[event.options.outcomes]]
+weight = 55
+text = "Bright takes a tenth of the hold and your good name in lieu of toll."
+effects = [{ kind = "lose_cargo", pct = 10 }, { kind = "standing", faction = "free", amount = -2 }, { kind = "arc_step", arc = "free" }]
+
+[[event]]
+id = "free_3_widow"
+family = "arc"
+title = "Calla Voss, and a debt"
+text = "At Brindle's Rest a woman in a pilot's jacket stops you on the dock. Calla Voss. Her husband flew for Orsk and died in a Union raid, and the Ledger says 900 credits are owed to his widow. 'Orsk says the book will be square when it's delivered,' she says. 'I'd like it square before.'"
+weight = 2000
+arc = "free"
+step = 3
+when = [{ kind = "arc_at", arc = "free", step = 3 }, { kind = "arc_wait", arc = "free", days = 1 }, { kind = "economy", economy = "haven" }]
+[[event.options]]
+label = "Pay Calla's 900 from your own purse"
+req = [{ kind = "cash", min = 900 }]
+needs = "900 credits in the purse"
+[[event.options.outcomes]]
+weight = 100
+text = "Calla counts it in silence and hands you a chit that says only 'paid'. By evening three captains you have never met stand you a drink."
+effects = [{ kind = "credits", amount = -900 }, { kind = "standing", faction = "free", amount = 6 }, { kind = "arc_branch", arc = "free", branch = "oath" }, { kind = "arc_step", arc = "free" }]
+[[event.options]]
+label = "Pay what you can"
+req = [{ kind = "cash", min = 300 }]
+needs = "300 credits in the purse"
+[[event.options.outcomes]]
+weight = 50
+text = "She takes 300 and a handshake. 'The rest is on your word,' she says. The dock watches the handshake."
+effects = [{ kind = "credits", amount = -300 }, { kind = "standing", faction = "free", amount = 3 }, { kind = "arc_branch", arc = "free", branch = "oath" }, { kind = "arc_step", arc = "free" }]
+[[event.options.outcomes]]
+weight = 50
+text = "She takes 300 and hands back the handshake. 'Words are cheap in a ledger,' she says."
+effects = [{ kind = "credits", amount = -300 }, { kind = "standing", faction = "free", amount = -1 }, { kind = "arc_step", arc = "free" }]
+[[event.options]]
+label = "Read her husband's entry"
+req = [{ kind = "arc_branch", arc = "free", branch = "reader" }]
+needs = "you read the Ledger earlier"
+[[event.options.outcomes]]
+weight = 100
+text = "The entry is real, and so is the one beside it: Orsk's own debts, struck out in the wrong ink. You tell Calla only the first half. It is enough to make her cry."
+effects = [{ kind = "standing", faction = "free", amount = 2 }, { kind = "xp", skill = "stealth", amount = 40 }, { kind = "arc_step", arc = "free" }]
+[[event.options]]
+label = "The Ledger is not mine to spend"
+[[event.options.outcomes]]
+weight = 100
+text = "Calla nods slowly, the nod of someone who has heard it from better liars. The dock goes quiet as you pass."
+effects = [{ kind = "standing", faction = "free", amount = -3 }, { kind = "arc_step", arc = "free" }]
+
+[[event]]
+id = "free_4_picket"
+family = "arc"
+title = "A hail from the League"
+text = "A League picket falls in behind you three jumps from the haven and asks, politely, for a manifest and a look at your 'books'. They do not say which books. Somebody has been talking, and the commander has the tired courtesy of a man reading from a warrant."
+weight = 2000
+arc = "free"
+step = 4
+when = [{ kind = "arc_at", arc = "free", step = 4 }, { kind = "arc_wait", arc = "free", days = 1 }]
+[[event.options]]
+label = "Hide the Ledger in the hold"
+req = [{ kind = "skill", skill = "stealth", min = 2 }]
+needs = "Stealth 2"
+[[event.options.outcomes]]
+weight = 70
+text = "It goes under a false deck plate with the coffee. The picket searches thoroughly and leaves courteously."
+effects = [{ kind = "xp", skill = "stealth", amount = 25 }, { kind = "arc_step", arc = "free" }]
+[[event.options.outcomes]]
+weight = 30
+text = "They find a page's worth, enough to fine you. 400 credits and a signature in their little book."
+effects = [{ kind = "credits", amount = -400 }, { kind = "arc_step", arc = "free" }]
+[[event.options]]
+label = "Run for the nebula edge"
+req = [{ kind = "role", role = "pilot", min = 2 }]
+needs = "a pilot of skill 2 or better"
+[[event.options.outcomes]]
+weight = 65
+text = "Your pilot flies the picket off its own sensor range. Nobody gets a shot."
+effects = [{ kind = "fuel", amount = -6 }, { kind = "arc_step", arc = "free" }]
+[[event.options.outcomes]]
+weight = 35
+text = "A burst clips the stern as you break. You get away, mostly."
+effects = [{ kind = "hull", amount = -12 }, { kind = "fuel", amount = -6 }, { kind = "arc_step", arc = "free" }]
+[[event.options]]
+label = "Make them fight for it"
+req = [{ kind = "weapons", min = 2 }]
+needs = "weapons of power 2"
+[[event.options.outcomes]]
+weight = 100
+text = "The picket's courtesy ends where your guns begin."
+effects = [{ kind = "combat", enemy = "picket" }, { kind = "arc_step", arc = "free" }]
+[[event.options]]
+label = "Let them search"
+[[event.options.outcomes]]
+weight = 55
+text = "They find a book of numbers they cannot read, and leave unconvinced. You lose an afternoon."
+effects = [{ kind = "days", amount = 1 }, { kind = "arc_step", arc = "free" }]
+[[event.options.outcomes]]
+weight = 45
+text = "They photograph a dozen pages before you object. The Free Captains will hear of it soon."
+effects = [{ kind = "standing", faction = "free", amount = -3 }, { kind = "standing", faction = "league", amount = 2 }, { kind = "arc_step", arc = "free" }]
+
+[[event]]
+id = "free_5_hands"
+family = "arc"
+title = "Orsk at the rendezvous"
+text = "The Fat Mercy waits at the rendezvous with her running lights off. Orsk comes across with Tamsin Vey, his first mate, who carries a sidearm like a pen. 'Good flying,' he says. 'Change of plan. The Reckoner's moved. Hand it over and we're square.'"
+weight = 2000
+arc = "free"
+step = 5
+when = [{ kind = "arc_at", arc = "free", step = 5 }, { kind = "arc_wait", arc = "free", days = 1 }]
+[[event.options]]
+label = "Hand it to Orsk as you swore"
+[[event.options.outcomes]]
+weight = 100
+text = "Orsk takes it like a baby he doesn't much like. He pays 600 for the trouble. Tamsin watches your hands the whole time."
+effects = [{ kind = "credits", amount = 600 }, { kind = "standing", faction = "free", amount = 2 }, { kind = "arc_branch", arc = "free", branch = "handed" }, { kind = "arc_step", arc = "free" }]
+[[event.options]]
+label = "Confront him with his own handwriting"
+req = [{ kind = "arc_branch", arc = "free", branch = "reader" }]
+needs = "you read the Ledger earlier"
+[[event.options.outcomes]]
+weight = 60
+text = "'The sworn entries are in your hand, Dray.' He does not deny it. Tamsin's hand drifts and drifts back. He pays 1,200 for a silence you have not promised."
+effects = [{ kind = "credits", amount = 1200 }, { kind = "standing", faction = "free", amount = -2 }, { kind = "arc_step", arc = "free" }]
+[[event.options.outcomes]]
+weight = 40
+text = "He laughs, then stops. Tamsin's gun is out. You leave with the book, a graze and an enemy."
+effects = [{ kind = "hull", amount = -10 }, { kind = "standing", faction = "free", amount = -3 }, { kind = "arc_step", arc = "free" }]
+[[event.options]]
+label = "Check the pages for forgery"
+req = [{ kind = "role", role = "scientist", min = 2 }]
+needs = "a scientist of skill 2 or better"
+[[event.options.outcomes]]
+weight = 100
+text = "Your scientist runs the ink under a lamp. Eleven pages are new ink dressed as old. You close the book. 'Back to the haven,' Orsk says, with a smile that doesn't reach."
+effects = [{ kind = "arc_branch", arc = "free", branch = "reader" }, { kind = "arc_step", arc = "free" }]
+[[event.options]]
+label = "Not until the Reckoner has it"
+[[event.options.outcomes]]
+weight = 50
+text = "Orsk shrugs and lets you go, which is worse than shouting. Tamsin's ship holds station behind you for a day."
+effects = [{ kind = "standing", faction = "free", amount = -2 }, { kind = "arc_step", arc = "free" }]
+[[event.options.outcomes]]
+weight = 50
+text = "Tamsin fires across your bow, Orsk shouts at her, and then, a long moment later, at you."
+effects = [{ kind = "hull", amount = -8 }, { kind = "standing", faction = "free", amount = -2 }, { kind = "arc_step", arc = "free" }]
+
+[[event]]
+id = "free_6_raid"
+family = "arc"
+title = "Blackout at Brindle's Rest"
+text = "The haven's lights go out in a pattern. Union enforcers are in the lane, five of them, on a schedule only someone who had sold the haven's own could have given them. Everyone is shouting on the comm and nobody is in command."
+weight = 2000
+arc = "free"
+step = 6
+when = [{ kind = "arc_at", arc = "free", step = 6 }, { kind = "arc_wait", arc = "free", days = 1 }, { kind = "economy", economy = "haven" }]
+[[event.options]]
+label = "Hold the lane and fight"
+req = [{ kind = "weapons", min = 3 }]
+needs = "weapons of power 3"
+[[event.options.outcomes]]
+weight = 100
+text = "You put your hull between the haven and the enforcers. The Free Captains don't forget this kind of thing."
+effects = [{ kind = "standing", faction = "free", amount = 6 }, { kind = "combat", enemy = "enforcer" }, { kind = "arc_step", arc = "free" }]
+[[event.options]]
+label = "Broadcast the warning to every dock"
+[[event.options.outcomes]]
+weight = 70
+text = "The haven scatters. Every captain who can fly is out of the pocket in twenty minutes, and your name is on the comm."
+effects = [{ kind = "standing", faction = "free", amount = 4 }, { kind = "hull", amount = -10 }, { kind = "arc_step", arc = "free" }]
+[[event.options.outcomes]]
+weight = 30
+text = "The warning lands late. The haven loses a dock, and some of the people on it."
+effects = [{ kind = "standing", faction = "free", amount = 2 }, { kind = "hull", amount = -15 }, { kind = "arc_step", arc = "free" }]
+[[event.options]]
+label = "Trade the haven's lanes to the Union"
+req = [{ kind = "standing", faction = "miners", min = 10 }]
+needs = "standing 10 with the Miners' Union"
+[[event.options.outcomes]]
+weight = 100
+text = "A marshal takes your offer with the grace of a man buying a coat. 800 credits and a promise to pass the Fat Mercy by. The haven burns anyway."
+effects = [{ kind = "credits", amount = 800 }, { kind = "standing", faction = "miners", amount = 6 }, { kind = "standing", faction = "free", amount = -10 }, { kind = "arc_branch", arc = "free", branch = "turncoat" }, { kind = "arc_step", arc = "free" }]
+[[event.options]]
+label = "Ask Orsk's mate where the book is"
+req = [{ kind = "arc_branch", arc = "free", branch = "handed" }]
+needs = "you handed the Ledger to Orsk"
+[[event.options.outcomes]]
+weight = 100
+text = "Tamsin Vey tells you, flat as a deck plate: the Ledger is on the Union's table, traded for Orsk's pardon. She is crying and does not want to be seen. She asks you to remember she said it."
+effects = [{ kind = "standing", faction = "free", amount = 2 }, { kind = "arc_step", arc = "free" }]
+
+[[event]]
+id = "free_7_moot"
+family = "arc"
+title = "The moot in the dark"
+text = "The survivors meet in a gutted cargo hall and call it a moot. Forty captains, the Reckoner's empty chair, and a long table where the Ledger would be. They want to hear who will speak for it, and they do not much care who."
+weight = 2000
+arc = "free"
+step = 7
+when = [{ kind = "arc_at", arc = "free", step = 7 }, { kind = "arc_wait", arc = "free", days = 1 }]
+[[event.options]]
+label = "Speak for the debts you paid"
+req = [{ kind = "arc_branch", arc = "free", branch = "oath" }]
+needs = "you paid Calla's debt"
+[[event.options.outcomes]]
+weight = 100
+text = "Calla Voss stands up in the third row and says, 'Paid.' It carries."
+effects = [{ kind = "standing", faction = "free", amount = 8 }, { kind = "arc_step", arc = "free" }]
+[[event.options]]
+label = "Read the forged pages aloud"
+req = [{ kind = "arc_branch", arc = "free", branch = "reader" }]
+needs = "you read the Ledger earlier"
+[[event.options.outcomes]]
+weight = 70
+text = "You name the pages Orsk forged. A groan, a chair knocked over. The moot decides, noisily, that Orsk's seat is empty."
+effects = [{ kind = "standing", faction = "free", amount = 6 }, { kind = "arc_step", arc = "free" }]
+[[event.options.outcomes]]
+weight = 30
+text = "A Marrow Hand captain objects that your proof is your word. The vote is close, and ugly."
+effects = [{ kind = "standing", faction = "free", amount = 2 }, { kind = "arc_step", arc = "free" }]
+[[event.options]]
+label = "Ask Ysolde Bright to stand with you"
+req = [{ kind = "not", req = { kind = "arc_branch", arc = "free", branch = "blood" } }]
+needs = "you did not shoot first at Gallows Reach"
+[[event.options.outcomes]]
+weight = 100
+text = "Bright arrives with two skiffs and a sour face. 'I said I'd remember you,' she says. 'I'd rather remember this.'"
+effects = [{ kind = "standing", faction = "free", amount = 4 }, { kind = "credits", amount = 300 }, { kind = "arc_step", arc = "free" }]
+[[event.options]]
+label = "Slip out before the vote"
+req = [{ kind = "arc_branch", arc = "free", branch = "turncoat" }]
+needs = "you traded the haven to the Union"
+[[event.options.outcomes]]
+weight = 100
+text = "You leave before the vote. Nobody follows you, which is its own verdict."
+effects = [{ kind = "standing", faction = "free", amount = -4 }, { kind = "arc_step", arc = "free" }]
+[[event.options]]
+label = "Stand at the back and listen"
+[[event.options.outcomes]]
+weight = 100
+text = "Nobody shouts at you. Nobody speaks to you. You learn which captains still count."
+effects = [{ kind = "standing", faction = "free", amount = 1 }, { kind = "arc_step", arc = "free" }]
+
+[[event]]
+id = "free_8_ledger"
+family = "arc"
+title = "Who owns the Black Ledger"
+text = "Whoever holds the Ledger holds every captain's name. If you hold it, the moot goes quiet and waits. If you do not, it waits for what you do about the man who does. Dawn is coming through the cargo hall's broken roof."
+weight = 2000
+arc = "free"
+step = 8
+when = [{ kind = "arc_at", arc = "free", step = 8 }]
+[[event.options]]
+label = "Burn it page by page"
+req = [{ kind = "not", req = { kind = "arc_branch", arc = "free", branch = "handed" } }, { kind = "not", req = { kind = "arc_branch", arc = "free", branch = "turncoat" } }]
+needs = "the book in your hold, and no turncoat"
+[[event.options.outcomes]]
+weight = 100
+text = "You feed it to the furnace a handful of pages at a time. By dawn every debt in the Free Captains is forgiven, and every grudge is theirs again."
+effects = [{ kind = "standing", faction = "free", amount = 10 }, { kind = "ending", arc = "free", ending = "burned" }]
+[[event.options]]
+label = "Sell it to the League"
+req = [{ kind = "not", req = { kind = "arc_branch", arc = "free", branch = "handed" } }]
+needs = "the book in your hold"
+[[event.options.outcomes]]
+weight = 70
+text = "A League attaché pays 4,500 for the book and 500 more not to ask how it was edited. The captains it names will be arrested one at a time, over years."
+effects = [{ kind = "credits", amount = 5000 }, { kind = "standing", faction = "league", amount = 8 }, { kind = "standing", faction = "free", amount = -20 }, { kind = "ending", arc = "free", ending = "sold" }]
+[[event.options.outcomes]]
+weight = 30
+text = "The attaché gets his book and a lawyer's promise that your fee will be 'processed'. 2,500 arrives eventually."
+effects = [{ kind = "credits", amount = 2500 }, { kind = "standing", faction = "league", amount = 5 }, { kind = "standing", faction = "free", amount = -20 }, { kind = "ending", arc = "free", ending = "sold" }]
+[[event.options]]
+label = "Take the Reckoner's chair"
+req = [{ kind = "not", req = { kind = "arc_branch", arc = "free", branch = "handed" } }, { kind = "not", req = { kind = "arc_branch", arc = "free", branch = "turncoat" } }, { kind = "arc_branch", arc = "free", branch = "oath" }, { kind = "standing", faction = "free", min = 25 }]
+needs = "oath kept, standing 25 with the Free Captains"
+[[event.options.outcomes]]
+weight = 100
+text = "The chair is too tall and the seat is cold, but nobody argues. You are the Reckoner now, a job with no pay and a long reach."
+effects = [{ kind = "standing", faction = "free", amount = 12 }, { kind = "credits", amount = 1000 }, { kind = "ending", arc = "free", ending = "keeper" }]
+[[event.options]]
+label = "Hunt Orsk down for the book"
+req = [{ kind = "arc_branch", arc = "free", branch = "handed" }]
+needs = "you handed the Ledger to Orsk"
+[[event.options.outcomes]]
+weight = 100
+text = "Orsk runs with a Union pardon in his teeth and a corsair at his heel. When it is over the book is yours, and the furnace is lit."
+effects = [{ kind = "standing", faction = "free", amount = 4 }, { kind = "combat", enemy = "corsair" }, { kind = "ending", arc = "free", ending = "burned" }]
+[[event.options]]
+label = "Walk away from it all"
+[[event.options.outcomes]]
+weight = 100
+text = "You are not the Reckoner and do not want to be. The Ledger finds another hand, and another, and they all end with the same ink."
+effects = [{ kind = "standing", faction = "free", amount = -2 }, { kind = "ending", arc = "free", ending = "passed" }]
+
+[[event]]
+id = "guild_1_gap"
+family = "arc"
+title = "Blanks on the board"
+text = "Surveyor-Chief Idris Holm has a wall of charts with the same grey hole in one corner. 'The Guild won't fund it,' he says. 'Blank is a policy, not a fact. Take a sounding in the dark and I'll pay for it, and I'll pretend I never asked.'"
+weight = 2000
+arc = "guild"
+step = 1
+when = [{ kind = "arc_at", arc = "guild", step = 1 }, { kind = "standing", faction = "guild", min = 10 }, { kind = "economy", economy = "research" }]
+[[event.options]]
+label = "Take the commission"
+[[event.options.outcomes]]
+weight = 100
+text = "Holm stamps a chit and looks relieved. A modest commission for a modest sounding, and the hole in his wall stays where it is."
+effects = [{ kind = "survey", value = 300 }, { kind = "standing", faction = "guild", amount = 3 }, { kind = "arc_step", arc = "guild" }]
+[[event.options]]
+label = "Bring a scientist's sounding"
+req = [{ kind = "role", role = "scientist", min = 2 }]
+needs = "a scientist of skill 2 or better"
+[[event.options.outcomes]]
+weight = 100
+text = "Your scientist's rig is better than anything on the Guild's racks. Holm takes the data like a man handed a cold drink."
+effects = [{ kind = "survey", value = 600 }, { kind = "standing", faction = "guild", amount = 4 }, { kind = "arc_step", arc = "guild" }]
+[[event.options]]
+label = "Ask for an advance"
+[[event.options.outcomes]]
+weight = 100
+text = "Holm winces and pays 400 out of a drawer marked 'Contingency'. He writes it down anyway."
+effects = [{ kind = "credits", amount = 400 }, { kind = "standing", faction = "guild", amount = -1 }, { kind = "arc_step", arc = "guild" }]
+
+[[event]]
+id = "guild_2_buoy"
+family = "arc"
+title = "A buoy that won't die"
+text = "A Guild buoy tumbles by with a dead beacon and a live data port, still transmitting a chart on a loop. A lovely chart, hand-inked, every sounding in neat columns. Four of the systems on it are on no list you have ever seen."
+weight = 2000
+arc = "guild"
+step = 2
+when = [{ kind = "arc_at", arc = "guild", step = 2 }, { kind = "arc_wait", arc = "guild", days = 1 }]
+[[event.options]]
+label = "Copy the full chart to your own drive"
+req = [{ kind = "scanner", min = 1 }]
+needs = "a working scanner"
+[[event.options.outcomes]]
+weight = 100
+text = "The buoy hands it over without a flicker. A hundred megabytes of somebody's patient life."
+effects = [{ kind = "survey", value = 400 }, { kind = "arc_branch", arc = "guild", branch = "copy" }, { kind = "arc_step", arc = "guild" }]
+[[event.options]]
+label = "Report the buoy to the Guild as found"
+[[event.options.outcomes]]
+weight = 100
+text = "Dispatch logs it with a clerk's boredom and a receipt number. 200 credits for the find, a promise of a callback."
+effects = [{ kind = "credits", amount = 200 }, { kind = "standing", faction = "guild", amount = 3 }, { kind = "arc_branch", arc = "guild", branch = "report" }, { kind = "arc_step", arc = "guild" }]
+[[event.options]]
+label = "Copy it, then report it"
+req = [{ kind = "scanner", min = 1 }, { kind = "standing", faction = "guild", min = 10 }]
+needs = "a scanner, and Guild standing 10"
+[[event.options.outcomes]]
+weight = 100
+text = "You copy the chart, then file the buoy by the book. The receipt is for a dead buoy. The copy is for you."
+effects = [{ kind = "survey", value = 200 }, { kind = "standing", faction = "guild", amount = 2 }, { kind = "arc_branch", arc = "guild", branch = "copy" }, { kind = "arc_branch", arc = "guild", branch = "report" }, { kind = "arc_step", arc = "guild" }]
+[[event.options]]
+label = "Pull the core and move on"
+[[event.options.outcomes]]
+weight = 60
+text = "You pull the memory core and drop it into the dark. It is the kind of thing that sticks to you afterwards."
+effects = [{ kind = "xp", skill = "stealth", amount = 20 }, { kind = "arc_step", arc = "guild" }]
+[[event.options.outcomes]]
+weight = 40
+text = "The buoy wipes itself and takes a spar of your antenna with it. You would have done the same."
+effects = [{ kind = "hull", amount = -4 }, { kind = "arc_step", arc = "guild" }]
+
+[[event]]
+id = "guild_3_pell"
+family = "arc"
+title = "Pell Anwen's drawer"
+text = "At a research dock an archivist named Pell Anwen asks to see your chart over tea. She knows the hand at once: Marek Osei, the Guild's best surveyor, dead forty years. She keeps her voice level. 'He drew this after they said he died, you know.'"
+weight = 2000
+arc = "guild"
+step = 3
+when = [{ kind = "arc_at", arc = "guild", step = 3 }, { kind = "arc_wait", arc = "guild", days = 1 }, { kind = "economy", economy = "research" }]
+[[event.options]]
+label = "Show her your copy"
+req = [{ kind = "arc_branch", arc = "guild", branch = "copy" }]
+needs = "you copied the chart"
+[[event.options.outcomes]]
+weight = 100
+text = "Pell reads all night and finds the soundings match Marek's last working papers, down to a coffee ring. She trusts you, and she is afraid."
+effects = [{ kind = "standing", faction = "guild", amount = 2 }, { kind = "credits", amount = 300 }, { kind = "arc_branch", arc = "guild", branch = "ally" }, { kind = "arc_step", arc = "guild" }]
+[[event.options]]
+label = "Let her read the Guild's receipt"
+req = [{ kind = "arc_branch", arc = "guild", branch = "report" }]
+needs = "you reported the buoy"
+[[event.options.outcomes]]
+weight = 100
+text = "Pell frowns at the receipt. The Guild never opened it, she says; the report went to the Cartographer-General's desk and nowhere else."
+effects = [{ kind = "standing", faction = "guild", amount = 1 }, { kind = "xp", skill = "survey", amount = 30 }, { kind = "arc_step", arc = "guild" }]
+[[event.options]]
+label = "Pay her to authenticate it"
+req = [{ kind = "cash", min = 200 }]
+needs = "200 credits in the purse"
+[[event.options.outcomes]]
+weight = 100
+text = "Pell examines the ink, the rounding, the constants. 'It's his,' she says. 'Forgers never make his mistakes.' She will not take more."
+effects = [{ kind = "credits", amount = -200 }, { kind = "arc_branch", arc = "guild", branch = "ally" }, { kind = "arc_step", arc = "guild" }]
+[[event.options]]
+label = "Say it's nothing and finish the tea"
+[[event.options.outcomes]]
+weight = 100
+text = "Pell nods and does not believe you. The cup rings on its saucer for some time afterwards."
+effects = [{ kind = "standing", faction = "guild", amount = -1 }, { kind = "arc_step", arc = "guild" }]
+
+[[event]]
+id = "guild_4_system"
+family = "arc"
+title = "A system on nobody's list"
+text = "You find the system where Marek's chart says it should be: a dim K star, six planets, and a ring of old coils where nothing should be. Your sensors match his soundings to the decimal. It is like finding a stranger's face on a coin."
+weight = 2000
+arc = "guild"
+step = 4
+when = [{ kind = "arc_at", arc = "guild", step = 4 }, { kind = "arc_wait", arc = "guild", days = 1 }]
+[[event.options]]
+label = "Survey it properly"
+req = [{ kind = "skill", skill = "survey", min = 2 }]
+needs = "Surveying 2"
+[[event.options.outcomes]]
+weight = 100
+text = "Three days of careful work. The data is the best the Guild will never see. Marek Osei's soundings agree with yours."
+effects = [{ kind = "survey", value = 1000 }, { kind = "xp", skill = "survey", amount = 60 }, { kind = "days", amount = 1 }, { kind = "arc_step", arc = "guild" }]
+[[event.options]]
+label = "Read the ring of coils"
+req = [{ kind = "role", role = "engineer", min = 2 }]
+needs = "an engineer of skill 2 or better"
+[[event.options.outcomes]]
+weight = 70
+text = "Your engineer reads the coils: gate coils, cold, older than the Guild, with a Church seal on the housing."
+effects = [{ kind = "survey", value = 500 }, { kind = "arc_step", arc = "guild" }]
+[[event.options.outcomes]]
+weight = 30
+text = "A coil flares and burns a patch of hull before your engineer can say what it is."
+effects = [{ kind = "survey", value = 500 }, { kind = "hull", amount = -8 }, { kind = "arc_step", arc = "guild" }]
+[[event.options]]
+label = "Board the survey cutter in the ring"
+[[event.options.outcomes]]
+weight = 100
+text = "Marek's own cutter, patient as a held breath."
+effects = [{ kind = "board", derelict = "survey_cutter" }, { kind = "arc_step", arc = "guild" }]
+[[event.options]]
+label = "Sound it from the edge and leave"
+[[event.options.outcomes]]
+weight = 100
+text = "A brisk, quiet pass. You tell yourself you will be back."
+effects = [{ kind = "survey", value = 350 }, { kind = "arc_step", arc = "guild" }]
+
+[[event]]
+id = "guild_5_auditor"
+family = "arc"
+title = "The auditor's tender"
+text = "A Guild tender matches your velocity and a woman in grey brocade comes across on a line. Auditor Sele Marrick, of the Cartographer-General's office. 'You've been out of the pattern,' she says. 'A buoy, a system, a copy. We take the Guild's property very seriously.' She holds out a hand."
+weight = 2000
+arc = "guild"
+step = 5
+when = [{ kind = "arc_at", arc = "guild", step = 5 }, { kind = "arc_wait", arc = "guild", days = 1 }]
+[[event.options]]
+label = "Hand over the copy"
+req = [{ kind = "arc_branch", arc = "guild", branch = "copy" }]
+needs = "you copied the chart"
+[[event.options.outcomes]]
+weight = 100
+text = "Marrick checks the drive, wipes it, and writes a cheque for 1,500 with an apology folded in. The cheque clears. The apology doesn't."
+effects = [{ kind = "credits", amount = 1500 }, { kind = "standing", faction = "guild", amount = 5 }, { kind = "arc_branch", arc = "guild", branch = "buried" }, { kind = "arc_step", arc = "guild" }]
+[[event.options]]
+label = "Hide the copy and bluff"
+req = [{ kind = "skill", skill = "stealth", min = 2 }]
+needs = "Stealth 2"
+[[event.options.outcomes]]
+weight = 65
+text = "She goes through your ship politely and finds an honest manifest and a tired crew. The copy sits in a coffee tin."
+effects = [{ kind = "xp", skill = "stealth", amount = 30 }, { kind = "arc_step", arc = "guild" }]
+[[event.options.outcomes]]
+weight = 35
+text = "A search dog sniffs out the tin. Marrick keeps the copy, fines you 600, and writes your hull number in a small neat book."
+effects = [{ kind = "credits", amount = -600 }, { kind = "standing", faction = "guild", amount = -4 }, { kind = "arc_branch", arc = "guild", branch = "buried" }, { kind = "arc_step", arc = "guild" }]
+[[event.options]]
+label = "Have Pell Anwen vouch for you"
+req = [{ kind = "arc_branch", arc = "guild", branch = "ally" }]
+needs = "Pell Anwen is on your side"
+[[event.options.outcomes]]
+weight = 100
+text = "Marrick reads the vouch. 'Pell is a bad influence,' she says, and lets you go, and probably writes down Pell's name too."
+effects = [{ kind = "standing", faction = "guild", amount = 2 }, { kind = "arc_step", arc = "guild" }]
+[[event.options]]
+label = "Cut the tender loose"
+req = [{ kind = "weapons", min = 2 }]
+needs = "weapons of power 2"
+[[event.options.outcomes]]
+weight = 100
+text = "You decline, in the loudest way a ship can."
+effects = [{ kind = "standing", faction = "guild", amount = -6 }, { kind = "combat", enemy = "cutter" }, { kind = "arc_step", arc = "guild" }]
+[[event.options]]
+label = "Say you have nothing, and offer tea"
+[[event.options.outcomes]]
+weight = 55
+text = "Marrick sips the tea. Nothing is said. She leaves a card, and a smell of lavender."
+effects = [{ kind = "arc_step", arc = "guild" }]
+bonus = [{ req = { kind = "role", role = "face", min = 2 }, add = 30 }]
+[[event.options.outcomes]]
+weight = 45
+text = "She does not believe you, and says so, and writes your name on a list."
+effects = [{ kind = "standing", faction = "guild", amount = -3 }, { kind = "arc_step", arc = "guild" }]
+
+[[event]]
+id = "guild_6_ring"
+family = "arc"
+title = "The gate that isn't on the map"
+text = "Marek's coordinates end at a dark ring and a grey-robed figure in a skiff, waving a lantern. 'The Church tended this gate before the Guild was a guild,' she says. 'We took it off the maps. We would ask you, nicely, to take it off yours.'"
+weight = 2000
+arc = "guild"
+step = 6
+when = [{ kind = "arc_at", arc = "guild", step = 6 }, { kind = "arc_wait", arc = "guild", days = 1 }]
+[[event.options]]
+label = "Promise the Church your silence"
+[[event.options.outcomes]]
+weight = 100
+text = "She presses a hand to her chest. 'The Quiet thanks you.' You have promised, and you can feel the weight of it."
+effects = [{ kind = "standing", faction = "church", amount = 6 }, { kind = "standing", faction = "guild", amount = -2 }, { kind = "arc_branch", arc = "guild", branch = "silence" }, { kind = "arc_step", arc = "guild" }]
+[[event.options]]
+label = "Show her the chart and ask why"
+req = [{ kind = "arc_branch", arc = "guild", branch = "copy" }]
+needs = "you copied the chart"
+[[event.options.outcomes]]
+weight = 60
+text = "She reads it by lantern. 'He found it honestly,' she says, 'and we were wrong to hide it. Keep your copy, and keep it to yourself.'"
+effects = [{ kind = "standing", faction = "church", amount = 3 }, { kind = "arc_step", arc = "guild" }]
+[[event.options.outcomes]]
+weight = 40
+text = "She reads it and her face shuts. A gate warden wakes behind her. 'Then you cannot be trusted with it.'"
+effects = [{ kind = "standing", faction = "church", amount = -6 }, { kind = "combat", enemy = "gate_warden" }, { kind = "arc_step", arc = "guild" }]
+[[event.options]]
+label = "Propose a joint chart with Pell's help"
+req = [{ kind = "arc_branch", arc = "guild", branch = "ally" }]
+needs = "Pell Anwen is on your side"
+[[event.options.outcomes]]
+weight = 100
+text = "The sister laughs. 'The Guild has not shared a pencil with us in forty years.' But she writes it down, and signs it."
+effects = [{ kind = "standing", faction = "church", amount = 3 }, { kind = "standing", faction = "guild", amount = 3 }, { kind = "arc_step", arc = "guild" }]
+[[event.options]]
+label = "Tell her the Guild already knows"
+req = [{ kind = "arc_branch", arc = "guild", branch = "report" }]
+needs = "you reported the buoy"
+[[event.options.outcomes]]
+weight = 100
+text = "She goes grey. 'Then it has already begun,' she says, and signs off before you can ask what."
+effects = [{ kind = "standing", faction = "church", amount = -2 }, { kind = "arc_step", arc = "guild" }]
+
+[[event]]
+id = "guild_7_blank"
+family = "arc"
+title = "What the chart is for"
+text = "The chart is on the table and it says four things the Guild never wanted said. A blank on a map is a promise nobody has to keep. You can fill it in, hold it back or sell it. Rook's office is on your comm. So are the Church, and the Free Captains."
+weight = 2000
+arc = "guild"
+step = 7
+when = [{ kind = "arc_at", arc = "guild", step = 7 }]
+[[event.options]]
+label = "Publish it to every dock"
+req = [{ kind = "arc_branch", arc = "guild", branch = "copy" }, { kind = "not", req = { kind = "arc_branch", arc = "guild", branch = "buried" } }, { kind = "not", req = { kind = "arc_branch", arc = "guild", branch = "silence" } }]
+needs = "your own copy, no sale, no oath of silence"
+[[event.options.outcomes]]
+weight = 100
+text = "You push it to every beacon on the lane at once. By morning every dock has a Marek Osei chart on its board. Rook resigns by noon, or is made to."
+effects = [{ kind = "standing", faction = "guild", amount = 6 }, { kind = "standing", faction = "church", amount = -10 }, { kind = "credits", amount = 500 }, { kind = "ending", arc = "guild", ending = "published" }]
+[[event.options]]
+label = "Sell it to the Free Captains"
+req = [{ kind = "arc_branch", arc = "guild", branch = "copy" }, { kind = "not", req = { kind = "arc_branch", arc = "guild", branch = "buried" } }]
+needs = "your own copy, not handed over"
+[[event.options.outcomes]]
+weight = 70
+text = "A haven pays 3,500 in coin and a promise of passage. The Guild's surveyors notice by noon; so does Rook."
+effects = [{ kind = "credits", amount = 3500 }, { kind = "standing", faction = "free", amount = 8 }, { kind = "standing", faction = "guild", amount = -12 }, { kind = "ending", arc = "guild", ending = "sold" }]
+[[event.options.outcomes]]
+weight = 30
+text = "The havens pay less than promised: 2,000 and a bottle. It is enough to be hated for."
+effects = [{ kind = "credits", amount = 2000 }, { kind = "standing", faction = "free", amount = 5 }, { kind = "standing", faction = "guild", amount = -12 }, { kind = "ending", arc = "guild", ending = "sold" }]
+[[event.options]]
+label = "Deliver it to the Church vault"
+req = [{ kind = "arc_branch", arc = "guild", branch = "silence" }]
+needs = "you promised the Church your silence"
+[[event.options.outcomes]]
+weight = 100
+text = "Sealed in a reliquary under a candle. The Church thanks you the way a cold room is warmed by one match."
+effects = [{ kind = "credits", amount = 1500 }, { kind = "standing", faction = "church", amount = 12 }, { kind = "standing", faction = "guild", amount = -4 }, { kind = "ending", arc = "guild", ending = "sealed" }]
+[[event.options]]
+label = "File it with Pell, let the Guild argue"
+req = [{ kind = "arc_branch", arc = "guild", branch = "ally" }]
+needs = "Pell Anwen is on your side"
+[[event.options.outcomes]]
+weight = 100
+text = "Pell enters it in the Guild's own drawers under a boring name. The Guild will argue about it for ten years, publicly, which is how truths are kept."
+effects = [{ kind = "credits", amount = 800 }, { kind = "standing", faction = "guild", amount = 8 }, { kind = "ending", arc = "guild", ending = "filed" }]
+[[event.options]]
+label = "Leave it unread"
+[[event.options.outcomes]]
+weight = 100
+text = "You close the drive and fly on. Somebody else will fill the blank one day, with less care."
+effects = [{ kind = "credits", amount = 300 }, { kind = "standing", faction = "guild", amount = 2 }, { kind = "ending", arc = "guild", ending = "filed" }]
+
+[[event]]
+id = "church_1_candles"
+family = "arc"
+title = "Candles for a dead gate"
+text = "At a Church waystation Warden-Mother Elspeth Quill counts candles into a crate. 'Tallow is cheap and the vigil is long,' she says. 'Carry these to the gate at Hollow Reach and sit with us a night. The Quiet does not ask for much. It asks for it for a very long time.'"
+weight = 2000
+arc = "church"
+step = 1
+when = [{ kind = "arc_at", arc = "church", step = 1 }, { kind = "standing", faction = "church", min = 10 }]
+[[event.options]]
+label = "Carry the candles"
+[[event.options.outcomes]]
+weight = 100
+text = "A crate you can lift with one hand. A night's work, she says, and then the long wait."
+effects = [{ kind = "standing", faction = "church", amount = 3 }, { kind = "arc_step", arc = "church" }]
+[[event.options]]
+label = "Donate medicine for the pilgrims"
+req = [{ kind = "good", good = "medicine", tons = 2 }]
+needs = "2 t of medicine aboard"
+[[event.options.outcomes]]
+weight = 100
+text = "Quill weighs a vial in her hand like coin. 'The sick are the vigil's first duty.' The ledger is not a place she writes your name, but she remembers."
+effects = [{ kind = "cargo", good = "medicine", tons = -2 }, { kind = "standing", faction = "church", amount = 6 }, { kind = "arc_step", arc = "church" }]
+[[event.options]]
+label = "Charge her for the haul"
+[[event.options.outcomes]]
+weight = 100
+text = "Quill pays 250 without a word, and writes down the sum. The Church has long memories and short change."
+effects = [{ kind = "credits", amount = 250 }, { kind = "standing", faction = "church", amount = -2 }, { kind = "arc_step", arc = "church" }]
+
+[[event]]
+id = "church_2_vigil"
+family = "arc"
+title = "A night at Hollow Reach"
+text = "The gate at Hollow Reach is a ring of dead coil three kilometres across, and a few dozen of the faithful have anchored a circle of ships around it. They sit in the dark with candles. The gate hums so low you feel it in your teeth."
+weight = 2000
+arc = "church"
+step = 2
+when = [{ kind = "arc_at", arc = "church", step = 2 }, { kind = "arc_wait", arc = "church", days = 1 }]
+[[event.options]]
+label = "Sit the whole vigil"
+[[event.options.outcomes]]
+weight = 100
+text = "A night gone. Nobody speaks; somebody weeps. You think you hear a pattern in the hum, and then you stop thinking."
+effects = [{ kind = "days", amount = 1 }, { kind = "standing", faction = "church", amount = 4 }, { kind = "scare", amount = -1 }, { kind = "arc_branch", arc = "church", branch = "vigil" }, { kind = "arc_step", arc = "church" }]
+[[event.options]]
+label = "Tend the sick pilgrims"
+req = [{ kind = "role", role = "medic", min = 2 }]
+needs = "a medic of skill 2 or better"
+[[event.options.outcomes]]
+weight = 100
+text = "Your medic has a long night among the fevers. The vigil's hurt are the quietest patients you have known."
+effects = [{ kind = "days", amount = 1 }, { kind = "standing", faction = "church", amount = 6 }, { kind = "treat", amount = 1 }, { kind = "arc_branch", arc = "church", branch = "vigil" }, { kind = "arc_step", arc = "church" }]
+[[event.options]]
+label = "Listen to the gate on your scanner"
+req = [{ kind = "scanner", min = 2 }]
+needs = "a scanner of grade 2 or better"
+[[event.options.outcomes]]
+weight = 70
+text = "The hum has a rhythm. Your scanner draws it as a spiral. You file the trace and tell no one."
+effects = [{ kind = "survey", value = 400 }, { kind = "arc_step", arc = "church" }]
+[[event.options.outcomes]]
+weight = 30
+text = "The hum bites back as a feedback shriek. The scanner ghosts for an hour."
+effects = [{ kind = "survey", value = 200 }, { kind = "wear", amount = 20 }, { kind = "arc_step", arc = "church" }]
+[[event.options]]
+label = "Stay an hour and slip away"
+[[event.options.outcomes]]
+weight = 100
+text = "Hollow Reach is poor company for a captain with a schedule. Quill says nothing; her face says it for her."
+effects = [{ kind = "standing", faction = "church", amount = -1 }, { kind = "arc_step", arc = "church" }]
+
+[[event]]
+id = "church_3_opened"
+family = "arc"
+title = "The Opened ask for passage"
+text = "A pilgrim barge hails you. Brother Tobias Wren leads it: thin, gentle, certain. The Opened believe the gates were never dead, only asleep, and that the Church's vigils keep them so. 'We want to wake it,' he says. 'Will you carry six of us to the Reach, and not tell Mother Quill?'"
+weight = 2000
+arc = "church"
+step = 3
+when = [{ kind = "arc_at", arc = "church", step = 3 }, { kind = "arc_wait", arc = "church", days = 1 }]
+[[event.options]]
+label = "Carry them for coin"
+[[event.options.outcomes]]
+weight = 100
+text = "Six pilgrims, one honest gentleman, a chest they do not open. Wren pays 500 and shakes your hand with both of his."
+effects = [{ kind = "credits", amount = 500 }, { kind = "standing", faction = "church", amount = -4 }, { kind = "arc_branch", arc = "church", branch = "heresy" }, { kind = "arc_step", arc = "church" }]
+[[event.options]]
+label = "Tell Mother Quill"
+[[event.options.outcomes]]
+weight = 100
+text = "Quill receives the news with a stone face and absolute silence. A week later a Church ship turns the barge around."
+effects = [{ kind = "standing", faction = "church", amount = 6 }, { kind = "arc_branch", arc = "church", branch = "informer" }, { kind = "arc_step", arc = "church" }]
+[[event.options]]
+label = "Argue the sleeping gate with Wren"
+req = [{ kind = "role", role = "face", min = 2 }]
+needs = "a face of skill 2 or better"
+[[event.options.outcomes]]
+weight = 60
+text = "You talk for an hour and neither of you moves. He leaves a pamphlet; you leave a point he will chew on."
+effects = [{ kind = "xp", skill = "trade", amount = 40 }, { kind = "arc_step", arc = "church" }]
+[[event.options.outcomes]]
+weight = 40
+text = "He argues better than you do. You leave with a pamphlet you will secretly read."
+effects = [{ kind = "arc_branch", arc = "church", branch = "heresy" }, { kind = "arc_step", arc = "church" }]
+[[event.options]]
+label = "Turn the barge away without a word"
+[[event.options.outcomes]]
+weight = 100
+text = "Wren bows his head and the barge turns. You feel as though you have closed a door and are not sure on whom."
+effects = [{ kind = "standing", faction = "church", amount = 1 }, { kind = "arc_step", arc = "church" }]
+
+[[event]]
+id = "church_4_reliquary"
+family = "arc"
+title = "The reliquary ship"
+text = "The Church's reliquary ship rides at anchor near the gate: one vault, one relic, the gate-key, a band of gold-grey metal no bigger than a wedding ring. Quill asks you to stand guard the night. Wren's people have gone very quiet."
+weight = 2000
+arc = "church"
+step = 4
+when = [{ kind = "arc_at", arc = "church", step = 4 }, { kind = "arc_wait", arc = "church", days = 1 }]
+[[event.options]]
+label = "Guard the vault"
+req = [{ kind = "weapons", min = 2 }]
+needs = "weapons of power 2"
+[[event.options.outcomes]]
+weight = 100
+text = "Someone comes in the small hours, crew in grey masks, and you drive them off. Quill's thanks is a closed hand on your sleeve."
+effects = [{ kind = "standing", faction = "church", amount = 5 }, { kind = "combat", enemy = "marauder" }, { kind = "arc_step", arc = "church" }]
+[[event.options]]
+label = "Slip the key into your pocket"
+req = [{ kind = "skill", skill = "stealth", min = 2 }]
+needs = "Stealth 2"
+[[event.options.outcomes]]
+weight = 70
+text = "The vault is old and your hands are quick. The ring is in your hold before the candle gutters."
+effects = [{ kind = "standing", faction = "church", amount = -8 }, { kind = "arc_branch", arc = "church", branch = "key" }, { kind = "arc_step", arc = "church" }]
+[[event.options.outcomes]]
+weight = 30
+text = "A warden sees your hand in the case. Quill takes the ring back herself, and what she says is the quietest thing you have ever heard."
+effects = [{ kind = "standing", faction = "church", amount = -10 }, { kind = "arc_step", arc = "church" }]
+[[event.options]]
+label = "Raid the reliquary"
+[[event.options.outcomes]]
+weight = 100
+text = "The Church will call it sacrilege. Your crew will call it a payday. The vault's hatch is old and closed and shows no fear."
+effects = [{ kind = "standing", faction = "church", amount = -8 }, { kind = "arc_branch", arc = "church", branch = "key" }, { kind = "board", derelict = "church_reliquary" }, { kind = "arc_step", arc = "church" }]
+[[event.options]]
+label = "Stay out of it"
+[[event.options.outcomes]]
+weight = 100
+text = "A night's sleep. In the morning nobody mentions the vault, and Quill's look says everyone knows who slept."
+effects = [{ kind = "standing", faction = "church", amount = -1 }, { kind = "arc_step", arc = "church" }]
+
+[[event]]
+id = "church_5_quill"
+family = "arc"
+title = "Mother Quill asks"
+text = "Quill finds you at breakfast, a bowl of grey porridge in her hand, and sits across from you. 'I hear things,' she says. 'Who carried whom. Who knows what. I would like you to answer me honestly, and I would like you to know I will know.'"
+weight = 2000
+arc = "church"
+step = 5
+when = [{ kind = "arc_at", arc = "church", step = 5 }, { kind = "arc_wait", arc = "church", days = 1 }]
+[[event.options]]
+label = "Tell her everything"
+req = [{ kind = "arc_branch", arc = "church", branch = "informer" }]
+needs = "you told her about the Opened"
+[[event.options.outcomes]]
+weight = 100
+text = "Quill listens, nods, and pays 800 'for the Church's gratitude, which will be in the ledger and not on the floor'."
+effects = [{ kind = "credits", amount = 800 }, { kind = "standing", faction = "church", amount = 4 }, { kind = "arc_step", arc = "church" }]
+[[event.options]]
+label = "Tell her nothing"
+req = [{ kind = "arc_branch", arc = "church", branch = "heresy" }]
+needs = "you carried the Opened"
+[[event.options.outcomes]]
+weight = 60
+text = "Quill's eyes are the colour of old brass. 'Nothing,' she says, and writes it down. She does not forgive; she does not forget."
+effects = [{ kind = "standing", faction = "church", amount = -4 }, { kind = "arc_step", arc = "church" }]
+[[event.options.outcomes]]
+weight = 40
+text = "She knew. She says so quietly. 'We will talk when the Reach decides.'"
+effects = [{ kind = "standing", faction = "church", amount = -6 }, { kind = "arc_step", arc = "church" }]
+[[event.options]]
+label = "Remind her you sat the vigil"
+req = [{ kind = "arc_branch", arc = "church", branch = "vigil" }]
+needs = "you sat the vigil"
+[[event.options.outcomes]]
+weight = 100
+text = "'I remember,' she says. 'I counted.' Her smile is a small, rare one, and she has the almoner leave 300 credits in your cabin."
+effects = [{ kind = "credits", amount = 300 }, { kind = "standing", faction = "church", amount = 4 }, { kind = "arc_step", arc = "church" }]
+[[event.options]]
+label = "Ask her to trust you"
+req = [{ kind = "standing", faction = "church", min = 20 }]
+needs = "standing 20 with the Church"
+[[event.options.outcomes]]
+weight = 100
+text = "She considers you for a long time. 'Trust is a candle,' she says. 'Hold it.' She gives you her signet to hold, which is not a gift."
+effects = [{ kind = "standing", faction = "church", amount = 3 }, { kind = "xp", skill = "stealth", amount = 20 }, { kind = "arc_step", arc = "church" }]
+[[event.options]]
+label = "Say what you think of the Opened"
+[[event.options.outcomes]]
+weight = 100
+text = "You tell her what you think. It is honest, which is more than most people give her."
+effects = [{ kind = "standing", faction = "church", amount = 1 }, { kind = "arc_step", arc = "church" }]
+
+[[event]]
+id = "church_6_wardens"
+family = "arc"
+title = "The wardens wake"
+text = "Gate wardens are slow, enormous, patient drones that sleep in the dark until a gate is threatened. One wakes. Its sensors turn to your ship the way a head turns in a quiet room. The vigil goes silent. Everyone is looking at you."
+weight = 2000
+arc = "church"
+step = 6
+when = [{ kind = "arc_at", arc = "church", step = 6 }, { kind = "arc_wait", arc = "church", days = 1 }]
+[[event.options]]
+label = "Stand your ground and fight"
+req = [{ kind = "weapons", min = 3 }]
+needs = "weapons of power 3"
+[[event.options.outcomes]]
+weight = 100
+text = "Nobody has fought a warden in a lifetime. You do it with the whole vigil watching."
+effects = [{ kind = "standing", faction = "church", amount = -3 }, { kind = "combat", enemy = "gate_warden" }, { kind = "arc_step", arc = "church" }]
+[[event.options]]
+label = "Sing the old response"
+req = [{ kind = "arc_branch", arc = "church", branch = "vigil" }]
+needs = "you sat the vigil"
+[[event.options.outcomes]]
+weight = 100
+text = "You remember a phrase from the night, a syllable more breath than word. The warden dims. 'Rest,' says a pilgrim behind you, weeping."
+effects = [{ kind = "standing", faction = "church", amount = 6 }, { kind = "arc_step", arc = "church" }]
+[[event.options]]
+label = "Ride it out under dead power"
+req = [{ kind = "role", role = "engineer", min = 2 }]
+needs = "an engineer of skill 2 or better"
+[[event.options.outcomes]]
+weight = 65
+text = "Your engineer kills everything but the heartbeat. The warden pauses, cycles through the lane, and sleeps."
+effects = [{ kind = "wear", amount = 30 }, { kind = "arc_step", arc = "church" }]
+[[event.options.outcomes]]
+weight = 35
+text = "The warden brushes you with a spar. You live."
+effects = [{ kind = "hull", amount = -18 }, { kind = "arc_step", arc = "church" }]
+[[event.options]]
+label = "Offer the gate-key"
+req = [{ kind = "arc_branch", arc = "church", branch = "key" }]
+needs = "you hold the gate-key"
+[[event.options.outcomes]]
+weight = 100
+text = "The warden takes the ring's frequency like a name. It does not sleep; it watches, and the watching is patient."
+effects = [{ kind = "standing", faction = "church", amount = -2 }, { kind = "arc_step", arc = "church" }]
+[[event.options]]
+label = "Run"
+[[event.options.outcomes]]
+weight = 70
+text = "You burn out of the Reach. The warden does not follow, but its sensors remember."
+effects = [{ kind = "fuel", amount = -10 }, { kind = "standing", faction = "church", amount = -2 }, { kind = "arc_step", arc = "church" }]
+[[event.options.outcomes]]
+weight = 30
+text = "It lands one blow before you clear the Reach."
+effects = [{ kind = "hull", amount = -15 }, { kind = "fuel", amount = -10 }, { kind = "arc_step", arc = "church" }]
+
+[[event]]
+id = "church_7_hum"
+family = "arc"
+title = "What the gate says"
+text = "The vigil's last night. Quill has asked for silence; Wren has asked for a minute of it. The gate's hum has changed. It was a drone; it is a phrase now, repeating every four minutes, and everyone aboard every ship in the Reach has gone very still."
+weight = 2000
+arc = "church"
+step = 7
+when = [{ kind = "arc_at", arc = "church", step = 7 }, { kind = "arc_wait", arc = "church", days = 2 }]
+[[event.options]]
+label = "Listen with instruments"
+req = [{ kind = "role", role = "scientist", min = 2 }]
+needs = "a scientist of skill 2 or better"
+[[event.options.outcomes]]
+weight = 100
+text = "Your scientist sets up the lattice. The phrase is not a code but an address: the gate is listening for a particular other gate. It is not dead and not asleep. It is waiting for an answer."
+effects = [{ kind = "survey", value = 700 }, { kind = "arc_branch", arc = "church", branch = "heard" }, { kind = "arc_step", arc = "church" }]
+[[event.options]]
+label = "Listen with your own ears"
+req = [{ kind = "skill", skill = "survey", min = 2 }]
+needs = "Surveying 2"
+[[event.options.outcomes]]
+weight = 80
+text = "You sit in the dark, and the phrase resolves. The gate is not asleep. It is waiting for a reply."
+effects = [{ kind = "xp", skill = "survey", amount = 50 }, { kind = "arc_branch", arc = "church", branch = "heard" }, { kind = "arc_step", arc = "church" }]
+[[event.options.outcomes]]
+weight = 20
+text = "You hear only the hum, and a headache that lasts till dawn."
+effects = [{ kind = "arc_step", arc = "church" }]
+[[event.options]]
+label = "Record it for the Guild"
+req = [{ kind = "scanner", min = 1 }]
+needs = "a working scanner"
+[[event.options.outcomes]]
+weight = 100
+text = "A clean recording, a paid recording. The Church does not like being recorded."
+effects = [{ kind = "survey", value = 500 }, { kind = "standing", faction = "guild", amount = 3 }, { kind = "standing", faction = "church", amount = -3 }, { kind = "arc_step", arc = "church" }]
+[[event.options]]
+label = "Close your ears and keep watch"
+[[event.options.outcomes]]
+weight = 100
+text = "Someone has to watch the sky while the rest listen. The night passes, long and without incident."
+effects = [{ kind = "standing", faction = "church", amount = 2 }, { kind = "arc_step", arc = "church" }]
+
+[[event]]
+id = "church_8_rite"
+family = "arc"
+title = "The last candle"
+text = "Quill lifts the last candle. If it goes out, the vigil ends, the wardens sleep, and the gate stays closed another generation. Wren stands at the edge of the ring with six pilgrims and a plea. Everyone looks at the ship that carried the news, the key or the silence. They look at you."
+weight = 2000
+arc = "church"
+step = 8
+when = [{ kind = "arc_at", arc = "church", step = 8 }]
+[[event.options]]
+label = "Stand with Mother Quill and the candle"
+req = [{ kind = "not", req = { kind = "arc_branch", arc = "church", branch = "heresy" } }]
+needs = "you did not carry the Opened"
+[[event.options.outcomes]]
+weight = 100
+text = "The candle burns down in your hands, and nobody says a word. The Reach stays dark, the wardens sleep, and the Church counts a gate as kept."
+effects = [{ kind = "standing", faction = "church", amount = 10 }, { kind = "credits", amount = 1000 }, { kind = "ending", arc = "church", ending = "kept" }]
+[[event.options]]
+label = "Give Wren the key"
+req = [{ kind = "arc_branch", arc = "church", branch = "key" }]
+needs = "you hold the gate-key"
+[[event.options.outcomes]]
+weight = 60
+text = "He takes the ring in both hands, and the gate wakes, and for one long second every lamp in the Reach goes out."
+effects = [{ kind = "credits", amount = 2000 }, { kind = "standing", faction = "church", amount = -15 }, { kind = "hull", amount = -20 }, { kind = "ending", arc = "church", ending = "opened" }]
+[[event.options.outcomes]]
+weight = 40
+text = "The ring warms and nothing happens, for a long, awful minute. Then it does."
+effects = [{ kind = "credits", amount = 2000 }, { kind = "standing", faction = "church", amount = -15 }, { kind = "hull", amount = -10 }, { kind = "ending", arc = "church", ending = "opened" }]
+[[event.options]]
+label = "Answer the gate"
+req = [{ kind = "arc_branch", arc = "church", branch = "heard" }, { kind = "arc_branch", arc = "church", branch = "vigil" }, { kind = "arc_branch", arc = "church", branch = "key" }]
+needs = "you heard it, sat the vigil, hold the key"
+[[event.options.outcomes]]
+weight = 100
+text = "You sing the phrase back, the way the vigil taught you, and put the ring against the old coil. The gate answers once: a note, then a silence that feels like permission."
+effects = [{ kind = "credits", amount = 2500 }, { kind = "survey", value = 1000 }, { kind = "standing", faction = "church", amount = 8 }, { kind = "ending", arc = "church", ending = "answered" }]
+[[event.options]]
+label = "Walk away from the ring"
+[[event.options.outcomes]]
+weight = 100
+text = "You walk away, and nobody calls after you. The candle gutters or it does not; you never find out."
+effects = [{ kind = "standing", faction = "church", amount = -3 }, { kind = "ending", arc = "church", ending = "unwatched" }]

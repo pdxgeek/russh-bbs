@@ -6,6 +6,7 @@
 //! the UI slice (L3); the screen reads the same lines for the look-around view.
 
 mod screens;
+mod society;
 mod ui;
 
 use std::sync::Arc;
@@ -38,6 +39,13 @@ pub(crate) enum Start {
     Captain(Box<Player>),
     /// A save this build cannot read; nothing is written over it.
     Unreadable,
+    /// No captain yet this season, but an earlier season's captain left a legacy.
+    Successor {
+        /// Earlier seasons, the last one included.
+        legacy: Vec<crate::socialplay::Legacy>,
+        /// The module handed down (255 for none).
+        heirloom: u8,
+    },
 }
 
 enum Mode {
@@ -54,10 +62,13 @@ enum Mode {
     News,
     Crew(usize),
     Jobs(usize),
+    Society(society::Tab, usize, Option<String>),
 }
 
 pub(crate) struct Session {
     content: Arc<Content>,
+    /// The generated map, without outposts (what a stored world is keyed to).
+    base: Arc<Frontier>,
     frontier: Arc<Frontier>,
     world: World,
     player: Option<Player>,
@@ -70,6 +81,13 @@ pub(crate) struct Session {
     chart: ui::chart::ChartState,
     plan: Option<ui::route::Plan>,
     reactor: ui::combat::Reactor,
+    /// World changes made while the door was opening, sent with the first key.
+    pending: Vec<crate::world::Delta>,
+    /// What an earlier season left the captain who is about to sign on.
+    inheritance: Option<(Vec<crate::socialplay::Legacy>, u8)>,
+    /// Opening the door changed the captain (a new day, collected raids and dividends); the
+    /// first key writes it, even if that key leaves.
+    opened_dirty: bool,
 }
 
 fn cr(n: i64) -> String {
@@ -135,8 +153,10 @@ fn clip(text: &str, width: usize) -> String {
 }
 
 impl Session {
+    #[allow(clippy::too_many_arguments)]
     pub(crate) fn new(
         content: Arc<Content>,
+        base: Arc<Frontier>,
         frontier: Arc<Frontier>,
         world: World,
         start: Start,
@@ -144,19 +164,36 @@ impl Session {
         today: i64,
         rng: &mut DoorRng,
     ) -> Self {
+        let mut inheritance = None;
         let (player, mode) = match start {
             Start::New => (None, Mode::Pick(0)),
+            Start::Successor { legacy, heirloom } => {
+                inheritance = Some((legacy, heirloom));
+                (None, Mode::Pick(0))
+            }
             Start::Unreadable => (None, Mode::Unreadable),
             Start::Captain(player) => (Some(*player), Mode::Bridge),
         };
         let mut world = world;
         let mut player = player;
+        let mut pending = Vec::new();
+        if let Some(p) = player.as_mut()
+            && p.social.handle != handle
+        {
+            // Bookkeeping, not a change worth a save of its own.
+            handle.clone_into(&mut p.social.handle);
+        }
+        let loaded = player.clone();
         let events = player.as_mut().map_or_else(Vec::new, |p| {
             let mut env = Env::new(&content, &frontier, &mut world, rng, today);
-            p.settle(&mut env)
+            let mut events = p.settle(&mut env);
+            events.extend(p.claim_social(&mut env));
+            pending = std::mem::take(&mut env.deltas);
+            events
         });
         let mut session = Self {
             content,
+            base,
             frontier,
             world,
             player,
@@ -168,7 +205,11 @@ impl Session {
             chart: ui::chart::ChartState::new(0),
             plan: None,
             reactor: ui::combat::Reactor::new(),
+            inheritance,
+            pending,
+            opened_dirty: false,
         };
+        session.opened_dirty = session.player != loaded || !session.pending.is_empty();
         if let Some(p) = &session.player {
             session.chart = ui::chart::ChartState::new(p.at);
         }
@@ -176,6 +217,25 @@ impl Session {
         // if the captain leaves without another key; the first key saves it.
         session.note_events(&events);
         session
+    }
+
+    /// Write what opening the door changed, once, with the first key.
+    fn flush_open(&mut self, ctx: &mut Ctx<'_>) {
+        if !self.opened_dirty {
+            return;
+        }
+        self.opened_dirty = false;
+        if let Some(p) = &self.player {
+            ctx.request_save(p.encode());
+        }
+        let deltas = std::mem::take(&mut self.pending);
+        if !deltas.is_empty() {
+            let (content, base) = (Arc::clone(&self.content), Arc::clone(&self.base));
+            let today = ctx.today().as_raw();
+            ctx.edit_world(move |old| {
+                Some(World::apply_stored(old, &content, &base, today, &deltas))
+            });
+        }
     }
 
     fn push(&mut self, text: String, style: DoorStyle) {
@@ -244,7 +304,8 @@ impl Session {
         }
         let today = ctx.today().as_raw();
         let before = player.clone();
-        let (settled, result, deltas) = {
+        let carried = std::mem::take(&mut self.pending);
+        let (settled, result, mut deltas) = {
             let mut env = Env::new(
                 &self.content,
                 &self.frontier,
@@ -256,6 +317,7 @@ impl Session {
             let result = player.apply(&mut env, action);
             (settled, result, env.deltas)
         };
+        deltas.splice(0..0, carried);
         self.note_events(&settled);
         let ok = match result {
             Ok(events) => {
@@ -271,18 +333,9 @@ impl Session {
             ctx.request_save(player.encode());
         }
         if !deltas.is_empty() {
-            let (content, frontier) = (Arc::clone(&self.content), Arc::clone(&self.frontier));
+            let (content, base) = (Arc::clone(&self.content), Arc::clone(&self.base));
             ctx.edit_world(move |old| {
-                let mut world = old
-                    .and_then(|bytes| World::decode(bytes, &frontier))
-                    .filter(|w| {
-                        w.season == frontier.season && w.gen_version == crate::frontier::GEN_VERSION
-                    })
-                    .unwrap_or_else(|| World::fresh(&content, &frontier, today));
-                for delta in &deltas {
-                    world.apply(&content, &frontier, delta);
-                }
-                Some(world.encode())
+                Some(World::apply_stored(old, &content, &base, today, &deltas))
             });
         }
         self.player = Some(player);
@@ -310,8 +363,25 @@ impl Session {
                 let captain = ctx
                     .player_name(&self.handle)
                     .map_or_else(|_| self.handle.clone(), |n| n.as_str().to_owned());
-                let player =
+                let mut player =
                     Player::new(&self.content, &self.frontier, &captain, background, today);
+                player.social.handle.clone_from(&self.handle);
+                if let Some((legacy, heirloom)) = self.inheritance.take() {
+                    if let Some(last) = legacy.last()
+                        && let Some((title, text)) = self.content.ending_text(last.ending)
+                    {
+                        self.push(
+                            format!("Last season ended as {title}: {text}"),
+                            DoorStyle::Accent,
+                        );
+                    }
+                    if let Some(name) = player.inherit(&self.content, legacy, heirloom) {
+                        self.push(
+                            format!("A {name} comes down to you from the last captain."),
+                            DoorStyle::Good,
+                        );
+                    }
+                }
                 ctx.request_save(player.encode());
                 self.push(
                     "You sign the loan. The ship is yours, and so is the debt.".to_owned(),
@@ -365,6 +435,7 @@ impl Session {
                 };
             }
             'a' => self.mode = Mode::Standing,
+            'o' => self.mode = Mode::Society(society::Tab::Convoy, 0, None),
             'y' if player.docked.is_some() => self.mode = Mode::Yard(0),
             'l' if player.docked.is_some() => self.mode = Mode::Loan,
             'n' => self.mode = Mode::News,
@@ -1003,6 +1074,14 @@ impl Session {
             Mode::News => out.extend(self.news_lines(player)),
             Mode::Crew(cursor) => out.extend(self.crew_lines(player, *cursor)),
             Mode::Jobs(cursor) => out.extend(self.jobs_lines(player, *cursor)),
+            Mode::Society(tab, cursor, input) => {
+                out.extend(self.society_lines(
+                    *tab,
+                    *cursor,
+                    input.as_deref(),
+                    height.saturating_sub(8).max(10),
+                ));
+            }
         }
         out.push((String::new(), DoorStyle::Plain));
         for (text, style) in self
@@ -1035,6 +1114,7 @@ fn fit_width(lines: Vec<(String, DoorStyle)>) -> Vec<(String, DoorStyle)> {
 
 impl DoorSession for Session {
     fn key(&mut self, key: DoorKey, ctx: &mut Ctx<'_>) -> Flow {
+        self.flush_open(ctx);
         if self.player.as_ref().is_some_and(|p| p.scene.is_some()) {
             return self.scene_key(key, ctx);
         }
@@ -1086,6 +1166,10 @@ impl DoorSession for Session {
                 self.jobs_key(key, ctx);
                 Flow::Stay
             }
+            Mode::Society(..) => {
+                self.society_key(key, ctx);
+                Flow::Stay
+            }
         }
     }
 
@@ -1110,6 +1194,11 @@ impl DoorSession for Session {
             let Ok(y) = u16::try_from(y) else { break };
             canvas.text(1, y, text, *style);
         }
+    }
+
+    fn captures_text(&self) -> bool {
+        // The convoy line takes every key, a `?` included.
+        matches!(self.mode, Mode::Society(_, _, Some(_)))
     }
 
     fn look_around(&self, _env: &DoorEnv) -> Vec<String> {

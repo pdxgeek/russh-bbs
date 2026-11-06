@@ -1,0 +1,114 @@
+# Reed-folk chains, set C: the bell, the eels, the apprentice and the fever. The scenes that set
+# these marks are in events-quests-c.toml.
+
+[[quest]]
+id = "bell-below"
+faction = "reed"
+title = "The Bell Below"
+intro = "The drowned chapel's bell is under the water, and at spring tide it rings anyway. The Reed-folk say it is calling for something. The Tidecourt says it is a very good bell."
+
+[[quest.step]]
+mark = "q-bell-below-one"
+text = "You heard the bell ring under the water at the drowned chapel."
+[[quest.step]]
+mark = "q-bell-below-two"
+text = "Ose Tallow, the old bell-ringer, told you what the bell is for."
+[[quest.step]]
+mark = "q-bell-below-three"
+text = "You found the bell on its chain, wrapped in a net of hair."
+[[quest.step]]
+mark = "q-bell-below-four"
+text = "Warden Pell Aske of the Tidecourt came asking after the bell."
+[[quest.end]]
+mark = "q-bell-below-end-court"
+text = "The bell was raised for the Tidecourt. The Reed-folk are not speaking of it."
+[[quest.end]]
+mark = "q-bell-below-end-hags"
+text = "The bell was rung in the old rite, and the bog-hags left the peat."
+[[quest.end]]
+mark = "q-bell-below-end-sleep"
+text = "The bell was left to sleep, and the Reed-folk owe you quietly for it."
+
+[[quest]]
+id = "eel-mothers"
+faction = "reed"
+title = "The Eel-mothers"
+intro = "The eels breed in the channel lairs, and every month the netters pull fewer of their own out of the water. Somebody says there is a woman who speaks for the brood."
+
+[[quest.step]]
+mark = "q-eel-mothers-one"
+text = "You pulled a drowned netter's tangle out of the channel."
+[[quest.step]]
+mark = "q-eel-mothers-two"
+text = "The netters' widows told you where the brood lies."
+[[quest.step]]
+mark = "q-eel-mothers-three"
+text = "You saw the brood in the eel-hole, and the eel-wife watching you."
+[[quest.step]]
+mark = "q-eel-mothers-four"
+text = "Maud Greyfin, the eel-wife, spoke her terms."
+[[quest.end]]
+mark = "q-eel-mothers-end-cull"
+text = "You culled the brood. The eel-holes are empty, and the Reed-folk look away."
+[[quest.end]]
+mark = "q-eel-mothers-end-tithe"
+text = "You struck a bargain with the eel-wife. The netters pay a tithe and keep their lives."
+[[quest.end]]
+mark = "q-eel-mothers-end-deep"
+text = "You drove the brood toward the Deep. The channels are quiet and you carry the bites."
+
+[[quest]]
+id = "witchs-apprentice"
+faction = "reed"
+title = "The Witch's Apprentice"
+intro = "An old reed-witch wants a girl taken across the marsh before the next tide-turn, and will not say why. She pays in favours, which is to say she does not pay."
+
+[[quest.step]]
+mark = "q-witchs-apprentice-one"
+text = "Granny Wick asked you to carry her apprentice across the marsh."
+[[quest.step]]
+mark = "q-witchs-apprentice-two"
+text = "Tamsin walked with you, and a green glass phial rode in her sleeve."
+[[quest.step]]
+mark = "q-witchs-apprentice-three"
+text = "The wardens stopped you at the reed toll and asked about the girl."
+[[quest.step]]
+mark = "q-witchs-apprentice-four"
+text = "At camp Tamsin told you why she was really sent away."
+[[quest.end]]
+mark = "q-witchs-apprentice-end-stay"
+text = "Tamsin stayed with your clan, and the hold is a little warmer for it."
+[[quest.end]]
+mark = "q-witchs-apprentice-end-home"
+text = "You took Tamsin home to Granny Wick, and the Reed-folk noticed."
+[[quest.end]]
+mark = "q-witchs-apprentice-end-court"
+text = "You gave Tamsin to the Tidecourt's wardens. Granny Wick will not forget it."
+
+[[quest]]
+id = "quiet-fever"
+faction = "reed"
+title = "The Quiet Fever"
+intro = "A sickness has drifted in from the Deep. It takes the voice first, then the legs. The healers are out of herbs and the Tidecourt wants the reed camps shut."
+
+[[quest.step]]
+mark = "q-quiet-fever-one"
+text = "You saw the first case in a reed camp: a netter who cannot speak."
+[[quest.step]]
+mark = "q-quiet-fever-two"
+text = "Bram Orris the healer told you what the herbs must be."
+[[quest.step]]
+mark = "q-quiet-fever-three"
+text = "You learned where the sickness is held back and where it is not."
+[[quest.step]]
+mark = "q-quiet-fever-four"
+text = "A fever-wreck out of the Deep showed where it comes from."
+[[quest.end]]
+mark = "q-quiet-fever-end-cure"
+text = "The fever was cured with a pale-sedge salve, and the Reed-folk thank you."
+[[quest.end]]
+mark = "q-quiet-fever-end-ban"
+text = "You enforced the Tidecourt's quarantine. The reed camps are shut to your clan."
+[[quest.end]]
+mark = "q-quiet-fever-end-ruin"
+text = "You ran for the Deep's sealed ruins and came back with a relic and a cough."

@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>russh-bbs: a bulletin board you reach with plain ssh</title>
+<meta name="description" content="russh-bbs is an invite-only-by-default bulletin board written in Rust. Forums, chat, mail, feeds and door games over plain ssh, with a modern terminal UI and an honest privacy model.">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#07100b">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+<script>document.documentElement.className = "js";</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap bar">
+    <a class="brand" href="#top"><span class="prompt">&gt;_</span> russh-bbs</a>
+    <nav class="nav" aria-label="Sections">
+      <a href="#features">Features</a>
+      <a href="#look">Look and feel</a>
+      <a href="#doors">Doors</a>
+      <a href="#telnet">Telnet</a>
+      <a href="#run">Run a board</a>
+      <a href="#privacy">Privacy</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#roadmap">Roadmap</a>
+    </nav>
+    <button id="theme" class="theme-btn" type="button" hidden>theme: auto</button>
+  </div>
+</header>
+
+<main id="main">
+<!-- ===================== HERO ===================== -->
+<div class="hero" id="top">
+  <div class="wrap hero-grid">
+    <div>
+      <p class="eyebrow">Open source &middot; written in Rust &middot; pre-release</p>
+      <h1>A BBS you reach with <span class="hl">plain ssh</span>.</h1>
+      <p class="lede">Forums, chat, mail, feeds and door games, with the feel of a classic bulletin board and the security habits of a modern service. <strong>No client to install.</strong> If you have <code>ssh</code>, you are in.</p>
+      <div class="sshline" role="group" aria-label="Example connect command">
+        <span class="p" aria-hidden="true">$</span><code>ssh -p 2222 you@board.example</code>
+        <button class="copy" type="button" data-copy="ssh -p 2222 you@board.example" hidden>copy</button>
+      </div>
+      <p class="note">An example address: there is no public board yet. You run your own.</p>
+      <div class="cta">
+        <a class="btn primary" href="#run">Run your own board</a>
+        <a class="btn" href="https://github.com/pdxgeek/russh-bbs">View on GitHub</a>
+      </div>
+      <p><span class="chip">invite-only by default</span><span class="chip">ssh first</span><span class="chip">telnet optional</span></p>
+    </div>
+
+    <div>
+      <div class="term" id="demo">
+        <div class="term-bar"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="term-title">ssh</span></div>
+        <div class="term-cmd" id="demo-cmd" aria-hidden="true"><span class="p">$</span> ssh -p 2222 you@board.example</div>
+        <div class="shots">
+          <img data-step="waiting" src="img/waiting-room.webp" width="1116" height="676" alt="The waiting room: a short menu to read the rules, request an invite, redeem an invite code, or disconnect.">
+          <img data-step="login" src="img/login.webp" width="1336" height="808" alt="The login screen: Signed in as founder, with the terminal's icon style and a banner above it.">
+          <img class="on" data-step="menu" src="img/style-phosphor.webp" width="1336" height="808" alt="The main menu in the Phosphor style: a green-on-black dashboard with panels for the clock, who is online, last callers, mail and credits.">
+          <img data-step="doors" src="img/doors-list.webp" width="1336" height="808" alt="The doors list: Coin Toss, Saltmarch, Emberdeep, Nullroute, Long Haul and Hallpass, each with a one-line description.">
+          <img data-step="longhaul" src="img/door-longhaul.webp" width="1336" height="808" alt="Long Haul, a space trade door: ship gauges, an alert panel and a braille-dot star map.">
+        </div>
+      </div>
+      <p class="cap"><span id="demo-cap">The main menu, in the Phosphor style on the dashboard layout. Real capture from a real ssh session.</span>
+        <button id="demo-pause" class="theme-btn" type="button" hidden>pause demo</button></p>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="facts" role="list">
+      <div class="fact" role="listitem"><b>ssh</b><span>and nothing else to install for members</span></div>
+      <div class="fact" role="listitem"><b>9</b><span>styles in the gallery, six of them complete packs</span></div>
+      <div class="fact" role="listitem"><b>7</b><span>layouts, from classic hotkeys to a dashboard</span></div>
+      <div class="fact" role="listitem"><b>5</b><span>original door games, written for this board</span></div>
+      <div class="fact" role="listitem"><b>80&times;24</b><span>still works, and so does a plain ASCII tier</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== PITCH ===================== -->
+<section id="pitch">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="kicker">The pitch</span>
+      <h2>A quiet board for people you know.</h2>
+      <p>Out of the box a strangers' key lands in a <strong>waiting room</strong> and learns nothing: no member list, no board names, no numbers. Growth is by invitation, and the invite tree is a feature. The sysop can switch registration to apply-and-approve or to open; invite-only stays the default.</p>
+    </div>
+    <div class="cards">
+      <article class="card"><h3><span class="g">01</span> Reach it with ssh</h3><p>Members use the <code>ssh</code> they already have. No custom client, no browser, no account on a third-party service.</p></article>
+      <article class="card"><h3><span class="g">02</span> Alive, not a museum</h3><p>Door games with shared worlds, chat with presence and whispers, polls, one-liners and a graffiti wall, with a sysop who has a voice.</p></article>
+      <article class="card"><h3><span class="g">03</span> Honest about privacy</h3><p>The server can read nearly everything, and the product says so. Nothing the server can read is ever labelled &ldquo;private&rdquo;. <a href="#privacy">The short version</a>.</p></article>
+      <article class="card"><h3><span class="g">04</span> Yours to theme</h3><p>Sysops change the name, art, menus, pages and style; members pick their own style and layout live. Security cues stay put, whatever the theme.</p></article>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FEATURES ===================== -->
+<section id="features" class="alt">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="kicker">What is built</span>
+      <h2>Features, by area.</h2>
+      <p>Only what has merged to <code>main</code> is listed here. What is not built yet is marked, and the register is <a href="https://github.com/pdxgeek/russh-bbs/blob/main/docs/features.md">docs/features.md</a>.</p>
+    </div>
+    <div class="cards">
+      <article class="card"><h3><span class="g">&#9656;</span> Getting in</h3>
+        <ul>
+          <li><strong>Waiting room</strong> for unknown keys, identical in every registration mode.</li>
+          <li><strong>Registration modes</strong> <code>invite</code> (default), <code>apply</code> and <code>open</code>.</li>
+          <li><strong>Invite codes</strong>: single use, expiring, bound to the inviter, with quotas and an invite tree.</li>
+          <li><strong>Sysop queue</strong> to approve, deny or vouch.</li>
+          <li><strong>Keys and passwords</strong>: password sign-in is on by default; keys are the extra. Link a new device with a code, or use a staff recovery code.</li>
+          <li><strong>Founder claim</strong>: a one-time token printed on first start makes you sysop.</li>
+        </ul></article>
+      <article class="card"><h3><span class="g">&#9656;</span> Talking</h3>
+        <ul>
+          <li><strong>Forums</strong> with search, and a full-screen editor with quoting and autosaved drafts.</li>
+          <li><strong>Chat rooms</strong> with presence and whispers, and chat beside any screen (<kbd>Ctrl</kbd>-<kbd>T</kbd>).</li>
+          <li><strong>Community</strong>: one-liners, a graffiti wall, last callers and polls.</li>
+          <li><strong>Internal mail</strong>, encrypted at rest, with no staff reader.</li>
+          <li><strong>RSS</strong>: feeds in as read-only boards (with an SSRF guard), and feeds out for public boards.</li>
+        </ul></article>
+      <article class="card"><h3><span class="g">&#9656;</span> Look and feel</h3>
+        <ul>
+          <li><strong>Nine styles</strong>, <strong>seven layouts</strong> and <strong>17 widgets</strong>, switched live.</li>
+          <li><strong>Board art</strong> from CP437 <code>.ans</code> files, parsed safely into cells.</li>
+          <li><strong>Mouse</strong>, a <kbd>Ctrl</kbd>-<kbd>K</kbd> command palette, toasts, a live header ticker.</li>
+          <li><strong>Motion that turns off</strong>, and a plain ASCII tier with no icons.</li>
+          <li><strong>Sysop menus and pages</strong>, theme packs you can import and export.</li>
+        </ul></article>
+      <article class="card"><h3><span class="g">&#9656;</span> Doors</h3>
+        <ul>
+          <li><strong>Five original games</strong> on one door framework, each with full terminal screens.</li>
+          <li><strong>Deterministic engines</strong> with replay tests and a seeded RNG.</li>
+          <li><strong>Sandboxed by construction</strong>: a door has no filesystem or network handle to use.</li>
+          <li><strong>Shared worlds</strong> and a nightly tick that catches up after downtime.</li>
+        </ul></article>
+      <article class="card"><h3><span class="g">&#9656;</span> Keeping it safe</h3>
+        <ul>
+          <li><strong>One shared sanitizer</strong> for every piece of text that is not interface chrome.</li>
+          <li><strong>Security cues</strong> that a theme cannot hide or restyle.</li>
+          <li><strong>Roles and permissions</strong>, one named permission per action, plus an append-only audit log.</li>
+          <li><strong>Rate limits</strong> per address and per key, and bounded sessions.</li>
+        </ul></article>
+      <article class="card"><h3><span class="g">&#9656;</span> Running it</h3>
+        <ul>
+          <li><strong>One static binary</strong> and one data directory.</li>
+          <li><strong>SQLite</strong> by default, or <strong>Postgres</strong> with TLS required, tested against the same suite.</li>
+          <li><strong>TOML config</strong> with <code>RUSSH_BBS_*</code> overrides.</li>
+          <li><strong>Clean shutdown</strong> that checkpoints the database.</li>
+        </ul></article>
+      <article class="card"><h3><span class="g">&#9656;</span> Not built yet <span class="tag">planned</span></h3>
+        <ul>
+          <li><strong>File areas over SFTP</strong> (M4): the blob store exists, the member-facing areas do not.</li>
+          <li><strong>Sysop admin screens</strong> and an audit-log viewer (M5).</li>
+          <li><strong>GraphQL API</strong> (M5), <strong>PGP mail</strong> (M6) and <strong>end-to-end encryption</strong> with a native client (M9).</li>
+        </ul></article>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== LOOK ===================== -->
+<section id="look">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="kicker">Look and feel</span>
+      <h2>A modern terminal UI with a BBS soul.</h2>
+      <p>Pick a style. These are real screens: the real server, driven by a real OpenSSH client, captured to PNG with a renderer that joins box lines without gaps. Members switch styles live from Terminal settings; the sysop sets the board&rsquo;s default.</p>
+    </div>
+
+    <div class="switcher">
+      <div class="tabs" id="style-tabs" role="tablist" aria-label="Choose a style">
+        <button role="tab" type="button" aria-selected="true">Phosphor</button>
+        <button role="tab" type="button" aria-selected="false" tabindex="-1">Neon Night</button>
+        <button role="tab" type="button" aria-selected="false" tabindex="-1">Paper</button>
+        <button role="tab" type="button" aria-selected="false" tabindex="-1">Amber Terminal</button>
+        <button role="tab" type="button" aria-selected="false" tabindex="-1">Deep Space</button>
+        <button role="tab" type="button" aria-selected="false" tabindex="-1">Classic ANSI</button>
+      </div>
+
+      <figure class="style-fig on">
+        <div class="term"><div class="term-bar"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="term-title">ssh &middot; Phosphor</span></div><img src="img/style-phosphor.webp" width="1336" height="808" loading="lazy" alt="The dashboard layout in the Phosphor style: green on black with scanline shading and bracketed panel titles."></div>
+        <figcaption><b>Phosphor.</b> A green CRT: scanline shading, bracketed titles.</figcaption>
+      </figure>
+      <figure class="style-fig">
+        <div class="term"><div class="term-bar"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="term-title">ssh &middot; Neon Night</span></div><img src="img/style-neon.webp" width="1336" height="808" loading="lazy" alt="The dashboard layout in the Neon Night style: magenta and cyan on a dark blue background."></div>
+        <figcaption><b>Neon Night.</b> Synthwave: magenta and cyan, a chrome logo, fades.</figcaption>
+      </figure>
+      <figure class="style-fig">
+        <div class="term"><div class="term-bar"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="term-title">ssh &middot; Paper</span></div><img src="img/style-paper.webp" width="1336" height="808" loading="lazy" alt="The dashboard layout in the Paper style: dark ink on a light grey page with thin borders."></div>
+        <figcaption><b>Paper.</b> Calm and light: an ink-on-paper palette, thin borders, no motion.</figcaption>
+      </figure>
+      <figure class="style-fig">
+        <div class="term"><div class="term-bar"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="term-title">ssh &middot; Amber Terminal</span></div><img src="img/style-amber.webp" width="1336" height="808" loading="lazy" alt="The dashboard layout in the Amber Terminal style: warm amber text on black with heavy borders."></div>
+        <figcaption><b>Amber Terminal.</b> Warm amber on black, thick borders, a typewriter reveal.</figcaption>
+      </figure>
+      <figure class="style-fig">
+        <div class="term"><div class="term-bar"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="term-title">ssh &middot; Deep Space</span></div><img src="img/style-deepspace.webp" width="1336" height="808" loading="lazy" alt="The dashboard layout in the Deep Space style: cold blues with a starfield backdrop."></div>
+        <figcaption><b>Deep Space.</b> Starfield backgrounds, cold blues, braille nebula art.</figcaption>
+      </figure>
+      <figure class="style-fig">
+        <div class="term"><div class="term-bar"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="term-title">ssh &middot; Classic ANSI</span></div><img src="img/style-ansi.webp" width="1336" height="808" loading="lazy" alt="The dashboard layout in the Classic ANSI style: sixteen colours, blue bars and double-line cyan borders."></div>
+        <figcaption><b>Classic ANSI.</b> Sixteen colours, block art and double borders, like a 1994 board done properly.</figcaption>
+      </figure>
+    </div>
+
+    <div class="tiles">
+      <div class="tile">
+        <div class="term"><div class="term-bar"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="term-title">Style gallery</span></div><div class="shots"><img src="img/gallery.webp" width="1336" height="808" loading="lazy" alt="The style gallery: a strip of nine styles with a live sample of the selected one."></div></div>
+        <h3>A gallery with live samples</h3>
+        <p>Nine styles: the six above plus Default, Green and High Contrast. The sample says plainly that nothing on it is real.</p>
+      </div>
+      <div class="tile">
+        <div class="term"><div class="term-bar"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="term-title">80&times;24, classic layout</span></div><div class="shots"><img src="img/classic-80x24.webp" width="896" height="544" loading="lazy" alt="The classic hotkey layout at 80 by 24 in the Amber Terminal style: a single bordered menu with a letter beside each entry."></div></div>
+        <h3>Small terminals are first-class</h3>
+        <p>Every screen is built to work at 80&times;24, and a plain ASCII tier with no icons and no colour is always available.</p>
+      </div>
+      <div class="tile">
+        <div class="term"><div class="term-bar"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="term-title">Chat beside any screen</span></div><div class="shots"><img src="img/split-chat.webp" width="1116" height="676" loading="lazy" alt="The main menu on the left with a chat rooms pane beside it, a draggable divider between them."></div></div>
+        <h3>Chat beside anything</h3>
+        <p><kbd>Ctrl</kbd>-<kbd>T</kbd> docks chat next to the screen you are on, with a divider you can drag with the mouse or move with keys.</p>
+      </div>
+      <div class="tile">
+        <div class="term"><div class="term-bar"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="term-title">Forum reader</span></div><div class="shots"><img src="img/forum-reader.webp" width="1116" height="676" loading="lazy" alt="The forum reader showing a thread with a header bar and a status bar."></div></div>
+        <h3>Tables, readers and popups</h3>
+        <p>A header bar, a status bar, sortable tables, scrollbars and popups on every screen. Everything is drawn as ordinary styled cells: no terminal graphics protocol is ever sent.</p>
+      </div>
+    </div>
+    <p class="note" style="margin-top:1.5rem">Verified on OpenSSH 9.6 and a raw telnet client. Other terminals have not been checked, so box lines may need the Blocks border option on some.</p>
+  </div>
+</section>
+
+<!-- ===================== DOORS ===================== -->
+<section id="doors" class="alt">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="kicker">Door games</span>
+      <h2>Five original doors.</h2>
+      <p>Every game is written for this board, in Rust, with its own world, systems and text. Each has an RPG layer where choices close doors and consequences persist, and some outcomes change the shared world for everyone on the board. They run in-process with no filesystem or network access and save through the framework. The engines and screens are built and tested; the later content and balance passes for some of them are still planned.</p>
+    </div>
+    <div class="doors">
+      <article class="door"><div class="term"><div class="shots"><img src="img/door-saltmarch.webp" width="1336" height="808" loading="lazy" alt="Saltmarch: a tide chart across the top and a grid of hold buildings for a clan on a salt marsh."></div></div>
+        <h3>Saltmarch</h3><span class="genre">Clan strategy, daily turns</span><p>Lead a clan on a tidal salt marsh. The water is the clock.</p></article>
+      <article class="door"><div class="term"><div class="shots"><img src="img/door-emberdeep.webp" width="1336" height="808" loading="lazy" alt="Emberdeep hero creation: a choose-two-traits screen with a list of traits."></div></div>
+        <h3>Emberdeep</h3><span class="genre">Fantasy delving RPG</span><p>Delve the old forges under Cindermere. How deep will you go today?</p></article>
+      <article class="door"><div class="term"><div class="shots"><img src="img/door-nullroute.webp" width="1336" height="808" loading="lazy" alt="Nullroute: block-letter title, a menu of contracts and fixers, and panels for the rig and the deck."></div></div>
+        <h3>Nullroute</h3><span class="genre">Hacking and heists</span><p>Hack corporate networks before the trace finds your rig.</p></article>
+      <article class="door"><div class="term"><div class="shots"><img src="img/door-longhaul.webp" width="1336" height="808" loading="lazy" alt="Long Haul: ship gauges, an alert panel and a braille-dot star map."></div></div>
+        <h3>Long Haul</h3><span class="genre">Space trade and exploration</span><p>A tramp freighter, a loan and a failing frontier.</p></article>
+      <article class="door"><div class="term"><div class="shots"><img src="img/door-hallpass.webp" width="1336" height="808" loading="lazy" alt="Hallpass: a school timetable across the top, a dormitory description and a panel of the player's heat and nerve."></div></div>
+        <h3>Hallpass</h3><span class="genre">School mischief</span><p>Mischief at Greywater Academy. Pull schemes, dodge the file.</p></article>
+      <article class="door"><div class="term"><div class="shots"><img src="img/doors-list.webp" width="1336" height="808" loading="lazy" alt="The doors list, with a Coin Toss example door beside the five games."></div></div>
+        <h3>And a framework</h3><span class="genre">For writing your own</span><p>A sixth entry, Coin Toss, is the framework&rsquo;s example door. A game is a Rust crate that depends on the door framework and nothing else.</p></article>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== TELNET ===================== -->
+<section id="telnet">
+  <div class="wrap arch">
+    <div>
+      <span class="kicker">Telnet access</span>
+      <h2>Telnet, if you must, and labelled.</h2>
+      <p>Telnet is <strong>off by default</strong>: out of the box nothing listens on it. A sysop who wants it turns on two separate switches, and the board then says <code>LOW-SECURITY MODE</code> in its log and on staff screens.</p>
+      <ul>
+        <li>Connect with a plain <code>telnet</code> client; type <code>new</code> at <code>login:</code> to reach the same waiting room as over ssh.</li>
+        <li><strong>The whole session crosses the network unencrypted</strong>, password included. Every telnet screen carries a fixed <code>UNENCRYPTED</code> marker on its last row that nothing can hide.</li>
+        <li>Staff powers are dropped over telnet: a sysop who signs in that way is an ordinary member for the session.</li>
+        <li>Prefer ssh. Never reuse a password you typed over telnet.</li>
+      </ul>
+    </div>
+    <div>
+      <div class="term"><div class="term-bar"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="term-title">telnet</span></div><div class="shots"><img src="img/telnet-menu.webp" width="1116" height="676" loading="lazy" alt="The main menu over telnet: the same screens as ssh, with UNENCRYPTED shown on the last row."></div></div>
+      <p class="cap">The same menus over telnet. Note the fixed marker on the last row.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== RUN ===================== -->
+<section id="run" class="alt">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="kicker">Run your own board</span>
+      <h2>From a clone to a claimed board.</h2>
+      <p>There are no published binaries and no published container image yet: the owner has not cut a release. Today you build from source. These commands were run from a clean data directory with a real OpenSSH 9.6 client.</p>
+    </div>
+    <ol class="steps">
+      <li><h3>Build it</h3>
+        <pre><code><span class="p">$</span> git clone https://github.com/pdxgeek/russh-bbs &amp;&amp; cd russh-bbs
+<span class="p">$</span> cargo build --release -p russh-bbs-server
+<span class="c"># about four minutes on a small machine; rust-toolchain.toml pins the toolchain</span></code></pre></li>
+      <li><h3>Start it</h3>
+        <pre><code><span class="p">$</span> target/release/russh-bbs-server --listen 0.0.0.0:2222
+<span class="c"># first start creates the host key, the database and mail.key in one data directory,</span>
+<span class="c"># logs the host key fingerprint, and prints a one-time setup token to the console</span></code></pre></li>
+      <li><h3>Claim it</h3>
+        <pre><code><span class="p">$</span> ssh -p 2222 claim@your.host
+<span class="c"># paste the token, choose a password: you are now <b>founder</b>, with the sysop role</span></code></pre>
+        <p class="note">A restart before the claim prints a new token and voids the old one. Anyone who can read the console before you claim can claim the board, so do it first.</p></li>
+      <li><h3>Check it from outside</h3>
+        <pre><code><span class="p">$</span> ssh -p 2222 new@your.host
+<span class="c"># what a stranger sees: the waiting room, and nothing else</span></code></pre></li>
+    </ol>
+    <div class="callout">
+      <h3>Container, Postgres, backups</h3>
+      <p>A <code>Dockerfile</code> and <code>compose.yaml</code> are in the repository (one static binary in a <code>scratch</code> image, all state in one volume). Build the image yourself with <code>docker build -t russh-bbs .</code>; I did not run Docker for this page, so follow the deploy guide rather than this line. The guides also cover Postgres with TLS required, configuration, registration modes, themes, backups and upgrades.</p>
+      <p><a href="https://github.com/pdxgeek/russh-bbs/blob/main/docs/guide/sysop/01-install.md">Sysop guide</a> &middot; <a href="https://github.com/pdxgeek/russh-bbs/blob/main/docs/guide/member/01-connect.md">Member guide</a> &middot; <a href="https://github.com/pdxgeek/russh-bbs/blob/main/docs/deploy.md">Deploying with a container</a></p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== PRIVACY ===================== -->
+<section id="privacy">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="kicker">Privacy, plainly</span>
+      <h2>Who can read what.</h2>
+    </div>
+    <div class="callout privacy">
+      <ul>
+        <li><strong>The server, and so the person who runs it, can read nearly everything</strong>: posts, chat lines, whispers, profiles, who invited whom.</li>
+        <li>The exceptions are <strong>PGP-encrypted mail</strong> (you encrypt it yourself before you paste it in) and <strong>files you encrypt yourself</strong> before uploading (file areas are not built yet).</li>
+        <li><strong>Internal mail is encrypted at rest</strong> and has <strong>no staff reader</strong>. That protects a stolen disk or database copy; it does not hide mail from whoever controls the running server.</li>
+        <li><strong>ssh encrypts the wire, not the server. Telnet encrypts nothing.</strong> End-to-end encryption needs a native client that does not exist yet, and the board never fakes it: it will not call anything &ldquo;private&rdquo; that the server can read.</li>
+      </ul>
+      <p><a href="https://github.com/pdxgeek/russh-bbs/blob/main/docs/guide/privacy.md">Privacy: who can read what</a> &middot; <a href="https://github.com/pdxgeek/russh-bbs/blob/main/docs/threat-model.md">The threat model</a></p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== ARCHITECTURE ===================== -->
+<section id="architecture" class="alt">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="kicker">Architecture</span>
+      <h2>Thin front ends, one core.</h2>
+      <p>One Cargo workspace. Rules live in <code>russh-bbs-core</code>; the front ends stay thin and call it. A rule that exists in two front ends is a bug.</p>
+    </div>
+    <div class="arch">
+      <svg viewBox="0 0 560 700" role="img" aria-labelledby="arch-t arch-d">
+        <title id="arch-t">Architecture diagram</title>
+        <desc id="arch-d">Clients (ssh, telnet, and later sftp and GraphQL clients) connect to front ends in russh-bbs-server (and later russh-bbs-api). Both call russh-bbs-core, which holds the rules, the sanitizer and the storage traits. Core is implemented by russh-bbs-store, with SQLite or Postgres and a blob store. The door framework and five door crates sit beside core.</desc>
+        <defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z"/></marker></defs>
+
+        <text class="lbl" x="20" y="28">CLIENTS</text>
+        <rect class="box" x="20" y="38" width="120" height="54" rx="10"/><text class="t" x="80" y="62" text-anchor="middle">ssh</text><text class="s" x="80" y="80" text-anchor="middle">OpenSSH, any</text>
+        <rect class="box" x="154" y="38" width="120" height="54" rx="10"/><text class="t" x="214" y="62" text-anchor="middle">telnet</text><text class="s" x="214" y="80" text-anchor="middle">off by default</text>
+        <rect class="box plan" x="288" y="38" width="120" height="54" rx="10"/><text class="t" x="348" y="62" text-anchor="middle">sftp</text><text class="s" x="348" y="80" text-anchor="middle">planned (M4)</text>
+        <rect class="box plan" x="422" y="38" width="118" height="54" rx="10"/><text class="t" x="481" y="62" text-anchor="middle">GraphQL</text><text class="s" x="481" y="80" text-anchor="middle">planned (M5)</text>
+
+        <path class="ar" d="M80 92V138" marker-end="url(#ah)"/><path class="ar" d="M214 92V138" marker-end="url(#ah)"/>
+        <path class="ar dash" d="M348 92V138" marker-end="url(#ah)"/><path class="ar dash" d="M481 92V138" marker-end="url(#ah)"/>
+
+        <text class="lbl" x="20" y="130">FRONT ENDS (thin)</text>
+        <rect class="box" x="20" y="144" width="388" height="86" rx="10"/>
+        <text class="t" x="214" y="170" text-anchor="middle">russh-bbs-server</text>
+        <text class="s" x="214" y="190" text-anchor="middle">ssh and telnet, the terminal UI (ratatui),</text>
+        <text class="s" x="214" y="208" text-anchor="middle">config, rate limits, the doors it ships</text>
+        <rect class="box plan" x="422" y="144" width="118" height="86" rx="10"/><text class="t" x="481" y="180" text-anchor="middle">russh-bbs-api</text><text class="s" x="481" y="200" text-anchor="middle">reserved</text>
+
+        <path class="ar" d="M214 230V286" marker-end="url(#ah)"/><path class="ar dash" d="M481 230V286" marker-end="url(#ah)"/>
+
+        <text class="lbl" x="20" y="278">CORE (all the rules)</text>
+        <rect class="box core" x="20" y="292" width="520" height="140" rx="12"/>
+        <text class="t" x="280" y="320" text-anchor="middle">russh-bbs-core</text>
+        <text class="s" x="280" y="342" text-anchor="middle">access and permissions &middot; invites &middot; accounts</text>
+        <text class="s" x="280" y="361" text-anchor="middle">forums &middot; chat &middot; mail &middot; feeds &middot; credits &middot; scheduler</text>
+        <text class="s" x="280" y="380" text-anchor="middle">the one sanitizer &middot; icon registry and security markers</text>
+        <text class="s" x="280" y="410" text-anchor="middle">storage traits, implemented below</text>
+
+        <path class="ar" d="M120 432V490" marker-end="url(#ah)"/><path class="ar" d="M440 432V490" marker-end="url(#ah)"/>
+
+        <text class="lbl" x="20" y="482">STORAGE</text>
+        <rect class="box" x="20" y="496" width="250" height="100" rx="10"/>
+        <text class="t" x="145" y="522" text-anchor="middle">russh-bbs-store</text>
+        <text class="s" x="145" y="544" text-anchor="middle">SQLite (default)</text>
+        <text class="s" x="145" y="563" text-anchor="middle">or Postgres, TLS required</text>
+        <text class="s" x="145" y="582" text-anchor="middle">separate migrations</text>
+        <rect class="box door" x="300" y="496" width="240" height="100" rx="10"/>
+        <text class="t" x="420" y="522" text-anchor="middle">Door framework</text>
+        <text class="s" x="420" y="544" text-anchor="middle">Door trait, saves, daily tick,</text>
+        <text class="s" x="420" y="563" text-anchor="middle">replay, sandbox audit</text>
+        <text class="s" x="420" y="582" text-anchor="middle">crates/doors/framework</text>
+
+        <path class="ar" d="M420 596V630" marker-end="url(#ah)"/>
+        <rect class="box door" x="300" y="634" width="240" height="46" rx="10"/>
+        <text class="s" x="420" y="654" text-anchor="middle">Saltmarch &middot; Emberdeep &middot; Nullroute</text>
+        <text class="s" x="420" y="671" text-anchor="middle">Long Haul &middot; Hallpass</text>
+
+        <rect class="box" x="20" y="634" width="250" height="46" rx="10"/>
+        <text class="s" x="145" y="654" text-anchor="middle">BlobStore: local directory or</text>
+        <text class="s" x="145" y="671" text-anchor="middle">S3-compatible (built; no UI yet)</text>
+        <path class="ar" d="M145 596V630" marker-end="url(#ah)"/>
+      </svg>
+      <dl>
+        <dt>Front ends stay thin</dt><dd>The SSH server and the telnet listener drive the same screens. Neither decides who may do what; they ask core.</dd>
+        <dt>One core</dt><dd>Access, invites, mail, chat and the sanitizer live in <code>russh-bbs-core</code>. Core depends on nothing concrete.</dd>
+        <dt>Two databases, one test suite</dt><dd>SQLite is the default. Postgres has its own forward-only migrations and passes the same behaviour tests; there is no silent fallback from one to the other.</dd>
+        <dt>Doors depend on the framework only</dt><dd>A game is its own crate on the door framework: a deterministic engine, a saves host, a source audit that checks it reaches for no filesystem or network.</dd>
+        <dt>Dashed means not built</dt><dd>SFTP file areas and the GraphQL API are planned; their crates are reserved.</dd>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== ROADMAP ===================== -->
+<section id="roadmap">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="kicker">Roadmap</span>
+      <h2>Where it is, and what is planned.</h2>
+      <p>Each milestone ends with something runnable and with a QA pass by a session that did not write the code. Nothing past the current milestone is built, and there are no dates: the plan&rsquo;s estimates are guesses. The full plan is <a href="https://github.com/pdxgeek/russh-bbs/blob/main/docs/milestones.md">docs/milestones.md</a>.</p>
+    </div>
+    <ol class="timeline">
+      <li class="done"><h3>M0 &ndash; M3 <span class="state done">merged</span></h3><p>Workspace and shared sanitizer; the SSH server and waiting room; invites, roles, profiles and the sysop queue; forums, chat, mail, feeds, telnet, passwords and the scheduler.</p></li>
+      <li class="done"><h3>M3.5 Look and feel <span class="state done">merged</span></h3><p>The modern UI: styles, layouts, widgets, board art, sysop menus, mouse, effects and the command palette.</p></li>
+      <li class="now"><h3>M4 Files and doors <span class="state now">in progress</span></h3><p>The door framework and the five games are in. File areas over SFTP, scanning and the global new-scan are still to do.</p></li>
+      <li class="plan"><h3>M5 Sysop tooling and API <span class="state plan">planned</span></h3><p>An admin TUI, moderation workflow and audit-log viewer, notifications and digests, data export and deletion, an accessibility mode, backups with a tested restore for every backend, and a read-only GraphQL API. Then a closed beta.</p></li>
+      <li class="plan"><h3>M6 External mail <span class="state plan">planned</span></h3><p>Inbound and relayed outbound mail, and PGP mail through local <code>gpg</code>.</p></li>
+      <li class="plan"><h3>M7 Plugins <span class="state plan">planned</span></h3><p>A WASM plugin runtime for menu scripting and community doors.</p></li>
+      <li class="plan"><h3>M8 Open edges <span class="state plan">planned</span></h3><p>Opt-in federation, an NNTP gateway, an IRCv3 gateway for chat rooms, finger and a directory listing.</p></li>
+      <li class="plan"><h3>M9 Native client and E2EE <span class="state plan">planned</span></h3><p>A native client with end-to-end encrypted messages, multi-device, hardening and an external crypto review. Until then the server can read everything except what you encrypt yourself, and says so.</p></li>
+    </ol>
+  </div>
+</section>
+
+<!-- ===================== LINKS ===================== -->
+<section id="links" class="alt">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="kicker">Read more, or help</span>
+      <h2>Links.</h2>
+      <p>Work is done in small, reviewed slices, by people and by coding agents. There is no separate contributing file yet; <code>AGENTS.md</code> is the entry point for both.</p>
+    </div>
+    <div class="links">
+      <a href="https://github.com/pdxgeek/russh-bbs"><b>GitHub repository</b><span>Source, issues and pull requests</span></a>
+      <a href="https://github.com/pdxgeek/russh-bbs/blob/main/docs/README.md"><b>Documentation index</b><span>Every design and status document</span></a>
+      <a href="https://github.com/pdxgeek/russh-bbs/blob/main/AGENTS.md"><b>AGENTS.md</b><span>How to contribute: rules, validation, branches</span></a>
+      <a href="https://github.com/pdxgeek/russh-bbs/blob/main/docs/cloud-sessions.md"><b>Working in slices</b><span>How a contribution is sized and reviewed</span></a>
+      <a href="https://github.com/pdxgeek/russh-bbs/blob/main/docs/guide/sysop/01-install.md"><b>Sysop guide</b><span>Install, configure, look after a board</span></a>
+      <a href="https://github.com/pdxgeek/russh-bbs/blob/main/docs/guide/member/01-connect.md"><b>Member guide</b><span>Connect, your terminal, the board, doors</span></a>
+      <a href="https://github.com/pdxgeek/russh-bbs/blob/main/docs/threat-model.md"><b>Threat model</b><span>What the board defends and what it cannot</span></a>
+      <a href="https://github.com/pdxgeek/russh-bbs/blob/main/docs/features.md"><b>Feature register</b><span>The status of every feature</span></a>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>russh-bbs uses the russh library and is not affiliated with the russh project.</p>
+    <p>Screenshots on this page are captured from the real server over a real OpenSSH client with the repository&rsquo;s <code>tools/screenshots</code> renderer. This page is static files: no scripts from other sites, no trackers.</p>
+  </div>
+</footer>
+
+<script src="site.js"></script>
+</body>
+</html>

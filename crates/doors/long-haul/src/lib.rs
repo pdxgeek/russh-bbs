@@ -14,6 +14,7 @@
 
 #![forbid(unsafe_code)]
 
+pub mod arcs;
 pub mod boarding;
 pub mod codec;
 pub mod combat;
@@ -30,6 +31,8 @@ pub mod scene;
 mod session;
 pub mod ship;
 pub mod skills;
+pub mod social;
+pub mod socialplay;
 pub mod trade;
 pub mod transit;
 pub mod world;
@@ -50,9 +53,9 @@ use crate::world::World;
 /// The door's id. It never changes: saves and the world are filed under it.
 pub const DOOR_ID: &str = "long-haul";
 /// The player save's version (see [`player::SAVE_FORMAT`] for the format byte inside it).
-pub const SAVE_VERSION: u32 = 2;
+pub const SAVE_VERSION: u32 = 3;
 /// The shared world's version.
-pub const WORLD_VERSION: u32 = 1;
+pub const WORLD_VERSION: u32 = 2;
 
 /// Why the door could not be built.
 #[derive(Debug)]
@@ -109,6 +112,29 @@ impl LongHaul {
         Ok(Arc::new(Self::new()?))
     }
 
+    /// The start of a new captain after a season ended: what the last one made of it, and an
+    /// heirloom, if the old save can be read against the old season's map.
+    fn successor(&self, bytes: &[u8], season: u32, world: Option<&[u8]>) -> session::Start {
+        let base = self.frontier(season);
+        let map = world
+            .and_then(|w| World::decode(w, &self.content, &base))
+            .filter(|w| w.season == season)
+            .map_or_else(|| (*base).clone(), |w| w.extended(&self.content, &base));
+        let Some(old) = Player::decode(bytes, &self.content, &map) else {
+            return session::Start::New;
+        };
+        let mut legacy = old.social.legacy.clone();
+        legacy.push(socialplay::Legacy {
+            season,
+            ending: old.season_ending(&self.content),
+            worth: old.net_worth(&self.content),
+        });
+        session::Start::Successor {
+            legacy,
+            heirloom: old.heirloom_choice(&self.content),
+        }
+    }
+
     /// The content tables.
     #[must_use]
     pub fn content(&self) -> &Arc<Content> {
@@ -140,17 +166,21 @@ impl Door for LongHaul {
     }
 
     fn open(&self, start: Start<'_>, rng: &mut DoorRng) -> Box<dyn DoorSession> {
-        let frontier = self.frontier(start.season);
+        let base = self.frontier(start.season);
         let today = start.today.as_raw();
         let world = start
             .world
-            .and_then(|bytes| World::decode(bytes, &frontier))
+            .and_then(|bytes| World::decode(bytes, &self.content, &base))
             .filter(|w| w.season == start.season && w.gen_version == GEN_VERSION)
-            .unwrap_or_else(|| World::fresh(&self.content, &frontier, today));
+            .unwrap_or_else(|| World::successor(&self.content, &base, today, start.world));
+        let frontier = Arc::new(world.extended(&self.content, &base));
         let player = match start.save {
             Save::Fresh => session::Start::New,
-            // A save from an earlier season is a past captain: this season starts a new one.
-            Save::Loaded { season, .. } if season != start.season => session::Start::New,
+            // A save from an earlier season is a past captain: this season starts a new one, who
+            // remembers how that season ended and inherits a module.
+            Save::Loaded { bytes, season } if season != start.season => {
+                self.successor(bytes, season, start.world)
+            }
             Save::Loaded { bytes, .. } => match Player::decode(bytes, &self.content, &frontier) {
                 Some(player) => session::Start::Captain(Box::new(player)),
                 None => session::Start::Unreadable,
@@ -158,6 +188,7 @@ impl Door for LongHaul {
         };
         Box::new(session::Session::new(
             Arc::clone(&self.content),
+            base,
             frontier,
             world,
             player,
@@ -172,6 +203,8 @@ impl Door for LongHaul {
         // and scene sections (D98 (3): saves are forward-only, and these steps stay for good).
         match (kind, from) {
             (BlobKind::Save, 1) => Player::migrate_v1(bytes).ok_or(MigrateError::Unsupported(from)),
+            (BlobKind::Save, 2) => Player::migrate_v2(bytes).ok_or(MigrateError::Corrupt(from)),
+            (BlobKind::World, 1) => World::migrate_v1(bytes).ok_or(MigrateError::Corrupt(from)),
             _ => Err(MigrateError::Unsupported(from)),
         }
     }
@@ -188,7 +221,7 @@ impl Door for LongHaul {
         let frontier = self.frontier(season);
         let mut world = match tick.world() {
             None => World::fresh(&self.content, &frontier, day),
-            Some(bytes) => World::decode(bytes, &frontier)
+            Some(bytes) => World::decode(bytes, &self.content, &frontier)
                 .ok_or_else(|| TickError::Door("the world does not fit this frontier".into()))?,
         };
         world.tick_day(&self.content, &frontier, day, tick.rng());

@@ -28,6 +28,8 @@ pub const DAY0: i64 = 20_000;
 pub struct Harness {
     pub content: Content,
     pub frontier: Frontier,
+    /// The generated map without outposts (what the world's tick is keyed to).
+    pub base: Frontier,
     pub world: World,
     pub rng: DoorRng,
     pub today: i64,
@@ -42,6 +44,7 @@ impl Harness {
         let world = World::fresh(&content, &frontier, DAY0);
         Self {
             content,
+            base: frontier.clone(),
             frontier,
             world,
             rng: DoorRng::from_seed(seed),
@@ -124,7 +127,8 @@ impl Harness {
     pub fn next_day(&mut self) {
         self.today += 1;
         self.world
-            .tick_day(&self.content, &self.frontier, self.today, &mut self.rng);
+            .tick_day(&self.content, &self.base, self.today, &mut self.rng);
+        self.frontier = self.world.extended(&self.content, &self.base);
     }
 
     /// The first station whose economy is `economy` (optionally also with a shipyard).

@@ -270,7 +270,7 @@ The look-around view is the text of every screen (the `lines()` of `session.rs`,
 
 ## Implementation notes (M4-N4: social, content, balance, endings)
 
-Status: **Implemented (in review); Verified** by schema, unit, property, replay and migration tests, a two-player crew run through the framework's store, caps tests, the sandbox audit, the balance harness (numbers below) and a walk with the OpenSSH 9.6 client with two accounts on one board ([walk](../qa/m4-n4-walk.md), screenshots in [m4-n4-screens/](../qa/m4-n4-screens/)). Decision D-TBD.
+Status: **Implemented (in review); Verified** by schema, unit, property, replay and migration tests, a two-player crew run through the framework's store, caps tests, the sandbox audit, the balance harness (numbers below) and a walk with the OpenSSH 9.6 client with two accounts on one board ([walk](../qa/m4-n4-walk.md), screenshots in [m4-n4-screens/](../qa/m4-n4-screens/)). Decision D143.
 
 ### What is implemented
 

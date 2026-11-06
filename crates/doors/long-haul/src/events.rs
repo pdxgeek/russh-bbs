@@ -14,6 +14,14 @@ use crate::skills::Skill;
 /// Something that happened.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Event {
+    /// A line from the social layer, already written out (names in it were sanitized when
+    /// the captain chose them). `tone` is -1 bad, 0 plain, 1 good.
+    Social {
+        /// The line.
+        text: String,
+        /// How to colour it.
+        tone: i8,
+    },
     /// A new real day: the drive allowance came back.
     NewDay {
         /// Drive-days now available.
@@ -506,6 +514,9 @@ impl Event {
         reason = "one flat match with a line per event"
     )]
     pub fn text(&self, content: &Content, frontier: &Frontier) -> String {
+        if let Self::Social { text, .. } = self {
+            return text.clone();
+        }
         let good = |g: &u8| {
             content
                 .goods
@@ -531,6 +542,7 @@ impl Event {
         };
         let system = |s: &u16| frontier.system(*s).map_or("space", |s| s.name.as_str());
         match self {
+            Self::Social { text, .. } => text.clone(),
             Self::NewDay { days } => format!("A new day. {days} drive-days on the board."),
             Self::Interest { added } => format!("Interest added to the loan: {added} cr."),
             Self::DuePaid { amount } => {
@@ -841,6 +853,8 @@ impl Event {
 /// Why an action was refused. Nothing changed.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Refusal {
+    /// A social action was refused, and why.
+    Social(String),
     /// Not docked.
     NotDocked,
     /// Already docked.
@@ -960,6 +974,7 @@ impl Refusal {
     #[must_use]
     pub fn text(&self) -> String {
         match self {
+            Self::Social(text) => text.clone(),
             Self::NotDocked => "You are not docked anywhere.".to_owned(),
             Self::AlreadyDocked => "Already docked.".to_owned(),
             Self::NoSuchThing => "There is no such thing here.".to_owned(),

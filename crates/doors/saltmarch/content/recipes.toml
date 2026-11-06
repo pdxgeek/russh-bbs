@@ -79,3 +79,366 @@ qty = 1
 turns = 1
 skill = "salvager"
 learn = "trade"
+
+[[recipe]]
+id = "dry-fish"
+name = "Dry fish"
+workshop = "watchfire"
+inputs = { fish = 4 }
+output = "food"
+qty = 2
+turns = 1
+skill = "wader"
+learn = "start"
+
+[[recipe]]
+id = "ash-salt"
+name = "Burn ash-salt"
+workshop = "watchfire"
+inputs = { reed = 5 }
+output = "salt"
+qty = 3
+turns = 1
+skill = "raker"
+learn = "start"
+
+[[recipe]]
+id = "pickle-shoots"
+name = "Pickle reed shoots"
+workshop = "hut"
+inputs = { reed = 4, salt = 1 }
+output = "food"
+qty = 3
+turns = 1
+skill = "wader"
+learn = "start"
+
+[[recipe]]
+id = "boil-brine"
+name = "Boil brine"
+workshop = "salt-pan"
+inputs = { peat = 3, reed = 2 }
+output = "salt"
+qty = 4
+turns = 2
+skill = "raker"
+learn = "workshop"
+
+[[recipe]]
+id = "salt-the-catch"
+name = "Salt the catch"
+workshop = "salt-pan"
+inputs = { fish = 4, salt = 2 }
+output = "food"
+qty = 4
+turns = 1
+skill = "raker"
+learn = "workshop"
+
+[[recipe]]
+id = "peat-smoked-fish"
+name = "Peat-smoke fish"
+workshop = "peat-stack"
+inputs = { fish = 4, peat = 1 }
+output = "food"
+qty = 3
+turns = 1
+skill = "raker"
+learn = "workshop"
+
+[[recipe]]
+id = "bog-iron-bloom"
+name = "Smelt bog-iron"
+workshop = "peat-stack"
+inputs = { peat = 4, salt = 1 }
+output = "iron"
+qty = 2
+turns = 3
+skill = "smith"
+learn = "workshop"
+
+[[recipe]]
+id = "reed-seed-bread"
+name = "Bake reed-seed bread"
+workshop = "reed-garden"
+inputs = { reed = 5, fish = 1 }
+output = "food"
+qty = 3
+turns = 1
+skill = "wader"
+learn = "workshop"
+
+[[recipe]]
+id = "reed-plank"
+name = "Press reed planks"
+workshop = "reed-garden"
+inputs = { reed = 5, peat = 2 }
+output = "timber"
+qty = 3
+turns = 2
+skill = "wader"
+learn = "workshop"
+
+[[recipe]]
+id = "wreck-nails"
+name = "Pry wreck-nails"
+workshop = "drift-rack"
+inputs = { timber = 3 }
+output = "iron"
+qty = 2
+turns = 2
+skill = "salvager"
+learn = "workshop"
+
+[[recipe]]
+id = "whittle-tools"
+name = "Whittle wooden tools"
+workshop = "drift-rack"
+inputs = { reed = 5, timber = 1 }
+output = "tools"
+qty = 1
+turns = 1
+skill = "salvager"
+learn = "workshop"
+
+[[recipe]]
+id = "eel-cord"
+name = "Twist eel-skin cord"
+workshop = "fish-weir"
+inputs = { fish = 6 }
+output = "rope"
+qty = 2
+turns = 2
+skill = "wader"
+learn = "workshop"
+
+[[recipe]]
+id = "hawser-lay"
+name = "Lay a hawser"
+workshop = "ropewalk"
+inputs = { reed = 6 }
+output = "rope"
+qty = 2
+turns = 2
+skill = "wader"
+learn = "workshop"
+
+[[recipe]]
+id = "eel-fat-rope"
+name = "Oil and lay rope"
+workshop = "ropewalk"
+inputs = { fish = 4, reed = 3 }
+output = "rope"
+qty = 2
+turns = 2
+skill = "wader"
+learn = "workshop"
+
+[[recipe]]
+id = "smoke-hard-tack"
+name = "Smoke hard-tack"
+workshop = "smokehouse"
+inputs = { fish = 4, salt = 1, peat = 1 }
+output = "food"
+qty = 4
+turns = 2
+skill = "raker"
+learn = "workshop"
+
+[[recipe]]
+id = "smoke-big-batch"
+name = "Smoke a full rack"
+workshop = "smokehouse"
+inputs = { fish = 6, salt = 2, peat = 1 }
+output = "food"
+qty = 6
+turns = 3
+skill = "raker"
+learn = "workshop"
+
+[[recipe]]
+id = "spear-bundle"
+name = "Forge a spear bundle"
+workshop = "smithy"
+inputs = { iron = 2, timber = 1 }
+output = "arms"
+qty = 1
+turns = 2
+skill = "smith"
+learn = "workshop"
+
+[[recipe]]
+id = "beat-swords"
+name = "Beat swords to tools"
+workshop = "smithy"
+inputs = { arms = 1 }
+output = "tools"
+qty = 2
+turns = 1
+skill = "smith"
+learn = "workshop"
+
+[[recipe]]
+id = "raft-boat"
+name = "Lash a raft-boat"
+workshop = "boatyard"
+inputs = { timber = 5, rope = 2, reed = 4 }
+output = "boats"
+qty = 1
+turns = 3
+skill = "boatwright"
+learn = "workshop"
+
+[[recipe]]
+id = "signal-line"
+name = "Twist signal-line"
+workshop = "watch-tower"
+inputs = { reed = 4, timber = 1 }
+output = "rope"
+qty = 2
+turns = 2
+skill = "wader"
+learn = "workshop"
+
+[[recipe]]
+id = "healing-broth"
+name = "Boil healing broth"
+workshop = "infirmary"
+inputs = { reed = 3, fish = 3 }
+output = "food"
+qty = 3
+turns = 1
+skill = "healer"
+learn = "workshop"
+
+[[recipe]]
+id = "long-table-stew"
+name = "Stew for the long table"
+workshop = "longhouse"
+inputs = { reed = 6, fish = 2, salt = 1 }
+output = "food"
+qty = 5
+turns = 2
+skill = "wader"
+learn = "workshop"
+
+[[recipe]]
+id = "hardened-pikes"
+name = "Harden pikes"
+workshop = "gatehouse"
+inputs = { timber = 2, iron = 1, peat = 1 }
+output = "arms"
+qty = 1
+turns = 2
+skill = "fighter"
+learn = "workshop"
+
+[[recipe]]
+id = "pale-lantern"
+name = "Blow a pale lantern"
+workshop = "watch-tower"
+inputs = { silt-glass = 1, fish = 3, peat = 2, rope = 1 }
+output = "tools"
+qty = 2
+turns = 3
+skill = "salvager"
+learn = "ruin"
+
+[[recipe]]
+id = "salt-glass"
+name = "Melt salt-glass"
+workshop = "salt-pan"
+inputs = { salt = 4, peat = 2 }
+output = "silt-glass"
+qty = 2
+turns = 3
+skill = "smith"
+learn = "ruin"
+
+[[recipe]]
+id = "tide-compass"
+name = "Set a tide-compass"
+workshop = "watch-tower"
+inputs = { iron = 2, silt-glass = 1, rope = 1 }
+output = "tools"
+qty = 3
+turns = 3
+skill = "salvager"
+learn = "ruin"
+
+[[recipe]]
+id = "drowned-alloy"
+name = "Cast drowned alloy"
+workshop = "smithy"
+inputs = { iron = 3, silt-glass = 1, peat = 2 }
+output = "arms"
+qty = 2
+turns = 4
+skill = "smith"
+learn = "ruin"
+
+[[recipe]]
+id = "sluice-key"
+name = "Cut a sluice-key"
+workshop = "sluice"
+inputs = { timber = 2, iron = 1, rope = 1 }
+output = "tools"
+qty = 2
+turns = 3
+skill = "smith"
+learn = "ruin"
+
+[[recipe]]
+id = "relic-polish"
+name = "Polish a relic"
+workshop = "smithy"
+inputs = { silt-glass = 3, tools = 1, iron = 2, rope = 1, salt = 4 }
+output = "relic"
+qty = 1
+turns = 6
+skill = "salvager"
+learn = "ruin"
+
+[[recipe]]
+id = "reed-sail"
+name = "Sew a reed-sail skiff"
+workshop = "boatyard"
+inputs = { reed = 8, rope = 2, timber = 3 }
+output = "boats"
+qty = 1
+turns = 3
+skill = "boatwright"
+learn = "trade"
+
+[[recipe]]
+id = "brine-cure"
+name = "Brine-cure a catch"
+workshop = "smokehouse"
+inputs = { fish = 6, salt = 3, peat = 1 }
+output = "food"
+qty = 7
+turns = 2
+skill = "raker"
+learn = "trade"
+
+[[recipe]]
+id = "witch-salve"
+name = "Steep witch-salve"
+workshop = "infirmary"
+inputs = { reed = 6, fish = 2, salt = 1 }
+output = "food"
+qty = 5
+turns = 2
+skill = "reed-witch"
+learn = "trade"
+
+[[recipe]]
+id = "guild-steel"
+name = "Fold guild steel"
+workshop = "smithy"
+inputs = { iron = 3, peat = 3, salt = 2 }
+output = "arms"
+qty = 2
+turns = 4
+skill = "smith"
+learn = "trade"

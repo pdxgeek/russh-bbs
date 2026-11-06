@@ -1,0 +1,24 @@
+┌───────────────────────────────── russh-bbs ──────────────────────────────────┐
+│Emberdeep                                                                     │
+│                                                                              │
+│◆ EMBERDEEP · The Journal ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ founder L1 Warden │
+│the ember-priests' chain   Coin 20  Salvage 0  Store 0  Turns 25/25           │
+│╭ The Journal ─────────────────────────────╮╭ Preview ───────────────────────╮│
+││The Low Flame (0/10)                      ││Nothing to do                   ││
+││Go down to level 2 and see how the        ││Nothing here is open to you     ││
+││stair-lamps burn.                         ││today.                          ││
+││The Smiths' Debt: opens at level 3.       ││                                ││
+││The Quiet Watch: opens at level 5.        ││                                ││
+││Epitaph (up to 80 characters, read only if││                                ││
+││you are not found): She read              ││                                ││
+││the walls to the end.                     ││                                ││
+││[e] Write an epitaph                      ││                                ││
+││                                          ││                                ││
+││                                          ││                                ││
+││                                          ││                                ││
+││                                          ││                                ││
+││                                          ││                                ││
+││                                          ││                                ││
+│╰──────────────────────────────────────────╯╰────────────────────────────────╯│
+│[Esc] back                                                                    │
+└──────────────────────────────────────────────────────────────────────────────┘

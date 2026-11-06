@@ -21,7 +21,16 @@ pub(super) fn about(tag: &str, id: u16) -> bool {
 
 fn status(ui: &Ui<'_>, c: &Crew) -> (String, Style) {
     let p = &ui.pal;
-    if !c.injuries.is_empty() {
+    if ui.clan.social.is_away(c.id) {
+        ("away".to_owned(), p.gold())
+    } else if ui
+        .clan
+        .trip
+        .as_ref()
+        .is_some_and(|t| t.party.contains(&c.id))
+    {
+        ("out".to_owned(), p.sea())
+    } else if !c.injuries.is_empty() {
         (format!("hurt {}", c.injuries.len()), p.rust())
     } else if let Some(post) = c.post {
         (format!("post {post}"), p.sea())
@@ -40,7 +49,9 @@ fn roster(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
         .map(|c| {
             let (_, style) = status(ui, c);
             let bonded = !clan.partners(c.id).is_empty();
-            let mark = if !c.injuries.is_empty() {
+            let mark = if ui.clan.social.is_away(c.id) {
+                ui.look.g("»", ">")
+            } else if !c.injuries.is_empty() {
                 ui.look.g("+", "+")
             } else if bonded {
                 ui.look.g("♥", "&")
@@ -167,6 +178,19 @@ fn detail(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect, c: &Crew) {
         p.plain,
     ));
     lines.push(Line::from(age));
+    if ui.clan.social.is_away(c.id) {
+        lines.push(Line::styled(
+            "Away on a raid: back with the report.",
+            p.gold(),
+        ));
+    } else if ui
+        .clan
+        .trip
+        .as_ref()
+        .is_some_and(|t| t.party.contains(&c.id))
+    {
+        lines.push(Line::styled("Out on the marsh with the party.", p.sea()));
+    }
 
     // The three attributes, one to a row (on one line when the pane is short).
     if inner.height < 12 {

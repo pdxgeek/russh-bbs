@@ -45,7 +45,8 @@ fn clock(day: i64) -> Arc<ManualClock> {
 }
 
 fn migrated_hero(door: &Emberdeep) -> Vec<u8> {
-    door.migrate(BlobKind::Save, 1, &unhex(V1_HERO)).unwrap()
+    let v2 = door.migrate(BlobKind::Save, 1, &unhex(V1_HERO)).unwrap();
+    door.migrate(BlobKind::Save, 2, &v2).unwrap()
 }
 
 /// Press keys on a running door, flushing after each as the board does.
@@ -57,7 +58,7 @@ async fn press(running: &mut Running, store: &MemoryDoorStore, text: &str) {
 }
 
 #[tokio::test]
-async fn an_e1_hero_and_world_open_through_the_host_and_are_saved_as_version_two() {
+async fn an_e1_hero_and_world_open_through_the_host_and_are_saved_as_the_current_version() {
     let door = Emberdeep::shared().unwrap();
     let store = MemoryDoorStore::new();
     let id = door.info().id.clone();
@@ -103,7 +104,7 @@ async fn an_e1_hero_and_world_open_through_the_host_and_are_saved_as_version_two
     // The calling's recipe is there at once: forge it, which saves.
     press(&mut running, &store, "f 1 esc").await;
     let stored = store.load_save(&id, ann).await.unwrap().unwrap();
-    assert_eq!(stored.version, 2, "the next write is version 2");
+    assert_eq!(stored.version, 3, "the next write is version 3");
     let content = Emberdeep::new().unwrap();
     let s = summarize(&stored.bytes, content.content().unwrap()).unwrap();
     assert_eq!(s.whereabouts, Whereabouts::Town);
@@ -217,7 +218,7 @@ async fn a_finished_project_is_seen_by_the_next_player_and_never_counted_twice()
             &SaveWrite {
                 expected: Revision::NONE,
                 season: 1,
-                version: 2,
+                version: 3,
                 bytes: &migrated_hero(&content),
             },
         )
@@ -253,7 +254,7 @@ async fn a_finished_project_is_seen_by_the_next_player_and_never_counted_twice()
         .unwrap();
     press(&mut a, &store, "w 1 1 1 1 1 2 2").await;
     let screen = a.look_around(&env_a).join("\n");
-    assert!(screen.contains("1 of 11 finished"), "{screen}");
+    assert!(screen.contains("1 of 12 finished"), "{screen}");
     let town = |bytes: &[u8]| summarize_town(bytes, content.content().unwrap()).unwrap();
     let w = store.load_world(&id).await.unwrap().unwrap();
     assert_eq!(town(&w.bytes).done, vec!["new-bellows".to_owned()]);
@@ -300,7 +301,7 @@ async fn a_finished_project_is_seen_by_the_next_player_and_never_counted_twice()
     assert!(screen.contains("THE FORGE (level 2)"), "{screen}");
     press(&mut b, &store, "esc w").await;
     let screen = b.look_around(&env_b).join("\n");
-    assert!(screen.contains("1 of 11 finished"), "{screen}");
+    assert!(screen.contains("1 of 12 finished"), "{screen}");
     assert!(
         !screen.contains("New Bellows"),
         "a finished project is not asked for again: {screen}"

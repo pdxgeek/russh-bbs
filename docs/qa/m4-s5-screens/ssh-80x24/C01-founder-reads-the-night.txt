@@ -1,0 +1,24 @@
+┌───────────────────────────────── russh-bbs ──────────────────────────────────┐
+│Saltmarch                                                                     │
+│                                                                              │
+│ ⌂ founder  day 10 of season 1           turns ██████████ 30/30  ◈ 40 tallies │
+│ ≈ TIDE ██████░░░░░░░░░┃░░░░░░  30 ↑ high in 4h44 (80)  middling tides  calm  │
+│╭ While you were away ─────────────────────╮╭ Today: middling tides ─────────╮│
+││1 night passed  ◗ the tide kept its hours ││100│⡇                           ││
+││◆ Made:  +2 fish  +2 peat                 ││   │⡇⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀││
+││▣ Your raid on bob was beaten off the     ││   │⡇ ⡰⠃   ⠈⠣⡀      ⣠⠋    ⠱⡀    ││
+││gate.                                     ││50 │⡇⠞       ⠱⣄    ⡴⠁      ⠘⢦   ││
+││× Ivo Tidewatcher suffers cracked ribs.   ││   │⡇         ⠈⠲⠤⠤⠚          ⠓⠤⠤││
+││× Maren Brinecook suffers a spear through ││0  │⡇                           ││
+││the thigh.                                ││   └────────────────────────────││
+││▤ Letters: none waiting at the post.      ││  00       06   12   18       24││
+││                                          │╰────────────────────────────────╯│
+│╰──────────────────────────────────────────╯╭ Standings: you are 1st of 2 ───╮│
+│╭ Today ───────────────────────────────────╮│ 1  founder                  21 ││
+││30 tide-turns. middling tides.            ││ 2  bob                      19 ││
+││Over the flood line: 03:10-06:30,         ││                                ││
+││15:30-19:00                               ││                                ││
+││Lows, the best time on the flats: 10:56   ││                                ││
+│╰──────────────────────────────────────────╯╰────────────────────────────────╯│
+│ »                                                                   any key  │
+└──────────────────────────────────────────────────────────────────────────────┘

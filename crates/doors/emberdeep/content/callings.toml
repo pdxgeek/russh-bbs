@@ -1,9 +1,9 @@
 # The six callings. attrs are might, finesse, wits, spirit.
 calling = [
   { id = "warden", name = "Warden", blurb = "Holds the line with halberd and grit, and carries more home than anyone.", attrs = [12, 9, 8, 9], hp = 38, weapon = "iron-halberd", armour = "ringmail", tags = ["brawn"], moves = ["shield-bash", "hold-the-line"] },
-  { id = "cutthroat", name = "Cutthroat", blurb = "Quick hands and quicker feet; locks open and purses lighten.", attrs = [8, 12, 10, 8], hp = 30, weapon = "stiletto", armour = "forge-leathers", tags = ["lockpick", "sneak"], moves = ["cheap-shot", "throw-knife"] },
+  { id = "cutthroat", name = "Cutthroat", blurb = "Quick hands and quicker feet; locks open and purses lighten.", attrs = [8, 12, 10, 8], hp = 33, weapon = "stiletto", armour = "forge-leathers", tags = ["lockpick", "sneak"], moves = ["cheap-shot", "throw-knife"] },
   { id = "ember-priest", name = "Ember-Priest", blurb = "Tends the old fires: bolts of cinder, a mending flame, a prayer for the way back.", attrs = [8, 8, 10, 12], hp = 32, weapon = "censer-mace", armour = "pilgrim-robe", tags = ["bless", "lore"], moves = ["cinder-bolt", "ember-mend"] },
   { id = "runesmith", name = "Runesmith", blurb = "Reads the maker's marks and wakes dead machines, from lifts to forges.", attrs = [10, 8, 12, 8], hp = 34, weapon = "rune-hammer", armour = "smith-apron", tags = ["runecraft", "tinker", "smithcraft"], moves = ["rune-strike", "runic-ward"] },
-  { id = "wanderer", name = "Wanderer", blurb = "Trail-wise and light on the rope; the surface is never far behind.", attrs = [9, 11, 10, 8], hp = 32, weapon = "pathfinder-sling", armour = "trail-coat", tags = ["forage", "climb"], moves = ["snare-shot", "second-wind"] },
+  { id = "wanderer", name = "Wanderer", blurb = "Trail-wise and light on the rope; the surface is never far behind.", attrs = [9, 11, 10, 8], hp = 36, weapon = "pathfinder-sling", armour = "trail-coat", tags = ["forage", "climb"], moves = ["snare-shot", "second-wind"] },
   { id = "duelist", name = "Duelist", blurb = "Wins by timing: reads the blow, answers it, and leaves unmarked.", attrs = [9, 12, 9, 9], hp = 31, weapon = "dueling-blade", armour = "fencing-jacket", tags = ["fence", "nimble"], moves = ["lunge", "feint"] },
 ]

@@ -35,6 +35,7 @@ pub(in crate::session) mod look;
 mod market;
 pub(in crate::session) mod route;
 mod scene;
+mod society;
 mod standing;
 
 use russh_bbs_door::layout::{Constraint, Layout, Rect};
@@ -69,6 +70,7 @@ enum Screen {
     Crew,
     Jobs,
     Standing,
+    Society,
 }
 
 impl Session {
@@ -95,6 +97,7 @@ impl Session {
             Mode::Crew(_) => Screen::Crew,
             Mode::Jobs(_) => Screen::Jobs,
             Mode::Standing => Screen::Standing,
+            Mode::Society(..) => Screen::Society,
         }
     }
 }
@@ -138,6 +141,7 @@ pub(super) fn draw(s: &Session, canvas: &mut Canvas<'_>, env: &DoorEnv) -> bool 
         Screen::Yard => s.draw_yard(&mut frame, body, &pal),
         Screen::Loan => s.draw_loan(&mut frame, body, &pal),
         Screen::News => s.draw_news(&mut frame, body, &pal),
+        Screen::Society => s.draw_society(&mut frame, body, &pal),
         Screen::Intro => {}
     }
     // The newest message, then the keys.
@@ -196,7 +200,12 @@ impl Session {
                 } else {
                     v.push(("d", " dock"));
                 }
-                v.extend([("c", " crew"), ("a", " standing"), ("n", " news")]);
+                v.extend([
+                    ("c", " crew"),
+                    ("a", " standing"),
+                    ("o", " society"),
+                    ("n", " news"),
+                ]);
                 if self
                     .player
                     .as_ref()
@@ -236,6 +245,18 @@ impl Session {
                 ("b/B", " borrow 1k/5k"),
                 ("p/P", " pay 500/5k"),
                 ("a", " pay all"),
+                ("Esc", " back"),
+            ],
+            Screen::Society => vec![
+                ("Left/Right", " tab"),
+                ("Up/Down", " choose"),
+                ("Enter", " join/hunt"),
+                ("n", " form"),
+                ("x", " leave"),
+                ("t", " say"),
+                ("1-8", " note"),
+                ("f", " colours"),
+                ("p/P", " pledge"),
                 ("Esc", " back"),
             ],
             Screen::News | Screen::Standing | Screen::Intro => vec![("Esc", " back")],

@@ -24,4 +24,32 @@ recipe = [
   { id = "lib-lodestone", name = "Lodestone Core", text = "The reading-room's copy of the surface-seeking coal.", makes = { kind = "core", id = "lodestone-core" }, salvage = 50, coin = 70, forge = 2, learn = { kind = "library" }, need = [{ kind = "tag", tag = "runecraft" }] },
   { id = "lib-tinder", name = "Tinder Core", text = "A core that lights lanterns from a distance.", makes = { kind = "core", id = "tinder-core" }, salvage = 34, coin = 44, forge = 2, learn = { kind = "library" }, need = [{ kind = "tag", tag = "runecraft" }] },
   { id = "lib-kings-blade", name = "King's Blade", text = "A king's sword from a relic's etched blueprint.", makes = { kind = "item", base = "kings-blade", affixes = ["royal"] }, salvage = 90, coin = 140, forge = 3, learn = { kind = "library" } },
+
+  # Calling patterns.
+  { id = "warden-maul", name = "Warden's Maul", text = "A maul with a head you can lean on, for holding a doorway.", makes = { kind = "item", base = "slag-maul", affixes = ["heavy"] }, salvage = 28, coin = 32, forge = 2, learn = { kind = "calling", id = "warden" } },
+  { id = "cutthroat-dirk", name = "Cutthroat's Dirk", text = "An ember-dark dirk meant for quiet work.", makes = { kind = "item", base = "ember-dirk", affixes = ["whetted"] }, salvage = 26, coin = 30, forge = 2, learn = { kind = "calling", id = "cutthroat" } },
+  { id = "priest-vigil", name = "Vigil Mace", text = "A mace of the night watch, rung against the stone to keep the dark off.", makes = { kind = "item", base = "vigil-mace", affixes = ["devout"] }, salvage = 28, coin = 32, forge = 2, learn = { kind = "calling", id = "ember-priest" } },
+  { id = "runesmith-rod", name = "Runesmith's Rod", text = "A rod carved with working marks, for a hand that thinks before it strikes.", makes = { kind = "item", base = "cipher-staff", affixes = ["scholars"] }, salvage = 26, coin = 30, forge = 2, learn = { kind = "calling", id = "runesmith" } },
+  { id = "wanderer-sling", name = "Wanderer's Sling", text = "A sling and a pouch of river-stones, for a long road.", makes = { kind = "item", base = "hunters-sling", affixes = ["wiry"] }, salvage = 10, coin = 10, forge = 1, learn = { kind = "calling", id = "wanderer" } },
+  { id = "duelist-foil", name = "Duelist's Foil", text = "A foil of lattice-glass, light enough to forget until it is in your hand.", makes = { kind = "item", base = "lattice-foil", affixes = ["mirrored"] }, salvage = 56, coin = 76, forge = 3, learn = { kind = "calling", id = "duelist" } },
+
+  # Taught by skills.
+  { id = "knifers-vest", name = "Knifer's Vest", text = "A vest cut for a body that moves; a hood to keep the soot out of your eyes.", makes = { kind = "item", base = "hoodman-vest", affixes = ["hooded"] }, salvage = 12, coin = 12, forge = 1, learn = { kind = "node", id = "cu-knifework" } },
+  { id = "marksman-arbalest", name = "Marksman's Arbalest", text = "A crossbow with a sight filed from a lens.", makes = { kind = "item", base = "tinkers-arbalest", affixes = ["tempered"] }, salvage = 30, coin = 36, forge = 2, learn = { kind = "node", id = "wn-marksman" } },
+  { id = "wall-cuirass", name = "Wall-Breaker's Cuirass", text = "Plate that is more wall than cuirass.", makes = { kind = "item", base = "crucible-cuirass", affixes = ["hardened"] }, salvage = 34, coin = 42, forge = 2, learn = { kind = "node", id = "wa-wall" } },
+  { id = "core-bulwark", name = "Bulwark Core", text = "A coal tempered inside a tiny wall of its own.", makes = { kind = "core", id = "bulwark-core" }, salvage = 36, coin = 54, forge = 2, learn = { kind = "node", id = "rs-bulwark-runes" }, need = [{ kind = "tag", tag = "runecraft" }] },
+  { id = "core-breaker", name = "Breaker Core", text = "Hammered with the grain so that it will split along it.", makes = { kind = "core", id = "breaker-core" }, salvage = 48, coin = 72, forge = 3, learn = { kind = "node", id = "rs-master-smith" }, need = [{ kind = "tag", tag = "runecraft" }] },
+
+  # Found below.
+  { id = "found-whip-dagger", name = "Whip Dagger", text = "A pattern for a little blade on a long grip, chalked on a cell wall.", makes = { kind = "item", base = "whip-dagger", affixes = ["keen"] }, salvage = 10, coin = 10, forge = 1, learn = { kind = "found" } },
+  { id = "found-miners-brigandine", name = "Miner's Brigandine", text = "Plates riveted into canvas, drawn on a miner's slate.", makes = { kind = "item", base = "miners-brigandine", affixes = ["padded"] }, salvage = 18, coin = 20, forge = 1, learn = { kind = "found" } },
+  { id = "found-thorn-core", name = "Thorn Core", text = "How to leave a barb in a coal.", makes = { kind = "core", id = "thorn-core" }, salvage = 34, coin = 48, forge = 2, learn = { kind = "found" }, need = [{ kind = "tag", tag = "runecraft" }] },
+  { id = "found-pommel-core", name = "Pommel Core", text = "A scrap of a smith's lesson: where to seat a coal in a hilt.", makes = { kind = "core", id = "pommel-core" }, salvage = 20, coin = 26, forge = 1, learn = { kind = "found" }, need = [{ kind = "tag", tag = "runecraft" }] },
+  { id = "found-shardplate", name = "Shardplate", text = "Plates of the Glass Halls, strung on wire, and the knack of the knot.", makes = { kind = "item", base = "shardplate", affixes = ["gravewarden"] }, salvage = 64, coin = 88, forge = 3, learn = { kind = "found" } },
+
+  # Read out of relics.
+  { id = "lib-mirror-core", name = "Mirror Core", text = "A relic's drawing of a coal set behind polished glass.", makes = { kind = "core", id = "mirror-core" }, salvage = 52, coin = 76, forge = 3, learn = { kind = "library" }, need = [{ kind = "tag", tag = "runecraft" }] },
+  { id = "lib-kindle-core", name = "Kindle Core", text = "A scribe's note on banking an ember that mends.", makes = { kind = "core", id = "kindle-core" }, salvage = 50, coin = 70, forge = 2, learn = { kind = "library" }, need = [{ kind = "tag", tag = "runecraft" }] },
+  { id = "lib-throne-maul", name = "Throne Maul", text = "A king's maul, drawn from a relic of the throne room.", makes = { kind = "item", base = "throne-maul", affixes = ["hearthbound"] }, salvage = 92, coin = 144, forge = 3, learn = { kind = "library" } },
+  { id = "lib-kingsguard-plate", name = "Kingsguard Plate", text = "The captain's plate, sketched from a relic's etching.", makes = { kind = "item", base = "hearthguard-plate", affixes = ["kingsguard"] }, salvage = 100, coin = 150, forge = 3, learn = { kind = "library" } },
 ]
