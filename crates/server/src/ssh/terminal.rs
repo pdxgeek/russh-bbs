@@ -219,6 +219,8 @@ pub struct KeyParser {
     /// Cursor-position replies read since the last [`KeyParser::take_acks`] (FIX-M35-3). Each
     /// answers a probe the shell sent after an effect frame; none is ever a key.
     acks: u32,
+    /// Non-ASCII characters dropped since the last [`KeyParser::take_dropped`].
+    dropped: usize,
 }
 
 /// Longest `ESC [ row ; col R` accepted, bytes after `ESC [`. A longer run is not a reply.
@@ -314,7 +316,15 @@ impl KeyParser {
             mouse: Vec::new(),
             discard: 0,
             acks: 0,
+            dropped: 0,
         }
+    }
+
+    /// How many non-ASCII characters were dropped since the last call (FIX-M3-7, D134): typed
+    /// or pasted letters the key set has no key for. The shell turns a non-zero count into one
+    /// short hint, so the loss is not silent.
+    pub(crate) fn take_dropped(&mut self) -> usize {
+        std::mem::take(&mut self.dropped)
     }
 
     /// The cursor-position replies read since the last call (FIX-M35-3). The shell sends one
@@ -514,6 +524,9 @@ impl KeyParser {
             b'\r' => keys.push(Key::PasteBreak),
             b'\n' if !after_cr => keys.push(Key::PasteBreak),
             0x20..=0x7e => keys.push(Key::Char(char::from(byte))),
+            // The first byte of a UTF-8 character (not a continuation byte): one character
+            // dropped.
+            0xc2..=0xf4 => self.dropped += 1,
             _ => {}
         }
     }
@@ -525,6 +538,12 @@ impl KeyParser {
         }
         self.parser.advance(bytes, false);
         for sequence in self.parser.by_ref() {
+            if let anes::parser::Sequence::Key(anes::parser::KeyCode::Char(c), _) = &sequence
+                && !c.is_ascii()
+                && !c.is_control()
+            {
+                self.dropped += 1;
+            }
             keys.push(key_of(sequence));
         }
     }

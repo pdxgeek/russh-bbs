@@ -14,7 +14,7 @@
 //! | `ended:ID@ENDING` | the storyline `ID` finished with `ENDING` (H2) |
 //! | `expelled` | the character has been expelled |
 //! | `not:<cond>` | the inner condition does not hold |
-//! | `stat>=N` (also `<=`, `>`, `<`, `=`) | a number compares: `legend`, `notoriety`, `heat`, `file`, `cool`, `nerve`, `cash`, `grades`, `pulled`, `caught`, `skill:ID`, `standing:CLIQUE`, `wary:NPC`, `grade:SUBJECT`, and from H2 `bond:NPC` (friendship, negative for a rival), `rank:CLUB` (0 when not a member), `day` (the day of the term, from 0) |
+//! | `stat>=N` (also `<=`, `>`, `<`, `=`) | a number compares: `legend`, `notoriety`, `heat`, `file`, `cool`, `nerve`, `cash`, `grades`, `pulled`, `caught`, `skill:ID`, `standing:CLIQUE`, `wary:NPC`, `grade:SUBJECT`, and from H2 `bond:NPC` (friendship, negative for a rival), `rank:CLUB` (0 when not a member), `day` (the day of the term, from 0), and from H4 `clues` (found in the east wing's mystery) |
 
 use serde::Deserialize;
 
@@ -70,6 +70,8 @@ pub enum Stat {
     Rank(String),
     /// The day of the term, from 0.
     Day,
+    /// Clues found in the east wing's mystery.
+    Clues,
 }
 
 /// One parsed condition.
@@ -137,6 +139,7 @@ fn stat_of(name: &str) -> Option<Stat> {
         "pulled" => Stat::Pulled,
         "caught" => Stat::Caught,
         "day" => Stat::Day,
+        "clues" => Stat::Clues,
         other => {
             let (kind, id) = other.split_once(':')?;
             if id.is_empty() {

@@ -216,6 +216,71 @@ fn detail_lines(ui: &Ui<'_>, width: u16) -> Vec<Line<'static>> {
                 out.push(bond_line(ui, g.bond(&n.id), width));
             }
         }
+        (Cmd::To(Mode::PlotKinds(who)), _) => {
+            if let Some(m) = g.classmates().into_iter().find(|m| m.name == *who) {
+                out.push(Line::styled(m.name.clone(), pal.chalk()));
+                out.push(Line::styled(
+                    format!("{} legend this term", m.legend),
+                    pal.ink(),
+                ));
+                out.push(Line::styled(
+                    format!(
+                        "last at school on day {}",
+                        m.last_day - g.world.term_start + 1
+                    ),
+                    pal.slate(),
+                ));
+                text(
+                    &mut out,
+                    "Pick a scheme from the fixed list. Whatever happens, they will hear it was you.",
+                    pal.chalk_soft(),
+                );
+            }
+        }
+        (Cmd::Do(Action::Plot { kind, to }), _) => {
+            if let Some(spec) = g.content.plot(kind) {
+                out.push(Line::styled(spec.name.clone(), pal.chalk()));
+                out.push(Line::styled(
+                    format!("a {} scheme on {to}", spec.kind),
+                    pal.ink(),
+                ));
+                text(&mut out, &spec.blurb, pal.chalk_soft());
+                out.push(Line::styled(
+                    format!(
+                        "costs {} nerve; they can see it coming if they are the sort who would",
+                        spec.nerve
+                    ),
+                    pal.slate(),
+                ));
+            }
+        }
+        (Cmd::Do(Action::Spread { rumour, about }), _) => {
+            if let Some(spec) = g.content.rumour(rumour) {
+                out.push(Line::styled(spec.name.clone(), pal.chalk()));
+                text(
+                    &mut out,
+                    &format!(
+                        "\"{}\"",
+                        spec.text.replace("{about}", &g.subject_name(about))
+                    ),
+                    pal.chalk_soft(),
+                );
+                out.push(Line::styled(
+                    format!("a {} rumour; the whole school hears it", spec.kind),
+                    pal.slate(),
+                ));
+            }
+        }
+        (Cmd::Do(Action::Vote(who)), _) => {
+            if let Some(b) = g.ballot().into_iter().find(|b| b.id == *who) {
+                out.push(Line::styled(b.name.clone(), pal.chalk()));
+                text(&mut out, &b.platform, pal.chalk_soft());
+                out.push(Line::styled(
+                    format!("backing {}  votes {}", b.backing, b.votes),
+                    pal.slate(),
+                ));
+            }
+        }
         _ => {
             for l in &ui.body {
                 text(&mut out, l, pal.chalk_soft());
@@ -307,6 +372,12 @@ pub(super) fn list(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
         Screen::Recruit => ("Who will help?", "The helper"),
         Screen::Schedule => ("When?", "The time"),
         Screen::Talk => ("Who do you want a word with?", "The person"),
+        Screen::Social => ("Social", "Among the pupils"),
+        Screen::Classmates => ("Classmates", "The pupil"),
+        Screen::PlotKinds => ("A scheme on them", "The scheme"),
+        Screen::Rumours => ("Rumours", "The rumour"),
+        Screen::RumourAbout => ("About whom?", "The subject"),
+        Screen::Election => ("The election", "The ballot"),
         _ => ("", ""),
     };
     let [left, right] = if area.width >= 100 {

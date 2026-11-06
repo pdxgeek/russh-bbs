@@ -91,6 +91,12 @@ pub(super) enum Screen {
     Talk,
     Clubs,
     Journal,
+    Social,
+    Classmates,
+    PlotKinds,
+    Rumours,
+    RumourAbout,
+    Election,
 }
 
 impl Screen {
@@ -132,6 +138,12 @@ impl Screen {
             Mode::Talk => Self::Talk,
             Mode::Clubs => Self::Clubs,
             Mode::Journal => Self::Journal,
+            Mode::Social => Self::Social,
+            Mode::Classmates => Self::Classmates,
+            Mode::PlotKinds(_) => Self::PlotKinds,
+            Mode::Rumours => Self::Rumours,
+            Mode::RumourAbout(_) => Self::RumourAbout,
+            Mode::Election => Self::Election,
         }
     }
 
@@ -162,6 +174,12 @@ impl Screen {
             Self::Talk => "talk",
             Self::Clubs => "clubs",
             Self::Journal => "journal",
+            Self::Social => "social",
+            Self::Classmates => "classmates",
+            Self::PlotKinds => "plots",
+            Self::Rumours => "rumours",
+            Self::RumourAbout => "rumour",
+            Self::Election => "election",
         }
     }
 }
@@ -561,6 +579,8 @@ fn chip_label(screen: Screen, it: &Item, short: bool) -> String {
         (Screen::Main, 'f') => "File",
         (Screen::Main, 'j') => "Journal",
         (Screen::Main, 'n') => "Paper",
+        (Screen::Main, 'o') => "Social",
+        (Screen::Main, 'e') => "Search",
         (Screen::Main, 'z') => "Lights out",
         (Screen::Main, 'q') => "Leave",
         (Screen::Scheme, 't') => "Twists",
@@ -729,6 +749,12 @@ fn screen(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
         | Screen::Getaway
         | Screen::Recruit
         | Screen::Schedule
+        | Screen::Social
+        | Screen::Classmates
+        | Screen::PlotKinds
+        | Screen::Rumours
+        | Screen::RumourAbout
+        | Screen::Election
         | Screen::Talk => plan::list(ui, f, body),
         Screen::Scheme => plan::planner(ui, f, body),
         Screen::Run => run::draw(ui, f, body),

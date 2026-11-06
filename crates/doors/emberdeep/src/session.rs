@@ -1580,6 +1580,11 @@ impl DoorSession for Session {
         flow
     }
 
+    fn captures_text(&self) -> bool {
+        // While an epitaph is being typed, `?` is a character, not the look-around key.
+        self.epitaph.is_some()
+    }
+
     fn render(&self, canvas: &mut Canvas<'_>, env: &DoorEnv) {
         ui::draw(self, canvas, env);
     }

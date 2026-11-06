@@ -14,6 +14,7 @@ use crate::save::encode_player;
 use crate::state::Status;
 use crate::world::WorldDelta;
 
+mod social_views;
 mod ui;
 
 /// Narrow enough for the door area inside the board's frame on an 80-column terminal.
@@ -41,6 +42,12 @@ pub(crate) enum Mode {
     Talk,
     Clubs,
     Journal,
+    Social,
+    Classmates,
+    PlotKinds(String),
+    Rumours,
+    RumourAbout(String),
+    Election,
 }
 
 #[derive(Debug, Clone)]
@@ -95,14 +102,13 @@ fn wrap(text: &str, width: usize) -> Vec<String> {
 const DIGITS: [char; 9] = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
 impl Session {
-    pub(crate) fn new(mut game: Game, opening: Vec<Event>) -> Self {
-        let dirty = !opening.is_empty();
+    pub(crate) fn new(game: Game, opening: Vec<Event>) -> Self {
+        let dirty = !opening.is_empty() || !game.pending.is_empty();
         let mut messages: Vec<String> = Vec::new();
         for event in opening {
             messages.extend(wrap(&event.describe(), WIDTH));
         }
-        // Whatever the morning did to the world is sent with the first key.
-        let _ = game.take_world_changes();
+        // Whatever the morning did to the world (plots delivered, say) is sent with the first key.
         Self {
             game,
             mode: Mode::Main,
@@ -138,7 +144,14 @@ impl Session {
                     self.mode = Mode::Plans;
                 } else if matches!(
                     action,
-                    Action::Go(_) | Action::Study(_) | Action::Talk(_) | Action::Meet
+                    Action::Go(_)
+                        | Action::Study(_)
+                        | Action::Talk(_)
+                        | Action::Meet
+                        | Action::Plot { .. }
+                        | Action::Spread { .. }
+                        | Action::Search
+                        | Action::Canvass
                 ) {
                     self.mode = Mode::Main;
                 }
@@ -357,6 +370,12 @@ impl Session {
             Mode::Talk => self.talk_view(),
             Mode::Clubs => self.clubs_view(),
             Mode::Journal => self.journal_view(),
+            Mode::Social => self.social_view(),
+            Mode::Classmates => self.classmates_view(),
+            Mode::PlotKinds(to) => self.plot_kinds_view(to),
+            Mode::Rumours => self.rumours_view(),
+            Mode::RumourAbout(id) => self.rumour_about_view(id),
+            Mode::Election => self.election_view(),
         }
     }
 
@@ -564,6 +583,18 @@ impl Session {
         add('f', "You: file, grades, standing", Cmd::To(Mode::Stats));
         add('j', "Journal: stories, friends", Cmd::To(Mode::Journal));
         add('n', "News and rumours", Cmd::To(Mode::News));
+        add(
+            'o',
+            "Social: plots, rumours, election",
+            Cmd::To(Mode::Social),
+        );
+        if self.can(&Action::Search) {
+            add(
+                'e',
+                "Search here for the wing's secret",
+                Cmd::Do(Action::Search),
+            );
+        }
         if self.can(&Action::Sleep) {
             add('z', "Lights out", Cmd::Do(Action::Sleep));
         }
@@ -1575,8 +1606,8 @@ impl DoorSession for Session {
                 .iter()
                 .flat_map(|e| wrap(&e.describe(), WIDTH))
                 .collect();
-            let _ = self.game.take_world_changes();
         }
+        self.flush_world(ctx);
         let (_, items) = self.view();
         let on_map = matches!(self.mode, Mode::Go)
             && self.game.playing()

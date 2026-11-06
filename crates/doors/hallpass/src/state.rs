@@ -4,6 +4,7 @@
 //! [`crate::scheme`]; the formats are pinned by tests, and a reader refuses bytes that are not
 //! exactly what the writer wrote.
 
+use crate::commons::{Commons, Social};
 use crate::wire::{Reader, Wire, Writer, wire_struct};
 
 /// A small map: id to value, kept as a vector so the encoding is stable.
@@ -433,6 +434,8 @@ pub struct Player {
     pub history: Vec<TermResult>,
     /// Classes, clubs, friendships and storylines (save version 2).
     pub life: SchoolLife,
+    /// Plots, rumours, the election, the mystery's verdict and awards (save version 3).
+    pub social: Social,
 }
 
 wire_struct!(Player {
@@ -480,7 +483,8 @@ wire_struct!(Player {
     next_scheme,
     news,
     history,
-    life
+    life,
+    social
 });
 
 impl Player {
@@ -533,6 +537,7 @@ impl Player {
             news: Vec::new(),
             history: Vec::new(),
             life: SchoolLife::default(),
+            social: Social::default(),
         }
     }
 
@@ -675,6 +680,8 @@ pub struct World {
     pub yearbook: Vec<YearEntry>,
     /// Big schemes this term.
     pub changes: u32,
+    /// Plots, rumours, the election, the mystery's verdicts and awards (world version 2).
+    pub commons: Commons,
 }
 wire_struct!(World {
     term,
@@ -685,7 +692,8 @@ wire_struct!(World {
     paper,
     hall,
     yearbook,
-    changes
+    changes,
+    commons
 });
 
 /// The most headlines kept.
@@ -709,6 +717,7 @@ impl World {
             hall: Vec::new(),
             yearbook: Vec::new(),
             changes: 0,
+            commons: Commons::default(),
         }
     }
 
