@@ -82,6 +82,17 @@ def snap(term, out, name):
         shot.render_cells(shot.parse_cells(open(f"{out}/{name}.cells").read()), f"{out}/{name}.png")
 
 
+def walkable_window(term):
+    """Turn to a window of the water a party can walk (a low), not one that needs a boat."""
+    for _ in range(5):
+        m = re.search(r"[▸>]\s*(\d\d:\d\d) +(?:low|high)[^\n]*?(needs a boat|on foot)", term.text())
+        if m and "boat" not in m.group(2):
+            return True
+        if not term.press("Next turn of the water"):
+            return False
+    return False
+
+
 def phase_a(port, fkey, bkey, out, cols, rows):
     f = Term(port, fkey, cols, rows, user="founder")
     found_or_report(f)
@@ -123,7 +134,7 @@ def phase_b(port, fkey, bkey, out, cols, rows):
     f.send("h", quiet=0.8)
     court(f)
     room(f, "The gate")
-    turn_to(f, "on foot", r"Next turn of the water", 6)
+    walkable_window(f)
     f.press("Send the raid on")
     snap(f, out, "B01-raid-sent")
     back_home(f)
