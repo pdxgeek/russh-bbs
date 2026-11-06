@@ -1,0 +1,24 @@
+┌───────────────────────────────── russh-bbs ──────────────────────────────────┐
+│Long Haul                                                                     │
+│                                                                              │
+│▲ LONG HAUL  bob  1,800 cr  debt 20,000  days ●●●●●●●●●● 10                   │
+│╭ SOCIETY: CONVOYS, PIRACY, OUTPOSTS ────────────────────────────────────────╮│
+││ Convoy  [Piracy]  Outposts   Hall   Journal                                ││
+││The server can read all of this. Other captains see only what is marked     ││
+││shared.                                                                     ││
+││Your colours are up since season day 0. Infamy 0, renown 0.                 ││
+││Only flagged captains meet. Caps: 2 hunts a day, 2 hits on one target a day,││
+││3 days before the same pair meet again, prizes at most 1500 cr and 8% of the││
+││purse. An unflagged hauler is never touched, whatever it carries.           ││
+││Raids won 0, driven off 0, robbed 0, fought off 0.                          ││
+││Flagged captains:                                                           ││
+││> founder  strength 20  worth 0/4  infamy 0  seen 0d ago                    ││
+││                                                                            ││
+││                                                                            ││
+││                                                                            ││
+││                                                                            ││
+│╰────────────────────────────────────────────────────────────────────────────╯│
+│You fly the Free Captains' colours. Other flagged captains can find you, and ~│
+│[Left/Right] tab  [Up/Down] choose  [Enter] join/hunt  [n] form  [x] leave    │
+│[t] say  [1-8] note  [f] colours  [p/P] pledge  [Esc] back                    │
+└──────────────────────────────────────────────────────────────────────────────┘

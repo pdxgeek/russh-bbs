@@ -582,7 +582,10 @@ fn run(season: u32, seed: u64, days: i64) -> Run {
     let mut income: BTreeMap<Strategy, [i64; 19]> = BTreeMap::new();
     let mut tows: BTreeMap<Strategy, u32> = BTreeMap::new();
     for b in &bots {
-        finals.entry(b.s).or_default().push(b.p.net_worth(&h.content));
+        finals
+            .entry(b.s)
+            .or_default()
+            .push(b.p.net_worth(&h.content));
         let row = income.entry(b.s).or_insert([0; 19]);
         for (slot, v) in row.iter_mut().zip(b.p.ledger.income.iter()) {
             *slot += v;
@@ -758,7 +761,10 @@ fn balance_report() {
         }
     }
     println!("\nover {seeds} seasons (credits are per captain, 60 days)");
-    println!("{:<9}{:>9}{:>9}{:>9}{:>10}{:>10}{:>7}{:>14}", "strategy", "min", "median", "max", "jobs", "loot", "tows", "fights/wrecks");
+    println!(
+        "{:<9}{:>9}{:>9}{:>9}{:>10}{:>10}{:>7}{:>14}",
+        "strategy", "min", "median", "max", "jobs", "loot", "tows", "fights/wrecks"
+    );
     for s in ALL {
         let mut v = finals[&s].clone();
         v.sort_unstable();

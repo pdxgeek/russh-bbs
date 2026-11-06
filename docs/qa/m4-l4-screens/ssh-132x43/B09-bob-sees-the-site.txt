@@ -1,0 +1,43 @@
+
+┌─────────────────────────────────────────────────────────── russh-bbs ────────────────────────────────────────────────────────────┐
+│Long Haul                                                                                                                         │
+│                                                                                                                                  │
+│▲ LONG HAUL  bob  0 cr  debt 20,736  days ●●●●●●●●●● 10                                                                           │
+│╭ SOCIETY: CONVOYS, PIRACY, OUTPOSTS ────────────────────────────────────────────────────────────────────────────────────────────╮│
+││ Convoy   Piracy  [Outposts]  Hall   Journal                                                                                    ││
+││The server can read all of this. Other captains see only what is marked shared.                                                 ││
+││Players can fund new stations in charted systems with none. 12,000 cr opens one; 24,000 and 48,000 raise it to level 2 and 3.   ││
+││Pledges are spent for good.                                                                                                     ││
+││  site at Kestrel Hold: 12,000 of 12,000 cr, 1 backers                                                                          ││
+││You are in Farrow Cairn. [p] pledge 500 cr  [P] pledge 5,000 cr toward a station here.                                          ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+│╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯│
+│Your convoy has broken up.                                                                                                        │
+│[Left/Right] tab  [Up/Down] choose  [Enter] join/hunt  [n] form  [x] leave  [t] say  [1-8] note  [f] colours  [p/P] pledge  [Esc] │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+

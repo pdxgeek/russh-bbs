@@ -601,6 +601,7 @@ impl Social {
 
     /// Apply one captain's change. Every branch re-checks its caps, so a replayed or hostile
     /// delta cannot grow a list past its limit or reach another captain's entry.
+    #[allow(clippy::too_many_lines)]
     pub fn apply(&mut self, delta: &SocialDelta, today: i64) {
         match delta {
             SocialDelta::Roster(p) => {
@@ -692,16 +693,12 @@ impl Social {
                 }
             }
             SocialDelta::ConvoyNote { id, note } => {
-                let posted_today = self
-                    .convoys
-                    .iter()
-                    .find(|c| c.id == *id)
-                    .map_or(0, |c| {
-                        c.notes
-                            .iter()
-                            .filter(|n| n.who == note.who && n.day == note.day)
-                            .count()
-                    });
+                let posted_today = self.convoys.iter().find(|c| c.id == *id).map_or(0, |c| {
+                    c.notes
+                        .iter()
+                        .filter(|n| n.who == note.who && n.day == note.day)
+                        .count()
+                });
                 if posted_today < usize::from(NOTES_PER_DAY)
                     && let Some(c) = self.convoys.iter_mut().find(|c| c.id == *id)
                     && c.members.iter().any(|m| m.name == note.who)
@@ -817,7 +814,11 @@ impl Social {
     /// The hall for the screen: each category's best, this season.
     #[must_use]
     pub fn hall(&self, category: u8) -> Vec<&Record> {
-        let mut rows: Vec<&Record> = self.live.iter().filter(|r| r.category == category).collect();
+        let mut rows: Vec<&Record> = self
+            .live
+            .iter()
+            .filter(|r| r.category == category)
+            .collect();
         rows.sort_by(|a, b| b.value.cmp(&a.value).then(a.name.cmp(&b.name)));
         rows
     }
@@ -919,7 +920,9 @@ impl Social {
     fn convoy_night(&mut self, today: i64, pools: &[i64], rng: &mut DoorRng) {
         let kinds = pools.len();
         for convoy in &mut self.convoys {
-            convoy.members.retain(|m| today - m.seen <= MEMBER_IDLE_DAYS);
+            convoy
+                .members
+                .retain(|m| today - m.seen <= MEMBER_IDLE_DAYS);
         }
         self.convoys.retain(|c| !c.members.is_empty());
         for convoy in &mut self.convoys {
@@ -949,7 +952,8 @@ impl Social {
                     .filter(|m| today - m.seen <= ACTIVE_DAYS)
                     .map(|m| u32::from(m.power))
                     .sum::<u32>();
-                convoy.pool = (convoy.pool + pools.get(usize::from(kind)).copied().unwrap_or(0)).max(0);
+                convoy.pool =
+                    (convoy.pool + pools.get(usize::from(kind)).copied().unwrap_or(0)).max(0);
                 let id = convoy.events.last().map_or(1, |e| e.id + 1);
                 convoy.events.push(ConvoyEvent {
                     id,
@@ -1029,6 +1033,7 @@ impl Social {
     }
 
     /// Write the section.
+    #[allow(clippy::too_many_lines)]
     pub fn write(&self, w: &mut Writer) {
         w.i64(self.born);
         w.u32(self.raid_serial);
@@ -1160,7 +1165,7 @@ impl Social {
             }
             let fund = r.i64()?;
             let traded = r.i64()?;
-            let founder = r.text()?;
+            let started_by = r.text()?;
             let nb = usize::from(r.u8()?);
             if nb > MAX_BACKERS {
                 return None;
@@ -1178,7 +1183,7 @@ impl Social {
                 fund,
                 traded,
                 backers,
-                founder,
+                founder: started_by,
             });
         }
         let n = r.len(MAX_SITES, 20)?;
@@ -1369,6 +1374,7 @@ pub fn hash_id(handle: &str, day: i64, salt: u32) -> u32 {
 
 #[cfg(test)]
 mod tests {
+    #![allow(clippy::unwrap_used)]
     use super::*;
 
     fn ship(power: u16) -> Pirate {
@@ -1467,7 +1473,14 @@ mod tests {
     #[test]
     fn the_hall_keeps_one_entry_per_captain_and_the_best_three() {
         let mut s = Social::new(0);
-        for (n, v) in [("A", 10), ("B", 30), ("C", 20), ("D", 40), ("A", 50), ("B", 5)] {
+        for (n, v) in [
+            ("A", 10),
+            ("B", 30),
+            ("C", 20),
+            ("D", 40),
+            ("A", 50),
+            ("B", 5),
+        ] {
             s.apply(
                 &SocialDelta::Record(Record {
                     category: 0,
@@ -1478,7 +1491,11 @@ mod tests {
                 1,
             );
         }
-        let names: Vec<_> = s.hall(0).iter().map(|r| (r.name.clone(), r.value)).collect();
+        let names: Vec<_> = s
+            .hall(0)
+            .iter()
+            .map(|r| (r.name.clone(), r.value))
+            .collect();
         assert_eq!(
             names,
             vec![("A".into(), 50), ("D".into(), 40), ("B".into(), 30)]
@@ -1531,13 +1548,20 @@ impl Table for SocialTable {
             if list.len() < 6 {
                 p.push(format!("`{name}` needs at least 6 entries"));
             }
-            if list.iter().any(|s| s.trim().is_empty() || s.chars().count() > max || !plain_text(s))
+            if list
+                .iter()
+                .any(|s| s.trim().is_empty() || s.chars().count() > max || !plain_text(s))
             {
-                p.push(format!("`{name}` entries must be plain text of {max} characters or fewer"));
+                p.push(format!(
+                    "`{name}` entries must be plain text of {max} characters or fewer"
+                ));
             }
         }
         if self.notes.len() < 6
-            || self.notes.iter().any(|s| s.trim().is_empty() || s.chars().count() > 100 || !plain_text(s))
+            || self
+                .notes
+                .iter()
+                .any(|s| s.trim().is_empty() || s.chars().count() > 100 || !plain_text(s))
         {
             p.push("`notes` needs 6 or more plain lines of 100 characters or fewer".into());
         }

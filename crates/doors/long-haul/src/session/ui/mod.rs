@@ -200,7 +200,12 @@ impl Session {
                 } else {
                     v.push(("d", " dock"));
                 }
-                v.extend([("c", " crew"), ("a", " standing"), ("o", " society"), ("n", " news")]);
+                v.extend([
+                    ("c", " crew"),
+                    ("a", " standing"),
+                    ("o", " society"),
+                    ("n", " news"),
+                ]);
                 if self
                     .player
                     .as_ref()

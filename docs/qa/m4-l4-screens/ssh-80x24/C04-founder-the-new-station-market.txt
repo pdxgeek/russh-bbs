@@ -1,0 +1,24 @@
+┌───────────────────────────────── russh-bbs ──────────────────────────────────┐
+│Long Haul                                                                     │
+│                                                                              │
+│▲ LONG HAUL  founder  2,990 cr  debt 35,789  days ●●●●●●●●●○ 9                │
+│╭ founder Landing - Farming station ─────────────────────╮╭ PRICES SEEN ─────╮│
+││Good             Stock   Mid    vs   Buy  Sell Own Role ││Ice Water         ││
+││ Ice Water         260    46  +53%    49    42   0 needs││base 30 cr - held ││
+││ Gas Volatiles     360    70   +0%    74    65   0      ││legal             ││
+││ Vat Protein       532    46  -29%    49    43   0 makes││█                 ││
+││ Salt Spice        336    78  -29%    83    73   0 makes││█                 ││
+││ Loomcloth         420    60  -29%    64    56   0 makes││█                 ││
+││ Machine Parts     117   276  +53%   291   259   0 needs││Dock elsewhere to ││
+││ Circuit Stock     160   220   +0%   232   206   0      ││compare. Prices   ││
+││ Sensor Glass      150   240   +0%   253   225   0      ││you have seen are ││
+││ Kiln Ceramics     260   100   +0%   106    93   0      ││remembered, not   ││
+││ Hand Tools        208   115  +53%   122   107   0 needs││live.             ││
+││ Frontier Curios    70   450   +0%   475   419   0      ││                  ││
+││                                                        ││                  ││
+││                                                        ││                  ││
+││                                                        ││                  ││
+│╰────────────────────────────────────────────────────────╯╰──────────────────╯│
+│Docked at founder Landing. Dock fee 10 cr.                                    │
+│[b/B] buy 1/10  [a] fill  [s/S] sell 1/10  [z] sell all  [Esc] back           │
+└──────────────────────────────────────────────────────────────────────────────┘

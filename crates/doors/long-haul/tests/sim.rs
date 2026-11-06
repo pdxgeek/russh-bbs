@@ -280,13 +280,22 @@ fn run(h: &mut Harness, bot: &mut Bot, action: &Action) -> bool {
 fn play_arc_scene(h: &mut Harness, bot: &mut Bot) {
     use russh_bbs_door_long_haul::scene::Scene;
     use russh_bbs_door_long_haul::transit::Where;
-    let Some(pick) = bot.story.as_mut() else { return };
-    let Some(Scene::Event(ix)) = bot.p.scene.clone() else { return };
+    let Some(pick) = bot.story.as_mut() else {
+        return;
+    };
+    let Some(Scene::Event(ix)) = bot.p.scene.clone() else {
+        return;
+    };
     let def = h.content.transit.event[usize::from(ix)].clone();
     if def.arc.is_empty() {
         return;
     }
-    let w = Where { content: &h.content, frontier: &h.frontier, system: bot.p.at, fresh: false };
+    let w = Where {
+        content: &h.content,
+        frontier: &h.frontier,
+        system: bot.p.at,
+        fresh: false,
+    };
     let open: Vec<usize> = def
         .options
         .iter()
@@ -298,7 +307,9 @@ fn play_arc_scene(h: &mut Harness, bot: &mut Bot) {
         return;
     }
     let n = open[usize::try_from(pick.below(u32::try_from(open.len()).unwrap())).unwrap()];
-    if h.go_strict(&mut bot.p, &Action::Choose(u8::try_from(n).unwrap())).is_ok() {
+    if h.go_strict(&mut bot.p, &Action::Choose(u8::try_from(n).unwrap()))
+        .is_ok()
+    {
         *bot.tally.entry("arc steps").or_insert(0) += 1;
     }
     bot.p.scene = None;
@@ -855,7 +866,10 @@ fn balance_report() {
         }
     }
     println!("\nmedian net worth over {seeds} seasons (credits)");
-    println!("{:<10}{:>9}{:>9}{:>9}{:>9}{:>14}", "strategy", "day 10", "day 20", "day 40", "day 60", "growth 20-60");
+    println!(
+        "{:<10}{:>9}{:>9}{:>9}{:>9}{:>14}",
+        "strategy", "day 10", "day 20", "day 40", "day 60", "growth 20-60"
+    );
     for (k, e) in &at {
         let m: Vec<i64> = e.iter().map(|v| med(v.clone())).collect();
         println!(
@@ -873,7 +887,15 @@ fn balance_report() {
         let mut v = v.clone();
         v.sort_unstable();
         let neg = v.iter().filter(|x| **x < 0).count();
-        println!("{k:?}: min {} p25 {} med {} p75 {} max {}  ({neg} of {} below zero)", v[0], v[v.len() / 4], v[v.len() / 2], v[v.len() * 3 / 4], v[v.len() - 1], v.len());
+        println!(
+            "{k:?}: min {} p25 {} med {} p75 {} max {}  ({neg} of {} below zero)",
+            v[0],
+            v[v.len() / 4],
+            v[v.len() / 2],
+            v[v.len() * 3 / 4],
+            v[v.len() - 1],
+            v.len()
+        );
     }
 }
 
@@ -911,7 +933,10 @@ fn trace_the_stuck_smuggler() {
         tally: BTreeMap::new(),
         story: None,
     };
-    println!("start {:?} docked {:?} cash {}", bot.p.at, bot.p.docked, bot.p.cash);
+    println!(
+        "start {:?} docked {:?} cash {}",
+        bot.p.at, bot.p.docked, bot.p.cash
+    );
     for day in 0..6 {
         h.settle(&mut bot.p);
         let mut guard = 0;
@@ -919,7 +944,16 @@ fn trace_the_stuck_smuggler() {
             guard += 1;
             let before = (bot.p.cash, bot.p.at, bot.p.docked, bot.p.ship.fuel);
             step(&mut h, &mut bot, &mut rng);
-            println!("day {day} {before:?} -> cash {} at {} docked {:?} fuel {} days {} cargo {} q {}", bot.p.cash, bot.p.at, bot.p.docked, bot.p.ship.fuel, bot.p.days_left, bot.p.ship.cargo_tons(), bot.queue.len());
+            println!(
+                "day {day} {before:?} -> cash {} at {} docked {:?} fuel {} days {} cargo {} q {}",
+                bot.p.cash,
+                bot.p.at,
+                bot.p.docked,
+                bot.p.ship.fuel,
+                bot.p.days_left,
+                bot.p.ship.cargo_tons(),
+                bot.queue.len()
+            );
         }
         h.next_day();
     }
@@ -964,7 +998,6 @@ struct SeasonReport {
     arc_endings: BTreeMap<u8, u32>,
     arc_branches: [u16; 6],
     steps: u32,
-    final_nw: BTreeMap<Style, Vec<i64>>,
 }
 
 fn season_bots(h: &mut Harness, seed: u64) -> Vec<SeasonBot> {
@@ -1011,7 +1044,11 @@ fn season_bots(h: &mut Harness, seed: u64) -> Vec<SeasonBot> {
 }
 
 /// What a bot does with the social layer at the start of its day.
-fn social_day(h: &mut Harness, sb: &mut SeasonBot, convoy_of: &BTreeMap<usize, u32>) -> Option<(usize, u32)> {
+fn social_day(
+    h: &mut Harness,
+    sb: &mut SeasonBot,
+    convoy_of: &BTreeMap<usize, u32>,
+) -> Option<(usize, u32)> {
     let bot = &mut sb.bot;
     let p = &mut bot.p;
     h.with_env(|env| p.claim_social(env));
@@ -1056,7 +1093,12 @@ fn social_day(h: &mut Harness, sb: &mut SeasonBot, convoy_of: &BTreeMap<usize, u
                     .first()
                     .map(|s| s.system)
                     .or_else(|| {
-                        h.world.social.outposts.iter().find(|o| o.level < 3).map(|o| o.system)
+                        h.world
+                            .social
+                            .outposts
+                            .iter()
+                            .find(|o| o.level < 3)
+                            .map(|o| o.system)
                     })
                     .or_else(|| {
                         h.frontier
@@ -1074,7 +1116,13 @@ fn social_day(h: &mut Harness, sb: &mut SeasonBot, convoy_of: &BTreeMap<usize, u
                     // A patron is carried to the site (travel is not what is measured here).
                     p.at = system;
                     p.docked = None;
-                    let _ = h.go(p, &Action::Pledge { system, amount: 8_000 });
+                    let _ = h.go(
+                        p,
+                        &Action::Pledge {
+                            system,
+                            amount: 8_000,
+                        },
+                    );
                 }
             }
         }
@@ -1094,7 +1142,9 @@ fn simulate_season(season: u32, seed: u64, days: usize) -> SeasonReport {
     for day in 0..=days {
         let mut by: BTreeMap<Style, Vec<i64>> = BTreeMap::new();
         for sb in &bots {
-            by.entry(sb.style).or_default().push(sb.bot.p.net_worth(&h.content));
+            by.entry(sb.style)
+                .or_default()
+                .push(sb.bot.p.net_worth(&h.content));
         }
         for (k, mut v) in by {
             curves.entry(k).or_default().push(median(&mut v));
@@ -1102,7 +1152,12 @@ fn simulate_season(season: u32, seed: u64, days: usize) -> SeasonReport {
         index.push(price_index(&h));
         outposts.push((
             h.world.social.outposts.len(),
-            h.world.social.outposts.iter().map(|o| u32::from(o.level)).sum(),
+            h.world
+                .social
+                .outposts
+                .iter()
+                .map(|o| u32::from(o.level))
+                .sum(),
             h.world.social.outposts.iter().map(|o| o.traded).sum(),
         ));
         if day == days {
@@ -1122,10 +1177,6 @@ fn simulate_season(season: u32, seed: u64, days: usize) -> SeasonReport {
         }
         h.next_day();
     }
-    println!("sites at the end: {:?}", h.world.social.sites);
-    for sb in &bots {
-        println!("{:?} {} cash {} debt {} tally {:?}", sb.style, sb.bot.p.captain, sb.bot.p.cash, sb.bot.p.debt.principal, sb.bot.tally);
-    }
     let mut raids: BTreeMap<&'static str, u32> = BTreeMap::new();
     for r in &h.world.social.raids {
         let k = match r.outcome {
@@ -1144,7 +1195,6 @@ fn simulate_season(season: u32, seed: u64, days: usize) -> SeasonReport {
     let mut arc_endings = BTreeMap::new();
     let mut arc_branches = [0u16; 6];
     let mut steps = 0;
-    let mut final_nw: BTreeMap<Style, Vec<i64>> = BTreeMap::new();
     for sb in &bots {
         let p = &sb.bot.p;
         inc += p.ledger.income[16];
@@ -1161,7 +1211,6 @@ fn simulate_season(season: u32, seed: u64, days: usize) -> SeasonReport {
             }
         }
         steps += sb.bot.tally.get("arc steps").copied().unwrap_or(0);
-        final_nw.entry(sb.style).or_default().push(p.net_worth(&h.content));
     }
     SeasonReport {
         days,
@@ -1178,7 +1227,6 @@ fn simulate_season(season: u32, seed: u64, days: usize) -> SeasonReport {
         arc_endings,
         arc_branches,
         steps,
-        final_nw,
     }
 }
 
@@ -1205,14 +1253,23 @@ fn print_season(r: &SeasonReport, content: &russh_bbs_door_long_haul::content::C
     for d in (0..=r.days).step_by(7) {
         println!("day {d:>3}: {:?}", r.outposts[d]);
     }
-    println!("\npiracy: raids {:?}; credits taken by pirates {}, paid by victims {}", r.raids, r.piracy_moved.0, r.piracy_moved.1);
-    println!("convoys alive at the end {}; pool paid in {}, dividends collected {}", r.convoys, r.convoy_paid.1, r.convoy_paid.0);
+    println!(
+        "\npiracy: raids {:?}; credits taken by pirates {}, paid by victims {}",
+        r.raids, r.piracy_moved.0, r.piracy_moved.1
+    );
+    println!(
+        "convoys alive at the end {}; pool paid in {}, dividends collected {}",
+        r.convoys, r.convoy_paid.1, r.convoy_paid.0
+    );
     println!("\nseason endings (captain counts):");
     for (code, n) in &r.endings {
         let (t, _) = content.ending_text(*code).unwrap_or(("?", ""));
         println!("  {t}: {n}");
     }
-    println!("\narcs: started {:?} finished {:?}, scenes played {}", r.arcs_started, r.arcs_finished, r.steps);
+    println!(
+        "\narcs: started {:?} finished {:?}, scenes played {}",
+        r.arcs_started, r.arcs_finished, r.steps
+    );
     for (code, n) in &r.arc_endings {
         let (t, _) = content.ending_text(*code).unwrap_or(("?", ""));
         println!("  arc ending {t}: {n}");
@@ -1237,6 +1294,46 @@ fn gap_by_seed() {
     for seed in 1..=4u64 {
         let o = simulate(u32::try_from(seed).unwrap(), seed, 60);
         let last = |k: Kind| *o.curves[&k].last().unwrap();
-        println!("seed {seed}: informed {} random {} gap {}", last(Kind::Informed), last(Kind::Random), last(Kind::Informed) - last(Kind::Random));
+        println!(
+            "seed {seed}: informed {} random {} gap {}",
+            last(Kind::Informed),
+            last(Kind::Random),
+            last(Kind::Informed) - last(Kind::Random)
+        );
     }
+}
+
+#[test]
+fn a_season_of_mixed_captains_keeps_prices_and_money_honest() {
+    let r = simulate_season(2, 2, 56);
+    for (mean, lo, hi) in &r.index {
+        assert!((700..=1800).contains(mean), "price level {mean}");
+        assert!(
+            *lo >= 400 && *hi <= 3000,
+            "prices left the band: {lo}..{hi}"
+        );
+    }
+    // A prize is what the victim paid: pirates never receive more than victims lost, and a
+    // prize waiting on a victim who has not come back is the only difference.
+    assert!(
+        r.piracy_moved.0 <= r.piracy_moved.1 + 1,
+        "{:?}",
+        r.piracy_moved
+    );
+    // Convoys pay out (night windfalls add to the pool, raiders and tolls take from it).
+    assert!(
+        r.convoy_paid.1 > 0 && r.convoy_paid.0 > 0,
+        "{:?}",
+        r.convoy_paid
+    );
+    // Players built something: outposts exist by the end and carry traffic.
+    let (count, levels, _) = *r.outposts.last().unwrap();
+    assert!(
+        count >= 1 && levels >= 1,
+        "no outpost opened: {:?}",
+        r.outposts.last()
+    );
+    // The season ends in several different ways and the arcs were played.
+    assert!(r.endings.len() >= 3, "{:?}", r.endings);
+    assert!(r.arcs_started.iter().sum::<u32>() > 0 && r.steps > 0);
 }

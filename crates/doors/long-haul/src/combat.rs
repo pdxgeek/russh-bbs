@@ -708,7 +708,9 @@ impl Player {
                 - if evasive { 15 } else { 0 })
             .clamp(15, 95);
             if env.rng.chance(u32::try_from(hit).unwrap_or(15), 100) {
-                let raw = (power * (u32::from(orders.weapons) + u32::from(gunner)) / DAMAGE_DIVISOR).max(1);
+                let raw = (power * (u32::from(orders.weapons) + u32::from(gunner))
+                    / DAMAGE_DIVISOR)
+                    .max(1);
                 let mut dmg = i32::try_from(raw).unwrap_or(i32::MAX);
                 if fight.intent == Intent::Brace {
                     dmg = dmg * 6 / 10;

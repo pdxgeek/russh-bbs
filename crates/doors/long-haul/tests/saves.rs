@@ -172,7 +172,10 @@ fn an_l2_save_migrates_to_the_social_format_and_keeps_everything() {
     let v3 = door.migrate(BlobKind::Save, 2, &v2).unwrap();
     assert_eq!(v3[0], 3);
     let after = Player::decode(&v3, &h.content, &h.frontier).unwrap();
-    assert_eq!(after, before, "nothing the captain had is lost, the social section is empty");
+    assert_eq!(
+        after, before,
+        "nothing the captain had is lost, the social section is empty"
+    );
     assert!(!after.social.flagged && after.social.convoy == 0);
     // The whole chain from the oldest save works too.
     let v1 = unhex(L1_SAVE);

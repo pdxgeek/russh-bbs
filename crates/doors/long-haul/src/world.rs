@@ -207,7 +207,10 @@ impl World {
                     self.traded_tons += i64::from(tons.unsigned_abs());
                     *cell = clamp_i32(next);
                 }
-                let base_len = frontier.stations.len().saturating_sub(self.social.outposts.len());
+                let base_len = frontier
+                    .stations
+                    .len()
+                    .saturating_sub(self.social.outposts.len());
                 if let Some(k) = usize::from(*station).checked_sub(base_len)
                     && let Some(o) = self.social.outposts.get_mut(k)
                 {
@@ -437,7 +440,7 @@ impl World {
                 |lead, _| {
                     k += 1;
                     let suffix = suffixes
-                        .get((usize::from(lead.len() as u8) + before + k) % suffixes.len().max(1))
+                        .get((lead.len() + before + k) % suffixes.len().max(1))
                         .cloned()
                         .unwrap_or_default();
                     let lead = lead.split_whitespace().next().unwrap_or("Free");
@@ -538,12 +541,7 @@ impl World {
 
     /// A fresh world for a new season that keeps the hall of the one before it.
     #[must_use]
-    pub fn successor(
-        content: &Content,
-        frontier: &Frontier,
-        day: i64,
-        old: Option<&[u8]>,
-    ) -> Self {
+    pub fn successor(content: &Content, frontier: &Frontier, day: i64, old: Option<&[u8]>) -> Self {
         let mut world = Self::fresh(content, frontier, day);
         if let Some((season, old_social)) = old.and_then(|b| Self::peek_social(b, content))
             && season < frontier.season

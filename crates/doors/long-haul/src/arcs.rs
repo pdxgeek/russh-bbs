@@ -163,7 +163,9 @@ impl Table for ArcTable {
                 || !text_ok(&a.hint, 120)
                 || !text_ok(&a.blurb, 200)
             {
-                p.push(format!("arc `{id}`: id, title <= 32, hint <= 120, blurb <= 200"));
+                p.push(format!(
+                    "arc `{id}`: id, title <= 32, hint <= 120, blurb <= 200"
+                ));
             }
             if a.branches.len() > MAX_BRANCHES {
                 p.push(format!("arc `{id}`: at most {MAX_BRANCHES} branches"));
@@ -174,8 +176,14 @@ impl Table for ArcTable {
             }
             crate::content::duplicates(a.ending.iter().map(|e| e.id.as_str()), "ending", &mut p);
             for e in &a.ending {
-                if !crate::content::ident_ok(&e.id) || !text_ok(&e.title, 32) || !text_ok(&e.text, 300) {
-                    p.push(format!("arc `{id}` ending `{}`: id, title <= 32, text <= 300", e.id));
+                if !crate::content::ident_ok(&e.id)
+                    || !text_ok(&e.title, 32)
+                    || !text_ok(&e.text, 300)
+                {
+                    p.push(format!(
+                        "arc `{id}` ending `{}`: id, title <= 32, text <= 300",
+                        e.id
+                    ));
                 }
             }
         }
@@ -186,26 +194,32 @@ impl Table for ArcTable {
         }
         for e in &self.season_ending {
             if !text_ok(&e.title, 32) || !text_ok(&e.text, 200) {
-                p.push(format!("season ending `{}`: title <= 32, text <= 200", e.id));
+                p.push(format!(
+                    "season ending `{}`: title <= 32, text <= 200",
+                    e.id
+                ));
             }
         }
         for e in &self.event {
             if e.family != "arc" || e.arc.is_empty() || e.step == 0 {
-                p.push(format!("scene `{}`: family `arc`, with an arc and a step", e.id));
+                p.push(format!(
+                    "scene `{}`: family `arc`, with an arc and a step",
+                    e.id
+                ));
             }
         }
         p
     }
 }
 
-fn walk_effects<'a>(e: &'a EventDef) -> impl Iterator<Item = &'a Effect> {
+fn walk_effects(e: &EventDef) -> impl Iterator<Item = &Effect> {
     e.options
         .iter()
         .flat_map(|o| o.outcomes.iter())
         .flat_map(|out| out.effects.iter())
 }
 
-fn reqs_of<'a>(e: &'a EventDef) -> impl Iterator<Item = &'a Req> {
+fn reqs_of(e: &EventDef) -> impl Iterator<Item = &Req> {
     e.when
         .iter()
         .chain(e.mods.iter().map(|m| &m.req))
@@ -219,6 +233,7 @@ fn reqs_of<'a>(e: &'a EventDef) -> impl Iterator<Item = &'a Req> {
 }
 
 /// Checks that need all the tables: steps contiguous, no dead end, no dead branch or ending.
+#[allow(clippy::too_many_lines)]
 pub(crate) fn link_problems(content: &Content, table: &ArcTable) -> Vec<String> {
     let mut p = Vec::new();
     for (ai, arc) in table.arc.iter().enumerate() {
@@ -231,31 +246,49 @@ pub(crate) fn link_problems(content: &Content, table: &ArcTable) -> Vec<String> 
         }
         for (i, e) in steps.iter().enumerate() {
             if usize::from(e.step) != i + 1 {
-                p.push(format!("arc `{id}`: steps must run 1, 2, 3 ... (found {})", e.step));
+                p.push(format!(
+                    "arc `{id}`: steps must run 1, 2, 3 ... (found {})",
+                    e.step
+                ));
             }
-            let gated = e.when.iter().any(|r| {
-                matches!(r, Req::ArcAt { arc, step } if arc == id && *step == e.step)
-            });
+            let gated = e
+                .when
+                .iter()
+                .any(|r| matches!(r, Req::ArcAt { arc, step } if arc == id && *step == e.step));
             if !gated {
-                p.push(format!("scene `{}`: `when` needs arc_at for its own step", e.id));
+                p.push(format!(
+                    "scene `{}`: `when` needs arc_at for its own step",
+                    e.id
+                ));
             }
             let last = usize::from(e.step) == n;
             for o in &e.options {
                 for out in &o.outcomes {
-                    let advances = out.effects.iter().any(
-                        |f| matches!(f, Effect::ArcStep { arc } if arc == id),
-                    );
-                    let ends = out.effects.iter().any(
-                        |f| matches!(f, Effect::Ending { arc, .. } if arc == id),
-                    );
+                    let advances = out
+                        .effects
+                        .iter()
+                        .any(|f| matches!(f, Effect::ArcStep { arc } if arc == id));
+                    let ends = out
+                        .effects
+                        .iter()
+                        .any(|f| matches!(f, Effect::Ending { arc, .. } if arc == id));
                     if last && !ends {
-                        p.push(format!("scene `{}`: every outcome of the last step ends the arc", e.id));
+                        p.push(format!(
+                            "scene `{}`: every outcome of the last step ends the arc",
+                            e.id
+                        ));
                     }
-                    if !last && !(advances || ends) {
-                        p.push(format!("scene `{}`: an outcome neither advances nor ends the arc", e.id));
+                    if !last && !advances && !ends {
+                        p.push(format!(
+                            "scene `{}`: an outcome neither advances nor ends the arc",
+                            e.id
+                        ));
                     }
                     if advances && ends {
-                        p.push(format!("scene `{}`: an outcome both advances and ends", e.id));
+                        p.push(format!(
+                            "scene `{}`: an outcome both advances and ends",
+                            e.id
+                        ));
                     }
                 }
             }
@@ -263,16 +296,21 @@ pub(crate) fn link_problems(content: &Content, table: &ArcTable) -> Vec<String> 
         // Every branch is set somewhere and tested somewhere; every ending is reachable.
         for b in &arc.branches {
             let set = table.event.iter().any(|e| {
-                walk_effects(e).any(|f| matches!(f, Effect::ArcBranch { arc, branch } if arc == id && branch == b))
+                walk_effects(e).any(
+                    |f| matches!(f, Effect::ArcBranch { arc, branch } if arc == id && branch == b),
+                )
             });
-            let tested = table.event.iter().any(|e| {
-                reqs_of(e).any(|r| req_tests_branch(r, id, b))
-            });
+            let tested = table
+                .event
+                .iter()
+                .any(|e| reqs_of(e).any(|r| req_tests_branch(r, id, b)));
             if !set {
                 p.push(format!("arc `{id}`: branch `{b}` is never set"));
             }
             if !tested {
-                p.push(format!("arc `{id}`: branch `{b}` never closes or opens anything"));
+                p.push(format!(
+                    "arc `{id}`: branch `{b}` never closes or opens anything"
+                ));
             }
         }
         for en in &arc.ending {
@@ -297,7 +335,9 @@ pub(crate) fn link_problems(content: &Content, table: &ArcTable) -> Vec<String> 
                 Effect::ArcStep { arc } if content.arc_ix(arc).is_none() => {
                     p.push(format!("scene `{}`: unknown arc `{arc}`", e.id));
                 }
-                Effect::ArcBranch { arc, branch } if content.arc_branch_bit(arc, branch).is_none() => {
+                Effect::ArcBranch { arc, branch }
+                    if content.arc_branch_bit(arc, branch).is_none() =>
+                {
                     p.push(format!("scene `{}`: unknown branch `{arc}/{branch}`", e.id));
                 }
                 Effect::Ending { arc, ending } if content.arc_ending_ix(arc, ending).is_none() => {
@@ -369,7 +409,10 @@ impl Content {
     #[must_use]
     pub fn ending_text(&self, code: u8) -> Option<(&str, &str)> {
         if code >= SEASON_ENDING_BASE {
-            let e = self.arcs.season_ending.get(usize::from(code - SEASON_ENDING_BASE))?;
+            let e = self
+                .arcs
+                .season_ending
+                .get(usize::from(code - SEASON_ENDING_BASE))?;
             Some((&e.title, &e.text))
         } else {
             let arc = self.arcs.arc.get(usize::from(code / 8))?;

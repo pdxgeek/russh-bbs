@@ -146,7 +146,14 @@ impl Session {
         }
     }
 
-    pub(super) fn society_lines(&self, tab: Tab, cursor: usize, input: Option<&str>) -> Lines {
+    #[allow(clippy::too_many_lines)]
+    pub(super) fn society_lines(
+        &self,
+        tab: Tab,
+        cursor: usize,
+        input: Option<&str>,
+        height: usize,
+    ) -> Lines {
         let Some(p) = &self.player else {
             return vec![line("No captain.", DoorStyle::Plain)];
         };
@@ -163,7 +170,7 @@ impl Session {
             .collect();
         out.push(line(tabs.join(" "), DoorStyle::Accent));
         out.push(line(
-            "Everything here is visible to the server and, where it says so, to other captains.",
+            "The server can read all of this. Other captains see only what is marked shared.",
             DoorStyle::Dim,
         ));
         let soc = &self.world.social;
@@ -192,19 +199,24 @@ impl Session {
                                 m.power,
                                 cr(m.earned)
                             ),
-                            if fresh { DoorStyle::Plain } else { DoorStyle::Dim },
+                            if fresh {
+                                DoorStyle::Plain
+                            } else {
+                                DoorStyle::Dim
+                            },
                         ));
                     }
                     out.push(line(
                         format!(
-                            "{}% of every profit you make goes to the pool; the night shares it \
-                             among captains who flew lately.",
+                            "{}% of each profit goes to the pool; the night shares it out.",
                             social::POOL_PCT
                         ),
                         DoorStyle::Dim,
                     ));
                     for ev in c.events.iter().rev().take(2) {
-                        if let Some(def) = self.content.social.convoy_event.get(usize::from(ev.kind)) {
+                        if let Some(def) =
+                            self.content.social.convoy_event.get(usize::from(ev.kind))
+                        {
                             out.push(line(format!("Night: {}", def.title), DoorStyle::Plain));
                         }
                     }
@@ -245,7 +257,11 @@ impl Session {
                         out.push(line(
                             format!(
                                 "{} {} ({}/{CONVOY_MAX}): {}",
-                                if i == cursor.min(open.len() - 1) { ">" } else { " " },
+                                if i == cursor.min(open.len() - 1) {
+                                    ">"
+                                } else {
+                                    " "
+                                },
                                 c.name,
                                 c.members.len(),
                                 names.join(", ")
@@ -263,13 +279,20 @@ impl Session {
                 out.push(line(
                     if p.social.flagged {
                         format!(
-                            "Your colours are up since day {}. Infamy {}, renown {}.",
-                            p.social.flagged_since, p.social.infamy, p.social.renown
+                            "Your colours are up since season day {}. Infamy {}, renown {}.",
+                            p.social.flagged_since - soc.born,
+                            p.social.infamy,
+                            p.social.renown
                         )
                     } else {
-                        "Your colours are down. Nobody can hunt you, and you hunt nobody.".to_owned()
+                        "Your colours are down. Nobody can hunt you, and you hunt nobody."
+                            .to_owned()
                     },
-                    if p.social.flagged { DoorStyle::Bad } else { DoorStyle::Good },
+                    if p.social.flagged {
+                        DoorStyle::Bad
+                    } else {
+                        DoorStyle::Good
+                    },
                 ));
                 out.push(line(
                     format!(
@@ -312,7 +335,11 @@ impl Session {
                             x.infamy,
                             today - x.seen
                         ),
-                        if sel { DoorStyle::Selected } else { DoorStyle::Plain },
+                        if sel {
+                            DoorStyle::Selected
+                        } else {
+                            DoorStyle::Plain
+                        },
                     ));
                 }
             }
@@ -335,7 +362,10 @@ impl Session {
                     DoorStyle::Plain,
                 ));
                 for o in &soc.outposts {
-                    let sys = self.frontier.system(o.system).map_or("?", |s| s.name.as_str());
+                    let sys = self
+                        .frontier
+                        .system(o.system)
+                        .map_or("?", |s| s.name.as_str());
                     out.push(line(
                         format!(
                             "  {} ({sys}) level {} - {} cr pledged, {} t traded, founded by {}",
@@ -349,7 +379,10 @@ impl Session {
                     ));
                 }
                 for s in &soc.sites {
-                    let sys = self.frontier.system(s.system).map_or("?", |s| s.name.as_str());
+                    let sys = self
+                        .frontier
+                        .system(s.system)
+                        .map_or("?", |s| s.name.as_str());
                     out.push(line(
                         format!(
                             "  site at {sys}: {} of {} cr, {} backers",
@@ -363,14 +396,20 @@ impl Session {
                 if soc.outposts.is_empty() && soc.sites.is_empty() {
                     out.push(line("  none yet", DoorStyle::Dim));
                 }
-                let here = self.frontier.system(p.at).map_or("here", |s| s.name.as_str());
+                let here = self
+                    .frontier
+                    .system(p.at)
+                    .map_or("here", |s| s.name.as_str());
                 out.push(line(
                     format!("You are in {here}. [p] pledge 500 cr  [P] pledge 5,000 cr toward a station here."),
                     DoorStyle::Strong,
                 ));
             }
             Tab::Journal => {
-                out.push(line("Stories you have begun, and how they ended.", DoorStyle::Dim));
+                out.push(line(
+                    "Stories you have begun, and how they ended.",
+                    DoorStyle::Dim,
+                ));
                 for (i, arc) in self.content.arcs.arc.iter().enumerate() {
                     let state = p.social.arcs[i];
                     let total = self
@@ -385,7 +424,10 @@ impl Session {
                         .then(|| self.content.ending_text(state.ending))
                         .flatten()
                     {
-                        out.push(line(format!("{} - finished: {title}", arc.title), DoorStyle::Good));
+                        out.push(line(
+                            format!("{} - finished: {title}", arc.title),
+                            DoorStyle::Good,
+                        ));
                         out.push(line(format!("  {text}"), DoorStyle::Dim));
                     } else if state.step == 0 {
                         out.push(line(format!("? {}", arc.hint), DoorStyle::Dim));
@@ -409,19 +451,30 @@ impl Session {
                 }
             }
             Tab::Hall => {
-                for (cat, title) in [(0u8, "Richest captains"), (1, "Best surveyors"), (2, "Most feared")] {
+                for (cat, title) in [
+                    (0u8, "Richest captains"),
+                    (1, "Best surveyors"),
+                    (2, "Most feared"),
+                ] {
                     out.push(line(title, DoorStyle::Dim));
                     let rows = soc.hall(cat);
                     if rows.is_empty() {
                         out.push(line("  nobody yet", DoorStyle::Dim));
                     }
                     for (i, r) in rows.iter().enumerate() {
-                        out.push(line(format!("  {}. {}  {}", i + 1, r.name, cr(r.value)), DoorStyle::Plain));
+                        out.push(line(
+                            format!("  {}. {}  {}", i + 1, r.name, cr(r.value)),
+                            DoorStyle::Plain,
+                        ));
                     }
                 }
                 if let Some(g) = &soc.gates {
                     out.push(line(
-                        format!("The gates were opened on day {} by {}.", g.day - soc.born, g.by),
+                        format!(
+                            "The gates were opened on day {} by {}.",
+                            g.day - soc.born,
+                            g.by
+                        ),
                         DoorStyle::Good,
                     ));
                 }
@@ -445,6 +498,7 @@ impl Session {
                 }
             }
         }
+        out.truncate(height.max(4));
         out
     }
 }

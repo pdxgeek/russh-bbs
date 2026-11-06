@@ -1,5 +1,11 @@
 //! Win rates in ship combat, for balance (not a guard rail): `--ignored --nocapture`.
-#![allow(clippy::unwrap_used, clippy::print_stdout, missing_docs, clippy::panic)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::print_stdout,
+    missing_docs,
+    clippy::panic,
+    clippy::many_single_char_names
+)]
 
 mod common;
 
@@ -15,7 +21,7 @@ fn win_rates() {
     for enemy in ["skiff", "raider", "corsair", "jumper"] {
         for (label, gunner) in [("lance+shield", false), ("lance+shield+gunner", true)] {
             let (mut won, mut ran, mut lost) = (0, 0, 0);
-            for seed in 0..40u64 {
+            for seed in 0..30u64 {
                 let mut h = Harness::new(1, seed);
                 let mut p = h.captain("dockhand");
                 h.fit(&mut p, "lance1");
@@ -25,7 +31,9 @@ fn win_rates() {
                 }
                 h.fight(&mut p, enemy);
                 for _ in 0..40 {
-                    let Some(Scene::Combat(c)) = p.scene.clone() else { break };
+                    let Some(Scene::Combat(c)) = p.scene.clone() else {
+                        break;
+                    };
                     let hull = u32::from(p.ship.hull_hp);
                     let max = u32::from(h.content.hulls[usize::from(p.ship.hull)].hull_points);
                     let a = if c.phase == Phase::Won {
@@ -47,7 +55,7 @@ fn win_rates() {
                     lost += 1;
                 }
             }
-            println!("{enemy:<8} {label:<22} won {won:>3} ran {ran:>3} other {lost:>3} of 300");
+            println!("{enemy:<8} {label:<22} won {won:>3} ran {ran:>3} other {lost:>3} of 30");
         }
     }
 }

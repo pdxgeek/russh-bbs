@@ -1,0 +1,24 @@
+┌───────────────────────────────── russh-bbs ──────────────────────────────────┐
+│Long Haul                                                                     │
+│                                                                              │
+│▲ LONG HAUL  founder  1,800 cr  debt 20,000  days ●●●●●●●●●● 10               │
+│╭ SOCIETY: CONVOYS, PIRACY, OUTPOSTS ────────────────────────────────────────╮│
+││ Convoy  [Piracy]  Outposts   Hall   Journal                                ││
+││The server can read all of this. Other captains see only what is marked     ││
+││shared.                                                                     ││
+││Your colours are down. Nobody can hunt you, and you hunt nobody.            ││
+││Only flagged captains meet. Caps: 2 hunts a day, 2 hits on one target a day,││
+││3 days before the same pair meet again, prizes at most 1500 cr and 8% of the││
+││purse. An unflagged hauler is never touched, whatever it carries.           ││
+││Raids won 0, driven off 0, robbed 0, fought off 0.                          ││
+││Flagged captains:                                                           ││
+││  none in the lanes                                                         ││
+││                                                                            ││
+││                                                                            ││
+││                                                                            ││
+││                                                                            ││
+│╰────────────────────────────────────────────────────────────────────────────╯│
+│Your note goes out on the convoy channel.                                     │
+│[Left/Right] tab  [Up/Down] choose  [Enter] join/hunt  [n] form  [x] leave    │
+│[t] say  [1-8] note  [f] colours  [p/P] pledge  [Esc] back                    │
+└──────────────────────────────────────────────────────────────────────────────┘

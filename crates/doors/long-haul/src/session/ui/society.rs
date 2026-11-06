@@ -16,12 +16,10 @@ impl Session {
         let inner = block.inner(area);
         frame.render_widget(block, area);
         let lines: Vec<Line<'static>> = self
-            .society_lines(*tab, *cursor, input.as_deref())
+            .society_lines(*tab, *cursor, input.as_deref(), usize::from(inner.height))
             .into_iter()
             .map(|(t, s)| Line::styled(t, pal.role(s)))
             .collect();
-        let skip = lines.len().saturating_sub(usize::from(inner.height));
-        let shown: Vec<Line<'static>> = lines.into_iter().skip(skip.min(1)).collect();
-        frame.render_widget(Paragraph::new(shown).wrap(Wrap { trim: false }), inner);
+        frame.render_widget(Paragraph::new(lines).wrap(Wrap { trim: false }), inner);
     }
 }

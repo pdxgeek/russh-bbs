@@ -1,6 +1,12 @@
 //! Opt-in piracy, convoy and outpost rules at the engine level: who may be hunted, the caps,
 //! the cooldowns, and that nothing a player sends can grow the world without bound.
-#![allow(clippy::unwrap_used, clippy::panic, missing_docs, clippy::too_many_lines)]
+#![allow(
+    clippy::assert_is_empty,
+    clippy::unwrap_used,
+    clippy::panic,
+    missing_docs,
+    clippy::too_many_lines
+)]
 
 mod common;
 
@@ -79,11 +85,20 @@ fn only_flagged_captains_hunt_and_only_flagged_captains_can_be_hunted() {
         Err(Refusal::Social(_))
     ));
     // The flagged, armed, settled hunter can.
-    h.world.social.apply(&SocialDelta::Roster(pirate("prey", 1, h.today)), h.today);
-    h.go(&mut hunter, &Action::Intercept("prey".into())).unwrap();
+    h.world
+        .social
+        .apply(&SocialDelta::Roster(pirate("prey", 1, h.today)), h.today);
+    h.go(&mut hunter, &Action::Intercept("prey".into()))
+        .unwrap();
     // Not oneself, not the same target twice, and a stale roster entry is gone.
-    assert!(h.go(&mut hunter, &Action::Intercept("hunter".into())).is_err());
-    assert!(h.go(&mut hunter, &Action::Intercept("prey".into())).is_err());
+    assert!(
+        h.go(&mut hunter, &Action::Intercept("hunter".into()))
+            .is_err()
+    );
+    assert!(
+        h.go(&mut hunter, &Action::Intercept("prey".into()))
+            .is_err()
+    );
     list(&mut h, &[("old", 1)]);
     h.world.social.roster.last_mut().unwrap().seen = h.today - 9;
     assert!(h.go(&mut hunter, &Action::Intercept("old".into())).is_err());
@@ -127,11 +142,27 @@ fn the_night_caps_hits_on_one_target_and_a_pair_cools_down() {
         );
     }
     s.tick(10, &[], &mut russh_bbs_door::DoorRng::from_seed(1));
-    let live = s.raids.iter().filter(|r| r.outcome != RaidOutcome::Void).count();
+    let live = s
+        .raids
+        .iter()
+        .filter(|r| r.outcome != RaidOutcome::Void)
+        .count();
     assert_eq!(live, social::TARGET_PER_DAY);
-    assert_eq!(s.raids.iter().filter(|r| r.outcome == RaidOutcome::Void).count(), 1);
+    assert_eq!(
+        s.raids
+            .iter()
+            .filter(|r| r.outcome == RaidOutcome::Void)
+            .count(),
+        1
+    );
     // The same pair cannot meet again for the cooldown.
-    let pair = s.raids.iter().find(|r| r.outcome != RaidOutcome::Void).unwrap().attacker.clone();
+    let pair = s
+        .raids
+        .iter()
+        .find(|r| r.outcome != RaidOutcome::Void)
+        .unwrap()
+        .attacker
+        .clone();
     s.apply(
         &SocialDelta::Intent(Intent {
             id: 900,
@@ -175,13 +206,24 @@ fn a_prize_is_never_more_than_the_cap_and_a_stronger_ship_wins_more_often() {
                 wins[k] += 1;
             }
             // A victim cannot be made to pay more than the cap, whatever is claimed.
-            s.apply(&SocialDelta::Settle { raid: raid.id, paid: 1_000_000 }, 10);
+            s.apply(
+                &SocialDelta::Settle {
+                    raid: raid.id,
+                    paid: 1_000_000,
+                },
+                10,
+            );
             if raid.outcome == RaidOutcome::Raided {
                 assert!(s.raids[0].paid <= raid.cap);
             }
         }
     }
-    assert!(wins[1] > wins[0] + 40, "weak {} strong {}", wins[0], wins[1]);
+    assert!(
+        wins[1] > wins[0] + 40,
+        "weak {} strong {}",
+        wins[0],
+        wins[1]
+    );
 }
 
 #[test]
@@ -252,14 +294,24 @@ fn world_lists_are_capped_whatever_players_send() {
     }
     assert_eq!(s.convoys[0].members.len(), CONVOY_MAX);
     // A captain is in one convoy at a time.
-    s.apply(&SocialDelta::ConvoyJoin { id: 2, member: member("m0") }, 5);
+    s.apply(
+        &SocialDelta::ConvoyJoin {
+            id: 2,
+            member: member("m0"),
+        },
+        5,
+    );
     assert_eq!(s.convoys[1].members.len(), 1);
     // Notes keep the newest few, and one author is limited per day.
     for _ in 0..20 {
         s.apply(
             &SocialDelta::ConvoyNote {
                 id: 1,
-                note: social::Note { day: 5, who: "m0".into(), text: "x".repeat(900) },
+                note: social::Note {
+                    day: 5,
+                    who: "m0".into(),
+                    text: "x".repeat(900),
+                },
             },
             5,
         );
@@ -276,14 +328,18 @@ fn convoy_actions_follow_their_rules_and_chat_is_limited() {
     let mut b = h.captain("dockhand");
     b.social.handle = "beta".into();
     h.go(&mut a, &Action::ConvoyForm).unwrap();
-    assert!(h.go(&mut a, &Action::ConvoyForm).is_err(), "one convoy at a time");
+    assert!(
+        h.go(&mut a, &Action::ConvoyForm).is_err(),
+        "one convoy at a time"
+    );
     let id = a.social.convoy;
     // The local world copy has the convoy because the engine applied the delta.
     h.go(&mut b, &Action::ConvoyJoin(id)).unwrap();
     assert!(h.go(&mut b, &Action::ConvoyJoin(id)).is_err());
     assert!(h.go(&mut b, &Action::ConvoyJoin(9999)).is_err() || b.social.convoy == id);
     for i in 0..social::NOTES_PER_DAY {
-        h.go(&mut a, &Action::ConvoySay(say(&format!("line {i}")))).unwrap();
+        h.go(&mut a, &Action::ConvoySay(say(&format!("line {i}"))))
+            .unwrap();
     }
     assert!(matches!(
         h.go(&mut a, &Action::ConvoySay(say("one too many"))),
@@ -301,7 +357,11 @@ fn convoy_actions_follow_their_rules_and_chat_is_limited() {
     // Leaving frees the seat; the pool pays a share of profit only while in a convoy.
     h.go(&mut b, &Action::ConvoyLeave).unwrap();
     assert_eq!(b.social.convoy, 0);
-    assert!(h.deltas.iter().any(|d| matches!(d, Delta::Social(SocialDelta::ConvoyLeave { .. }))));
+    assert!(
+        h.deltas
+            .iter()
+            .any(|d| matches!(d, Delta::Social(SocialDelta::ConvoyLeave { .. })))
+    );
 }
 
 #[test]
@@ -321,25 +381,88 @@ fn outposts_need_the_season_to_be_late_a_charted_empty_system_and_the_credits() 
     p.cash = 50_000;
     // Early in the season: refused.
     assert!(matches!(
-        h.go(&mut p, &Action::Pledge { system: site, amount: 600 }),
+        h.go(
+            &mut p,
+            &Action::Pledge {
+                system: site,
+                amount: 600
+            }
+        ),
         Err(Refusal::Social(_))
     ));
     h.today += social::OUTPOST_MIN_DAY;
     // Too small, too large, and in the wrong place.
-    assert!(h.go(&mut p, &Action::Pledge { system: site, amount: 10 }).is_err());
-    assert!(h.go(&mut p, &Action::Pledge { system: site, amount: 90_000 }).is_err());
+    assert!(
+        h.go(
+            &mut p,
+            &Action::Pledge {
+                system: site,
+                amount: 10
+            }
+        )
+        .is_err()
+    );
+    assert!(
+        h.go(
+            &mut p,
+            &Action::Pledge {
+                system: site,
+                amount: 90_000
+            }
+        )
+        .is_err()
+    );
     let other = frontier.systems.iter().find(|s| s.id != site).unwrap().id;
-    assert!(h.go(&mut p, &Action::Pledge { system: other, amount: 600 }).is_err());
+    assert!(
+        h.go(
+            &mut p,
+            &Action::Pledge {
+                system: other,
+                amount: 600
+            }
+        )
+        .is_err()
+    );
     // Where a station already stands: refused.
-    let built = frontier.systems.iter().find(|s| !s.stations.is_empty() && !s.uncharted).unwrap().id;
+    let built = frontier
+        .systems
+        .iter()
+        .find(|s| !s.stations.is_empty() && !s.uncharted)
+        .unwrap()
+        .id;
     p.at = built;
-    assert!(h.go(&mut p, &Action::Pledge { system: built, amount: 600 }).is_err());
+    assert!(
+        h.go(
+            &mut p,
+            &Action::Pledge {
+                system: built,
+                amount: 600
+            }
+        )
+        .is_err()
+    );
     p.at = site;
     let before = p.cash;
-    h.go(&mut p, &Action::Pledge { system: site, amount: 600 }).unwrap();
+    h.go(
+        &mut p,
+        &Action::Pledge {
+            system: site,
+            amount: 600,
+        },
+    )
+    .unwrap();
     assert_eq!(p.cash, before - 600);
     assert_eq!(h.world.social.site_at(site).unwrap().fund, 600);
     // Cannot pledge what you do not have.
     p.cash = 100;
-    assert!(h.go(&mut p, &Action::Pledge { system: site, amount: 600 }).is_err());
+    assert!(
+        h.go(
+            &mut p,
+            &Action::Pledge {
+                system: site,
+                amount: 600
+            }
+        )
+        .is_err()
+    );
 }

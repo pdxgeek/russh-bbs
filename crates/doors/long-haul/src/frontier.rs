@@ -322,7 +322,7 @@ impl Frontier {
                 i64::from(self.season) * 1000 + i64::from(o.system),
             );
             finish_stations(content, std::slice::from_mut(&mut st), &mut rng);
-            st.name = o.name.clone();
+            st.name.clone_from(&o.name);
             st.size = o.level.clamp(1, 3);
             if let Some(sys) = out.systems.get_mut(usize::from(o.system)) {
                 sys.stations.push(id);

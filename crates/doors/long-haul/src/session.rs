@@ -153,6 +153,7 @@ fn clip(text: &str, width: usize) -> String {
 }
 
 impl Session {
+    #[allow(clippy::too_many_arguments)]
     pub(crate) fn new(
         content: Arc<Content>,
         base: Arc<Frontier>,
@@ -180,7 +181,7 @@ impl Session {
             && p.social.handle != handle
         {
             // Bookkeeping, not a change worth a save of its own.
-            p.social.handle = handle.to_owned();
+            handle.clone_into(&mut p.social.handle);
         }
         let loaded = player.clone();
         let events = player.as_mut().map_or_else(Vec::new, |p| {
@@ -1074,7 +1075,12 @@ impl Session {
             Mode::Crew(cursor) => out.extend(self.crew_lines(player, *cursor)),
             Mode::Jobs(cursor) => out.extend(self.jobs_lines(player, *cursor)),
             Mode::Society(tab, cursor, input) => {
-                out.extend(self.society_lines(*tab, *cursor, input.as_deref()));
+                out.extend(self.society_lines(
+                    *tab,
+                    *cursor,
+                    input.as_deref(),
+                    height.saturating_sub(8).max(10),
+                ));
             }
         }
         out.push((String::new(), DoorStyle::Plain));

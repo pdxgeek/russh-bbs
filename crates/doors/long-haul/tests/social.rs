@@ -1,6 +1,8 @@
 //! Convoys, opt-in piracy and outposts through the framework's real open, key, flush and tick
 //! path with a store, two or more captains and a manual clock.
 #![allow(
+    clippy::assert_is_empty,
+    clippy::unreadable_literal,
     clippy::unwrap_used,
     clippy::panic,
     clippy::too_many_lines,
@@ -87,9 +89,14 @@ impl Board {
     async fn night(&self) {
         self.clock.advance(86_400);
         self.store.set_now(self.clock.now());
-        run_due(&self.store, self.door.as_ref(), self.clock.as_ref(), TickPolicy::default())
-            .await
-            .unwrap();
+        run_due(
+            &self.store,
+            self.door.as_ref(),
+            self.clock.as_ref(),
+            TickPolicy::default(),
+        )
+        .await
+        .unwrap();
     }
 
     async fn player(&self, n: i64) -> Player {
@@ -105,7 +112,12 @@ impl Board {
 
     async fn edit(&self, n: i64, f: impl FnOnce(&mut Player)) {
         let id = &self.door.info().id;
-        let saved = self.store.load_save(id, Self::id(n)).await.unwrap().unwrap();
+        let saved = self
+            .store
+            .load_save(id, Self::id(n))
+            .await
+            .unwrap()
+            .unwrap();
         let ext = self.world_ext().await;
         let mut p = Player::decode(&saved.bytes, self.door.content(), &ext).unwrap();
         f(&mut p);
@@ -214,7 +226,12 @@ async fn two_captains_form_and_share_a_convoy_through_the_store() {
     b.visit(1, "q").await;
     b.visit(2, "q").await;
     let (p1, p2) = (b.player(1).await, b.player(2).await);
-    assert!(p1.cash >= cash1 + 200 && p2.cash >= cash2 + 200, "{} {}", p1.cash - cash1, p2.cash - cash2);
+    assert!(
+        p1.cash >= cash1 + 200 && p2.cash >= cash2 + 200,
+        "{} {}",
+        p1.cash - cash1,
+        p2.cash - cash2
+    );
     assert_eq!(p1.social.collected, 200);
     // Opening again collects nothing more.
     b.visit(1, "q").await;
@@ -239,7 +256,11 @@ async fn a_typed_convoy_line_is_sanitized_and_rate_limited() {
     b.visit(1, "o t h i u1b u5b 3 1 m enter").await;
     let log = b.world().await.social.convoys[0].notes.clone();
     assert_eq!(log.len(), 1);
-    assert!(!log[0].text.contains('\u{1b}') && log[0].text.starts_with("hi"), "{:?}", log[0]);
+    assert!(
+        !log[0].text.contains('\u{1b}') && log[0].text.starts_with("hi"),
+        "{:?}",
+        log[0]
+    );
     // More than six player lines a minute are refused by the framework's limiter.
     for _ in 0..8 {
         b.visit(1, "o t x enter").await;
@@ -259,7 +280,10 @@ async fn piracy_needs_both_to_opt_in_and_a_prize_is_exactly_what_the_victim_paid
         join(&mut b, hunter).await;
         join(&mut b, prey).await;
         b.edit(hunter, |p| {
-            p.ship.modules.push(Installed { module: weapon, wear: 0 });
+            p.ship.modules.push(Installed {
+                module: weapon,
+                wear: 0,
+            });
             p.credit(Cause::Start, 4_000);
         })
         .await;
@@ -323,7 +347,10 @@ async fn piracy_needs_both_to_opt_in_and_a_prize_is_exactly_what_the_victim_paid
         }
     }
     assert!(raided > 0, "no raid landed in six pairs");
-    assert_eq!(total_in, total_out, "money in piracy is a transfer ({hunters_in} {victims_out})");
+    assert_eq!(
+        total_in, total_out,
+        "money in piracy is a transfer ({hunters_in} {victims_out})"
+    );
     assert_eq!(total_out, checked);
 }
 
@@ -360,8 +387,14 @@ async fn players_fund_an_outpost_late_in_the_season_and_it_becomes_a_market() {
     let cost = b.player(1).await.ledger.spend[Cause::Outpost.index()]
         + b.player(2).await.ledger.spend[Cause::Outpost.index()];
     assert_eq!(cost, 15_000);
-    assert_eq!(b.player(1).await.ledger.spend[Cause::Outpost.index()], 10_000);
-    assert!(b.world().await.social.outposts.is_empty(), "opens at the night");
+    assert_eq!(
+        b.player(1).await.ledger.spend[Cause::Outpost.index()],
+        10_000
+    );
+    assert!(
+        b.world().await.social.outposts.is_empty(),
+        "opens at the night"
+    );
     b.night().await;
     let world = b.world().await;
     let outpost = &world.social.outposts[0];
@@ -399,7 +432,10 @@ async fn a_season_ends_with_an_ending_a_legacy_an_heirloom_and_a_hall_that_carri
     b.visit(2, "q").await;
     let world = b.world().await;
     let rich = world.social.hall(0);
-    assert_eq!(rich.first().map(|r| r.name.clone()), Some(b.player(1).await.captain));
+    assert_eq!(
+        rich.first().map(|r| r.name.clone()),
+        Some(b.player(1).await.captain)
+    );
     let heir = b.player(1).await.heirloom_choice(b.door.content());
     // Staff end the season.
     let id = b.door.info().id.clone();
@@ -413,12 +449,18 @@ async fn a_season_ends_with_an_ending_a_legacy_an_heirloom_and_a_hall_that_carri
     let p = b.player(1).await;
     assert_eq!(p.social.legacy.len(), 1);
     assert_eq!(p.social.legacy[0].season, 1);
-    assert_eq!(p.social.legacy[0].ending, 8, "the arc's ending counts before riches");
+    assert_eq!(
+        p.social.legacy[0].ending, 8,
+        "the arc's ending counts before riches"
+    );
     assert_eq!(p.social.heirloom, heir);
     assert!(p.ship.modules.iter().any(|m| m.module == heir));
     assert!(p.cash < 5_000, "a new captain, a new purse");
     let text = lines.join("\n");
-    assert!(text.contains("Last season ended") || p.social.legacy.len() == 1, "{text}");
+    assert!(
+        text.contains("Last season ended") || p.social.legacy.len() == 1,
+        "{text}"
+    );
     // Captain 2 had no story: a season ending is picked from how they did.
     b.visit(2, "enter").await;
     assert!(b.player(2).await.social.legacy[0].ending >= 100);

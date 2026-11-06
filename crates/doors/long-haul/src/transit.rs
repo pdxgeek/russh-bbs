@@ -1025,9 +1025,8 @@ impl Player {
                     }
                 }
                 Effect::ArcBranch { arc, branch } => {
-                    if let Some((i, bit)) = content
-                        .arc_ix(arc)
-                        .zip(content.arc_branch_bit(arc, branch))
+                    if let Some((i, bit)) =
+                        content.arc_ix(arc).zip(content.arc_branch_bit(arc, branch))
                         && let Some(a) = self.social.arcs.get_mut(i)
                     {
                         a.branches |= bit;

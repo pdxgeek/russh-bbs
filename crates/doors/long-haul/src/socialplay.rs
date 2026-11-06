@@ -13,8 +13,8 @@ use crate::engine::Env;
 use crate::events::{Event, Refusal};
 use crate::player::{Cause, Player};
 use crate::social::{
-    self, CONVOY_MAX, FLAG_SETTLE_DAYS, INTERCEPTS_PER_DAY, LOOT_PCT, Member, MIN_PLEDGE, Note,
-    NOTES_PER_DAY, OUTPOST_MIN_DAY, POOL_PCT, Pirate, RaidOutcome, Social, SocialDelta,
+    self, CONVOY_MAX, FLAG_SETTLE_DAYS, INTERCEPTS_PER_DAY, LOOT_PCT, MIN_PLEDGE, Member,
+    NOTES_PER_DAY, Note, OUTPOST_MIN_DAY, POOL_PCT, Pirate, RaidOutcome, Social, SocialDelta,
 };
 use crate::world::Delta;
 
@@ -322,23 +322,32 @@ impl Player {
             )])
         } else {
             if env.today - self.social.flagged_since < FLAG_SETTLE_DAYS {
-                return Err(refuse("You cannot strike the colours the day you raised them."));
+                return Err(refuse(
+                    "You cannot strike the colours the day you raised them.",
+                ));
             }
             self.social.flagged = false;
             env.push(Delta::Social(SocialDelta::Unroster(
                 self.social.handle.clone(),
             )));
-            Ok(vec![say("You strike the colours. No one can hunt you now.".to_owned(), 0)])
+            Ok(vec![say(
+                "You strike the colours. No one can hunt you now.".to_owned(),
+                0,
+            )])
         }
     }
 
     /// Why this captain cannot hunt right now, if so.
     pub(crate) fn hunt_block(&self, env: &Env<'_>) -> Option<Refusal> {
         if !self.social.flagged {
-            return Some(refuse("Only captains who have raised the colours can hunt."));
+            return Some(refuse(
+                "Only captains who have raised the colours can hunt.",
+            ));
         }
         if env.today - self.social.flagged_since < FLAG_SETTLE_DAYS {
-            return Some(refuse("Your colours are too new: wait a day before you hunt."));
+            return Some(refuse(
+                "Your colours are too new: wait a day before you hunt.",
+            ));
         }
         if self.stats(env.content).power == 0 {
             return Some(refuse("You cannot hunt without a gun."));
@@ -382,14 +391,19 @@ impl Player {
         {
             return Err(refuse("You do not hunt your own convoy."));
         }
-        if env.world.social.intents.iter().any(|i| {
-            i.attacker == self.social.handle && i.target == other.handle
-        }) || env.world.social.raids.iter().any(|r| {
-            r.attacker == self.social.handle
-                && r.victim == other.handle
-                && r.outcome != RaidOutcome::Void
-                && env.today - r.day < social::PAIR_COOLDOWN_DAYS
-        }) {
+        if env
+            .world
+            .social
+            .intents
+            .iter()
+            .any(|i| i.attacker == self.social.handle && i.target == other.handle)
+            || env.world.social.raids.iter().any(|r| {
+                r.attacker == self.social.handle
+                    && r.victim == other.handle
+                    && r.outcome != RaidOutcome::Void
+                    && env.today - r.day < social::PAIR_COOLDOWN_DAYS
+            })
+        {
             return Err(refuse("You hunted that captain too recently."));
         }
         self.require_day()?;
@@ -441,8 +455,7 @@ impl Player {
         let id = social::hash_id(&self.social.handle, env.today, 7);
         let t = &env.content.social;
         let adj = &t.convoy_adjective[usize::try_from(id).unwrap_or(0) % t.convoy_adjective.len()];
-        let noun =
-            &t.convoy_noun[usize::try_from(id >> 8).unwrap_or(0) % t.convoy_noun.len()];
+        let noun = &t.convoy_noun[usize::try_from(id >> 8).unwrap_or(0) % t.convoy_noun.len()];
         let name = format!("{adj} {noun}");
         let member = self.member_entry(env.content, env.today);
         self.social.convoy = id;
@@ -461,7 +474,11 @@ impl Player {
     }
 
     /// Join a convoy that has room.
-    pub(crate) fn join_convoy(&mut self, env: &mut Env<'_>, id: u32) -> Result<Vec<Event>, Refusal> {
+    pub(crate) fn join_convoy(
+        &mut self,
+        env: &mut Env<'_>,
+        id: u32,
+    ) -> Result<Vec<Event>, Refusal> {
         self.need_handle()?;
         if self.social.convoy != 0 {
             return Err(refuse("Leave your convoy first."));
@@ -505,7 +522,11 @@ impl Player {
     }
 
     /// Post a quick note from the table to the convoy.
-    pub(crate) fn post_template(&mut self, env: &mut Env<'_>, n: usize) -> Result<Vec<Event>, Refusal> {
+    pub(crate) fn post_template(
+        &mut self,
+        env: &mut Env<'_>,
+        n: usize,
+    ) -> Result<Vec<Event>, Refusal> {
         let text = env
             .content
             .social
@@ -517,7 +538,11 @@ impl Player {
     }
 
     /// Post a line the captain typed (sanitized by the session).
-    pub(crate) fn post_say(&mut self, env: &mut Env<'_>, text: &Say) -> Result<Vec<Event>, Refusal> {
+    pub(crate) fn post_say(
+        &mut self,
+        env: &mut Env<'_>,
+        text: &Say,
+    ) -> Result<Vec<Event>, Refusal> {
         if text.as_str().trim().is_empty() {
             return Err(Refusal::NothingToDo);
         }
@@ -545,7 +570,10 @@ impl Player {
                 text: text.to_owned(),
             },
         }));
-        Ok(vec![say("Your note goes out on the convoy channel.".to_owned(), 0)])
+        Ok(vec![say(
+            "Your note goes out on the convoy channel.".to_owned(),
+            0,
+        )])
     }
 
     /// Why an outpost cannot be funded at `system` right now.
@@ -564,7 +592,7 @@ impl Player {
         let built = sys
             .stations
             .iter()
-            .any(|s| usize::from(*s) < env.frontier.stations.len() && !self.is_outpost(env, *s));
+            .any(|s| usize::from(*s) < env.frontier.stations.len() && !Self::is_outpost(env, *s));
         if built {
             return Some(refuse("A station already stands here."));
         }
@@ -574,7 +602,7 @@ impl Player {
         None
     }
 
-    fn is_outpost(&self, env: &Env<'_>, station: u16) -> bool {
+    fn is_outpost(env: &Env<'_>, station: u16) -> bool {
         let base = env
             .frontier
             .stations
@@ -612,7 +640,9 @@ impl Player {
             && env.world.social.outpost_at(system).is_none()
             && env.world.social.sites.len() >= social::MAX_SITES;
         if site_full {
-            return Err(refuse("The Guild is already tracking as many sites as it can."));
+            return Err(refuse(
+                "The Guild is already tracking as many sites as it can.",
+            ));
         }
         self.debit(Cause::Outpost, amount);
         self.social.pledged += amount;
@@ -709,7 +739,10 @@ impl Player {
         let Some(me) = c.members.iter().find(|m| m.handle == self.social.handle) else {
             self.social.convoy = 0;
             self.social.guard = 0;
-            out.push(say("The convoy has struck you from its roll.".to_owned(), 0));
+            out.push(say(
+                "The convoy has struck you from its roll.".to_owned(),
+                0,
+            ));
             return out;
         };
         if me.earned > self.social.collected {
@@ -736,10 +769,14 @@ impl Player {
                     .get(usize::from(self.ship.hull))
                     .map_or(1, |h| u32::from(h.hull_points));
                 let loss = max * u32::from(def.hull) * u32::from(100 - ev.guard) / 10_000;
-                let loss = u16::try_from(loss).unwrap_or(0).min(self.ship.hull_hp.saturating_sub(1));
+                let loss = u16::try_from(loss)
+                    .unwrap_or(0)
+                    .min(self.ship.hull_hp.saturating_sub(1));
                 self.ship.hull_hp -= loss;
                 if loss > 0 {
-                    line.push_str(&format!(" Hull -{loss}."));
+                    line.push_str(" Hull -");
+                    line.push_str(&loss.to_string());
+                    line.push('.');
                 }
             }
             if def.fuel != 0 {
@@ -752,6 +789,7 @@ impl Player {
         out
     }
 
+    #[allow(clippy::too_many_lines)]
     fn claim_raids(&mut self, env: &mut Env<'_>) -> Vec<Event> {
         let mut out = Vec::new();
         if self.social.handle.is_empty() {
@@ -798,7 +836,10 @@ impl Player {
                         self.social.tally[3] = self.social.tally[3].saturating_add(1);
                         self.shift_standing_quiet(Faction::League, 1);
                         out.push(say(
-                            format!("{} came for you and you drove them off. Your name grows.", r.aname),
+                            format!(
+                                "{} came for you and you drove them off. Your name grows.",
+                                r.aname
+                            ),
                             1,
                         ));
                     }
@@ -835,7 +876,10 @@ impl Player {
                         self.ship.hull_hp -= dent;
                         self.social.infamy = (self.social.infamy - 2).max(0);
                         out.push(say(
-                            format!("{} fought you off. Hull -{dent}, and your name suffers.", r.vname),
+                            format!(
+                                "{} fought you off. Hull -{dent}, and your name suffers.",
+                                r.vname
+                            ),
                             -1,
                         ));
                     }
@@ -862,7 +906,8 @@ impl Player {
                 }
                 Some(_) => self.social.awaited.push(id),
                 None => out.push(say(
-                    "A prize you were owed lapsed: its owner never came back to their dock.".to_owned(),
+                    "A prize you were owed lapsed: its owner never came back to their dock."
+                        .to_owned(),
                     0,
                 )),
             }
@@ -876,7 +921,10 @@ impl Player {
         self.social.tally[0] = self.social.tally[0].saturating_add(1);
         self.shift_standing_quiet(Faction::Free, 3);
         self.shift_standing_quiet(Faction::League, -3);
-        out.push(say(format!("{victim} paid {paid} credits. Your name is spoken in havens."), 1));
+        out.push(say(
+            format!("{victim} paid {paid} credits. Your name is spoken in havens."),
+            1,
+        ));
     }
 
     /// Collect everything the night left for this captain: raids, dividends, convoy events.
@@ -929,7 +977,10 @@ impl Player {
         state.ending = code;
         state.day = env.today;
         let def = &content.arcs.arc[ai].ending[usize::from(ei)];
-        events.push(say(format!("THE END OF A STORY - {}: {}", def.title, def.text), 1));
+        events.push(say(
+            format!("THE END OF A STORY - {}: {}", def.title, def.text),
+            1,
+        ));
         if def.gates {
             env.push(Delta::Social(SocialDelta::Gates(social::Gates {
                 day: env.today,
@@ -973,7 +1024,12 @@ impl Player {
         self.ship
             .modules
             .iter()
-            .max_by_key(|m| content.modules.get(usize::from(m.module)).map_or(0, |d| d.price))
+            .max_by_key(|m| {
+                content
+                    .modules
+                    .get(usize::from(m.module))
+                    .map_or(0, |d| d.price)
+            })
             .map_or(255, |m| m.module)
     }
 
@@ -992,7 +1048,10 @@ impl Player {
         self.social.heirloom = heirloom;
         let def = content.modules.get(usize::from(heirloom))?;
         let hull = content.hulls.get(usize::from(self.ship.hull))?;
-        let installed = crate::ship::Installed { module: heirloom, wear: 0 };
+        let installed = crate::ship::Installed {
+            module: heirloom,
+            wear: 0,
+        };
         if self.ship.used_slots(content, def.slot) < usize::from(hull.slots.of(def.slot)) {
             self.ship.modules.push(installed);
         } else {
