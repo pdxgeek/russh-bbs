@@ -99,6 +99,7 @@ pub fn setup(net: Network, deck: &[u8]) -> RunSetup {
         extra: Vec::new(),
         learned: Vec::new(),
         warden: None,
+        trace_share: 100,
     }
 }
 

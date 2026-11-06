@@ -15,6 +15,7 @@ use crate::content::Content;
 use crate::learn::{DECAY_PER_NIGHT, ROWS_MAX};
 use crate::net::NodeId;
 use crate::run::RunResult;
+use crate::social::{HIST_MAX, Social};
 
 /// The most contracts on the board.
 pub const BOARD_MAX: usize = 24;
@@ -96,6 +97,11 @@ pub struct World {
     pub season: u32,
     /// What the corporations have learned of the scripts used against them.
     pub learned: Vec<Learned>,
+    /// The market price level of the last nights, oldest first (a real history for the market's
+    /// sparkline).
+    pub hist: Vec<u8>,
+    /// Rivals, hacks, bounties, crews and crew runs, the street word and the hall.
+    pub social: Social,
 }
 
 impl Default for World {
@@ -108,6 +114,8 @@ impl Default for World {
             breaches: 0,
             season: 0,
             learned: Vec::new(),
+            hist: Vec::new(),
+            social: Social::default(),
         }
     }
 }
@@ -120,16 +128,55 @@ impl World {
     }
 
     /// A new season starts the corporations from nothing: the networks are regenerated, so what
-    /// was open and what was learned no longer applies. The board and the market carry on.
-    pub fn sync_season(&mut self, season: u32) {
+    /// was open and what was learned no longer applies. The board and the market carry on. The
+    /// season that closes goes into the hall (its ending chosen by what the board did), the
+    /// season's tallies, finale, bounties and crew runs start over, and crews and the hideouts
+    /// posted carry on.
+    pub fn sync_season(&mut self, content: &Content, season: u32) {
         if self.season != season {
             if self.season != 0 {
+                self.close_season(content);
                 self.nets.clear();
                 self.learned.clear();
                 self.breaches = 0;
             }
             self.season = season;
         }
+    }
+
+    /// Write the season that just ended into the hall.
+    fn close_season(&mut self, content: &Content) {
+        let s = &mut self.social;
+        let ending = content
+            .seasons
+            .season_ending
+            .iter()
+            .find(|e| {
+                crate::cond::Cond::parse(&e.rule, &[])
+                    .is_ok_and(|c| c.eval(None, &s.tallies))
+            })
+            .map_or(0, |e| e.num);
+        let mut top: Vec<(String, u32)> = s
+            .posted
+            .iter()
+            .map(|p| (p.handle.clone(), p.rep))
+            .collect();
+        top.sort_by(|a, b| b.1.cmp(&a.1).then_with(|| a.0.cmp(&b.0)));
+        top.truncate(5);
+        s.hall.push(crate::social::SeasonRecord {
+            season: self.season,
+            ending,
+            top,
+            tallies: std::mem::take(&mut s.tallies),
+            finale: s.finale.take().unwrap_or_default(),
+        });
+        while s.hall.len() > crate::social::HALL_MAX {
+            s.hall.remove(0);
+        }
+        s.bounties.clear();
+        s.orders.clear();
+        s.ops.clear();
+        s.pairs.clear();
     }
 
     /// What `corp` has learned, as (script identity, runs) pairs.
@@ -209,6 +256,30 @@ impl World {
         }
     }
 
+    /// Count a finished solo run toward the season's tallies and the street word.
+    pub fn record_run(&mut self, handle: &str, tier: u8, result: &RunResult, day: i64) {
+        use crate::run::Status;
+        use crate::social::Lines;
+        let s = &mut self.social;
+        if result.status == Status::Burned {
+            s.tallies.burns += 1;
+            if tier == 3 {
+                s.deed(day, Lines::DEED_BURN, handle, 3);
+            }
+        }
+        if result.objective {
+            s.tallies.jobs += 1;
+            if tier == 3 {
+                s.tallies.deep_breaches += 1;
+                s.deed(day, Lines::DEED_DEEP, handle, 3);
+            }
+        }
+        if result.warden_down {
+            s.tallies.wardens += 1;
+            s.deed(day, Lines::DEED_WARDEN, handle, 1);
+        }
+    }
+
     /// One night passes: corporations patch, alert falls, the market moves, old contracts lapse
     /// and new ones are posted.
     pub fn nightly(&mut self, content: &Content, rng: &mut DoorRng, day: i64) {
@@ -230,6 +301,12 @@ impl World {
         self.learned.retain(|l| l.uses > 0);
         self.nets
             .retain(|n| !n.holes.is_empty() || n.alert > 0 || n.backdoor || n.breaches > 0);
+        self.hist.push(u8::try_from(self.market_pct.min(255)).unwrap_or(100));
+        while self.hist.len() > HIST_MAX {
+            self.hist.remove(0);
+        }
+        self.social.settle(content, rng, day);
+        self.ops_night(content, day);
         self.board.retain(|c| c.expires >= day);
         self.board
             .extend(gen_contracts(content, rng, day, NIGHTLY_CONTRACTS));

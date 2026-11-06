@@ -121,3 +121,762 @@ tier = 3
 reward_min = 217
 reward_max = 304
 heat = 14
+
+[[contract]]
+num = 11
+title = "Lift the supplier price list"
+verb = "Steal"
+target = "VT"
+effect = "copy"
+tier = 1
+reward_min = 34
+reward_max = 56
+heat = 3
+
+[[contract]]
+num = 12
+title = "Photograph a rota"
+verb = "Steal"
+target = "VT"
+effect = "copy"
+tier = 1
+reward_min = 37
+reward_max = 59
+heat = 3
+
+[[contract]]
+num = 13
+title = "Skim a loyalty database"
+verb = "Steal"
+target = "VT"
+effect = "copy"
+tier = 1
+reward_min = 40
+reward_max = 62
+heat = 3
+
+[[contract]]
+num = 14
+title = "Pull last week's visitor log"
+verb = "Steal"
+target = "VT"
+effect = "copy"
+tier = 1
+reward_min = 43
+reward_max = 65
+heat = 3
+
+[[contract]]
+num = 15
+title = "Grab a canteen menu and key list"
+verb = "Steal"
+target = "VT"
+effect = "copy"
+tier = 1
+reward_min = 46
+reward_max = 68
+heat = 3
+
+[[contract]]
+num = 16
+title = "Copy a warehouse manifest"
+verb = "Steal"
+target = "VT"
+effect = "copy"
+tier = 1
+reward_min = 49
+reward_max = 71
+heat = 3
+
+[[contract]]
+num = 17
+title = "Drop a decoy invoice"
+verb = "Plant"
+target = "AC"
+effect = "plant"
+tier = 1
+reward_min = 52
+reward_max = 74
+heat = 4
+
+[[contract]]
+num = 18
+title = "Prop open a loading-bay door"
+verb = "Plant"
+target = "AC"
+effect = "plant"
+tier = 1
+reward_min = 55
+reward_max = 77
+heat = 4
+
+[[contract]]
+num = 19
+title = "Leave a listening post in the helpdesk"
+verb = "Plant"
+target = "AC"
+effect = "plant"
+tier = 1
+reward_min = 34
+reward_max = 56
+heat = 4
+
+[[contract]]
+num = 20
+title = "Seed a test account"
+verb = "Plant"
+target = "AC"
+effect = "plant"
+tier = 1
+reward_min = 37
+reward_max = 59
+heat = 4
+
+[[contract]]
+num = 21
+title = "Install a courtesy backdoor"
+verb = "Plant"
+target = "AC"
+effect = "plant"
+tier = 1
+reward_min = 40
+reward_max = 62
+heat = 4
+
+[[contract]]
+num = 22
+title = "Mark a rack for later"
+verb = "Plant"
+target = "SR"
+effect = "plant"
+tier = 1
+reward_min = 43
+reward_max = 65
+heat = 4
+
+[[contract]]
+num = 23
+title = "Park a bot in the print room"
+verb = "Plant"
+target = "SR"
+effect = "plant"
+tier = 1
+reward_min = 46
+reward_max = 68
+heat = 4
+
+[[contract]]
+num = 24
+title = "Hold the mail server for a morning"
+verb = "Ransom"
+target = "SR"
+effect = "plant"
+tier = 1
+reward_min = 49
+reward_max = 71
+heat = 4
+
+[[contract]]
+num = 25
+title = "Delete a parking fine"
+verb = "Wipe"
+target = "VT"
+effect = "shred"
+tier = 1
+reward_min = 52
+reward_max = 74
+heat = 4
+
+[[contract]]
+num = 26
+title = "Lose a bonus calculation"
+verb = "Wipe"
+target = "VT"
+effect = "shred"
+tier = 1
+reward_min = 55
+reward_max = 77
+heat = 4
+
+[[contract]]
+num = 27
+title = "Erase a complaint"
+verb = "Wipe"
+target = "VT"
+effect = "shred"
+tier = 1
+reward_min = 34
+reward_max = 56
+heat = 4
+
+[[contract]]
+num = 28
+title = "Scrub a delivery receipt"
+verb = "Wipe"
+target = "VT"
+effect = "shred"
+tier = 1
+reward_min = 37
+reward_max = 59
+heat = 4
+
+[[contract]]
+num = 29
+title = "Remove an intern from payroll"
+verb = "Wipe"
+target = "VT"
+effect = "shred"
+tier = 1
+reward_min = 40
+reward_max = 62
+heat = 4
+
+[[contract]]
+num = 30
+title = "Burn a stale backup"
+verb = "Wipe"
+target = "SR"
+effect = "shred"
+tier = 1
+reward_min = 43
+reward_max = 65
+heat = 4
+
+[[contract]]
+num = 31
+title = "Copy a rack inventory"
+verb = "Steal"
+target = "SR"
+effect = "copy"
+tier = 1
+reward_min = 46
+reward_max = 68
+heat = 3
+
+[[contract]]
+num = 32
+title = "Take a console's recent commands"
+verb = "Steal"
+target = "AC"
+effect = "copy"
+tier = 1
+reward_min = 49
+reward_max = 71
+heat = 3
+
+[[contract]]
+num = 33
+title = "Wipe a console's recent commands"
+verb = "Wipe"
+target = "AC"
+effect = "shred"
+tier = 1
+reward_min = 52
+reward_max = 74
+heat = 4
+
+[[contract]]
+num = 34
+title = "Photocopy a floor plan"
+verb = "Steal"
+target = "SR"
+effect = "copy"
+tier = 1
+reward_min = 55
+reward_max = 77
+heat = 3
+
+[[contract]]
+num = 35
+title = "Clean a sensor history"
+verb = "Wipe"
+target = "SR"
+effect = "shred"
+tier = 1
+reward_min = 34
+reward_max = 56
+heat = 4
+
+[[contract]]
+num = 36
+title = "Lift a contract before it is signed"
+verb = "Steal"
+target = "VT"
+effect = "copy"
+tier = 2
+reward_min = 90
+reward_max = 140
+heat = 7
+
+[[contract]]
+num = 37
+title = "Copy the merger shortlist"
+verb = "Steal"
+target = "VT"
+effect = "copy"
+tier = 2
+reward_min = 95
+reward_max = 145
+heat = 7
+
+[[contract]]
+num = 38
+title = "Siphon a pension fund report"
+verb = "Steal"
+target = "VT"
+effect = "copy"
+tier = 2
+reward_min = 100
+reward_max = 150
+heat = 7
+
+[[contract]]
+num = 39
+title = "Pull the audit working papers"
+verb = "Steal"
+target = "VT"
+effect = "copy"
+tier = 2
+reward_min = 105
+reward_max = 155
+heat = 7
+
+[[contract]]
+num = 40
+title = "Steal a rival's bid"
+verb = "Steal"
+target = "VT"
+effect = "copy"
+tier = 2
+reward_min = 110
+reward_max = 160
+heat = 7
+
+[[contract]]
+num = 41
+title = "Clone a security badge database"
+verb = "Steal"
+target = "AC"
+effect = "copy"
+tier = 2
+reward_min = 115
+reward_max = 165
+heat = 7
+
+[[contract]]
+num = 42
+title = "Hijack the maintenance console"
+verb = "Plant"
+target = "AC"
+effect = "plant"
+tier = 2
+reward_min = 120
+reward_max = 170
+heat = 8
+
+[[contract]]
+num = 43
+title = "Slip a worm into the scheduler"
+verb = "Plant"
+target = "AC"
+effect = "plant"
+tier = 2
+reward_min = 125
+reward_max = 175
+heat = 8
+
+[[contract]]
+num = 44
+title = "Wire a second admin account"
+verb = "Plant"
+target = "AC"
+effect = "plant"
+tier = 2
+reward_min = 90
+reward_max = 140
+heat = 8
+
+[[contract]]
+num = 45
+title = "Park a miner in the cold racks"
+verb = "Plant"
+target = "SR"
+effect = "plant"
+tier = 2
+reward_min = 95
+reward_max = 145
+heat = 8
+
+[[contract]]
+num = 46
+title = "Hold the payroll cluster"
+verb = "Ransom"
+target = "SR"
+effect = "plant"
+tier = 2
+reward_min = 100
+reward_max = 150
+heat = 8
+
+[[contract]]
+num = 47
+title = "Ransom the cooling plant"
+verb = "Ransom"
+target = "SR"
+effect = "plant"
+tier = 2
+reward_min = 105
+reward_max = 155
+heat = 8
+
+[[contract]]
+num = 48
+title = "Make a lawsuit disappear"
+verb = "Wipe"
+target = "VT"
+effect = "shred"
+tier = 2
+reward_min = 110
+reward_max = 160
+heat = 8
+
+[[contract]]
+num = 49
+title = "Burn a whistleblower's file"
+verb = "Wipe"
+target = "VT"
+effect = "shred"
+tier = 2
+reward_min = 115
+reward_max = 165
+heat = 8
+
+[[contract]]
+num = 50
+title = "Rewrite a shipping log"
+verb = "Wipe"
+target = "VT"
+effect = "shred"
+tier = 2
+reward_min = 120
+reward_max = 170
+heat = 8
+
+[[contract]]
+num = 51
+title = "Wipe the trial results"
+verb = "Wipe"
+target = "VT"
+effect = "shred"
+tier = 2
+reward_min = 125
+reward_max = 175
+heat = 8
+
+[[contract]]
+num = 52
+title = "Shred the access audit"
+verb = "Wipe"
+target = "AC"
+effect = "shred"
+tier = 2
+reward_min = 90
+reward_max = 140
+heat = 8
+
+[[contract]]
+num = 53
+title = "Clear a server's black box"
+verb = "Wipe"
+target = "SR"
+effect = "shred"
+tier = 2
+reward_min = 95
+reward_max = 145
+heat = 8
+
+[[contract]]
+num = 54
+title = "Copy a hot-standby image"
+verb = "Steal"
+target = "SR"
+effect = "copy"
+tier = 2
+reward_min = 100
+reward_max = 150
+heat = 7
+
+[[contract]]
+num = 55
+title = "Take the emergency passcodes"
+verb = "Steal"
+target = "AC"
+effect = "copy"
+tier = 2
+reward_min = 105
+reward_max = 155
+heat = 7
+
+[[contract]]
+num = 56
+title = "Quiet a rack that saw too much"
+verb = "Wipe"
+target = "SR"
+effect = "shred"
+tier = 2
+reward_min = 110
+reward_max = 160
+heat = 8
+
+[[contract]]
+num = 57
+title = "Stage a leak for a journalist"
+verb = "Steal"
+target = "VT"
+effect = "copy"
+tier = 2
+reward_min = 115
+reward_max = 165
+heat = 7
+
+[[contract]]
+num = 58
+title = "Bleed a research notebook"
+verb = "Steal"
+target = "VT"
+effect = "copy"
+tier = 2
+reward_min = 120
+reward_max = 170
+heat = 7
+
+[[contract]]
+num = 59
+title = "Plant evidence in a lab server"
+verb = "Plant"
+target = "SR"
+effect = "plant"
+tier = 2
+reward_min = 125
+reward_max = 175
+heat = 8
+
+[[contract]]
+num = 60
+title = "Crack the chairwoman's vault"
+verb = "Steal"
+target = "VT"
+effect = "copy"
+tier = 3
+reward_min = 205
+reward_max = 290
+heat = 14
+
+[[contract]]
+num = 61
+title = "Walk out with the crown jewels"
+verb = "Steal"
+target = "VT"
+effect = "copy"
+tier = 3
+reward_min = 212
+reward_max = 297
+heat = 14
+
+[[contract]]
+num = 62
+title = "Take the master key ring"
+verb = "Steal"
+target = "AC"
+effect = "copy"
+tier = 3
+reward_min = 219
+reward_max = 304
+heat = 14
+
+[[contract]]
+num = 63
+title = "Plant a root in the core"
+verb = "Plant"
+target = "AC"
+effect = "plant"
+tier = 3
+reward_min = 226
+reward_max = 311
+heat = 15
+
+[[contract]]
+num = 64
+title = "Seize the control room"
+verb = "Ransom"
+target = "SR"
+effect = "plant"
+tier = 3
+reward_min = 233
+reward_max = 318
+heat = 15
+
+[[contract]]
+num = 65
+title = "Turn off the building's eyes"
+verb = "Plant"
+target = "AC"
+effect = "plant"
+tier = 3
+reward_min = 240
+reward_max = 325
+heat = 15
+
+[[contract]]
+num = 66
+title = "Hold the data centre to ransom"
+verb = "Ransom"
+target = "SR"
+effect = "plant"
+tier = 3
+reward_min = 247
+reward_max = 332
+heat = 15
+
+[[contract]]
+num = 67
+title = "Burn the black ledger"
+verb = "Wipe"
+target = "VT"
+effect = "shred"
+tier = 3
+reward_min = 254
+reward_max = 339
+heat = 15
+
+[[contract]]
+num = 68
+title = "Erase a founder's name"
+verb = "Wipe"
+target = "VT"
+effect = "shred"
+tier = 3
+reward_min = 205
+reward_max = 290
+heat = 15
+
+[[contract]]
+num = 69
+title = "Unmake an acquisition"
+verb = "Wipe"
+target = "SR"
+effect = "shred"
+tier = 3
+reward_min = 212
+reward_max = 297
+heat = 15
+
+[[contract]]
+num = 70
+title = "Steal the next product"
+verb = "Steal"
+target = "SR"
+effect = "copy"
+tier = 3
+reward_min = 219
+reward_max = 304
+heat = 14
+
+[[contract]]
+num = 71
+title = "Gut the incident archive"
+verb = "Wipe"
+target = "AC"
+effect = "shred"
+tier = 3
+reward_min = 226
+reward_max = 311
+heat = 15
+
+[[contract]]
+num = 72
+title = "Wire the vault to a shell account"
+verb = "Plant"
+target = "SR"
+effect = "plant"
+tier = 3
+reward_min = 233
+reward_max = 318
+heat = 15
+
+[[contract]]
+num = 73
+title = "Take a catering contract"
+verb = "Steal"
+target = "VT"
+effect = "copy"
+tier = 1
+reward_min = 40
+reward_max = 64
+heat = 3
+
+[[contract]]
+num = 74
+title = "Blank a time card"
+verb = "Wipe"
+target = "VT"
+effect = "shred"
+tier = 1
+reward_min = 43
+reward_max = 67
+heat = 4
+
+[[contract]]
+num = 75
+title = "Leave a key under the mat"
+verb = "Plant"
+target = "AC"
+effect = "plant"
+tier = 1
+reward_min = 46
+reward_max = 70
+heat = 4
+
+[[contract]]
+num = 76
+title = "Copy the shareholder letter early"
+verb = "Steal"
+target = "VT"
+effect = "copy"
+tier = 2
+reward_min = 108
+reward_max = 158
+heat = 7
+
+[[contract]]
+num = 77
+title = "Own the badge printer"
+verb = "Plant"
+target = "AC"
+effect = "plant"
+tier = 2
+reward_min = 114
+reward_max = 164
+heat = 8
+
+[[contract]]
+num = 78
+title = "Rob the reserve ledger"
+verb = "Steal"
+target = "VT"
+effect = "copy"
+tier = 3
+reward_min = 230
+reward_max = 320
+heat = 14
+
+[[contract]]
+num = 79
+title = "Brick the backup vault"
+verb = "Wipe"
+target = "SR"
+effect = "shred"
+tier = 3
+reward_min = 236
+reward_max = 326
+heat = 15

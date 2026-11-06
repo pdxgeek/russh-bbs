@@ -16,6 +16,7 @@ use crate::run::{Act, Refused, Run, RunResult, Status, TRACE_MAX};
 use crate::save;
 use crate::world::{Contract, World};
 
+mod social;
 mod ui;
 
 type Line = (String, DoorStyle);
@@ -38,6 +39,12 @@ enum View {
     Heat,
     Profile,
     Black,
+    Rivals,
+    Input(Box<social::Input>),
+    Crew,
+    Arcs,
+    Scene(u8),
+    Street(u8),
 }
 
 /// How a run ended: the log's tail and the debrief notes for the look-around view, and the result
@@ -106,6 +113,8 @@ struct Active {
     aim: Option<usize>,
     /// The log with its time stamps.
     feed: Feed,
+    /// The crew this run belongs to, if it is a crew run.
+    crew: Option<social::CrewLink>,
 }
 
 pub(crate) struct Session {
@@ -119,6 +128,24 @@ pub(crate) struct Session {
     saved: Vec<u8>,
     /// The cursor on a list screen (the row within the page).
     sel: usize,
+    /// What the hideout last looked like when it was posted to the rivals board.
+    posted_sig: Option<crate::social::Posted>,
+}
+
+/// One action in the run: a solo run takes it itself, a crew run takes it through the crew.
+fn do_act(
+    active: &mut Active,
+    content: &Arc<Content>,
+    act: Act,
+    ctx: &mut Ctx<'_>,
+    season: u32,
+    handle: &str,
+) -> Result<(), Refused> {
+    if active.crew.is_some() {
+        Session::crew_act(active, content, act, ctx, season, handle)
+    } else {
+        active.run.act(content, act, ctx.rng())
+    }
 }
 
 fn run_has_fight(run: &Run) -> bool {
@@ -206,6 +233,26 @@ impl Session {
         for note in p.rollover(&content, today) {
             msgs.push((note, DoorStyle::Accent));
         }
+        // What the world owes the character: hacks, bounties, honeypots, receipts for what they
+        // sent, then a crew run the world no longer has.
+        for note in p.fold(&content, &world.social, today) {
+            msgs.push((note, DoorStyle::Accent));
+        }
+        if let Some(stake) = p.ties.stake
+            && !world.social.ops.iter().any(|o| o.id == stake.op && o.index_of(&p.name).is_some())
+            && let Some(note) = p.drop_stake()
+        {
+            msgs.push((note, DoorStyle::Accent));
+        }
+        let mut world = world;
+        world.social.post(p.posted(today));
+        if p
+            .ties
+            .stake
+            .is_some_and(|s| world.social.ops.iter().any(|o| o.id == s.op && o.state == crate::crew::OpState::Done))
+        {
+            msgs.push(("A crew run of yours is over. Collect your share: [k] crew, [c].".into(), DoorStyle::Good));
+        }
         let mut offers: Vec<Contract> = if world.board.is_empty() {
             crate::world::first_board(&content, today)
         } else {
@@ -225,6 +272,7 @@ impl Session {
             msgs,
             saved,
             sel: 0,
+            posted_sig: None,
         }
     }
 
@@ -244,10 +292,10 @@ impl Session {
     }
 
     fn contract_line(&self, n: usize, c: &Contract) -> Line {
-        let tmpl = self.content.contract(c.tmpl);
+        let tmpl = self.content.job(c);
         let text = format!(
             "{n}) {:<6} {:<21} T{} {:>4}  {}",
-            tmpl.map_or("?", |t| t.verb.as_str()),
+            tmpl.as_ref().map_or("?", |t| t.verb.as_str()),
             self.corp_name(c.corp),
             c.tier,
             c.reward,
@@ -258,7 +306,7 @@ impl Session {
         }
         match tmpl {
             // Say so before the player walks to the briefing: the deck has no tool for it.
-            Some(t)
+            Some(ref t)
                 if !self
                     .p
                     .deck
@@ -279,6 +327,9 @@ impl Session {
         let c = &*self.content;
         let mut body: Vec<Line> = Vec::new();
         let mut hint: Vec<Line> = Vec::new();
+        if let Some(lines) = self.social_lines(rows) {
+            return lines;
+        }
         match &self.view {
             View::Run(active) => return self.run_lines(active, rows),
             View::Code(draft) => {
@@ -363,6 +414,10 @@ impl Session {
                     "[h]ideout [p]rofile [t]heat [l]ie low [q]uit".into(),
                     Strong,
                 ));
+                hint.push((
+                    "[v]rivals [k]crew [a]rcs [w]orld".into(),
+                    Strong,
+                ));
             }
             View::Contracts => {
                 body.push(("CONTRACTS".into(), Accent));
@@ -377,7 +432,10 @@ impl Session {
             }
             View::Brief(contract) => {
                 body = self.brief_lines(contract);
-                hint.push(("[j] jack in   [p] buy a proxy   [Esc] back".into(), Strong));
+                hint.push((
+                    "[j] jack in   [g] gather a crew   [p] buy a proxy   [Esc] back".into(),
+                    Strong,
+                ));
             }
             View::Deck(page) => {
                 body.push((
@@ -549,6 +607,15 @@ impl Session {
                     Plain,
                 ));
                 body.push((
+                    format!(
+                        "Honeypots: level {} of {} (rivals who hack you have a {} percent chance to trip it).",
+                        p.ties.honeypot,
+                        crate::social::HONEYPOT_MAX,
+                        crate::social::TRAP_PCT * u32::from(p.ties.honeypot)
+                    ),
+                    Plain,
+                ));
+                body.push((
                     "Heat 50 and up brings raids; the safe is never touched.".into(),
                     Dim,
                 ));
@@ -561,7 +628,13 @@ impl Session {
                     Strong,
                 ));
                 hint.push((
-                    format!("[s] safe +{0}  [t] take {0}  [Esc] back", h.stash_step),
+                    format!(
+                        "[s] safe +{0}  [t] take {0}  [k] honeypot {1}  [Esc] back",
+                        h.stash_step,
+                        crate::ties::HONEYPOT_COST
+                            .get(usize::from(p.ties.honeypot))
+                            .map_or_else(|| "(max)".to_owned(), ToString::to_string)
+                    ),
                     Strong,
                 ));
             }
@@ -651,6 +724,17 @@ impl Session {
                         Plain,
                     ));
                 }
+                push_wrapped(&mut body, &social::stat_line(&p.ties.stats), Dim);
+                let ending_titles: Vec<&str> = c
+                    .story
+                    .ending
+                    .iter()
+                    .filter(|e| p.ties.endings & (1 << e.num) != 0)
+                    .map(|e| e.title.as_str())
+                    .collect();
+                if !ending_titles.is_empty() {
+                    push_wrapped(&mut body, &format!("Endings reached: {}", ending_titles.join(", ")), Dim);
+                }
                 hint.push(("[Esc] back".into(), Strong));
             }
             View::Black => {
@@ -704,6 +788,13 @@ impl Session {
                 ));
                 hint.push(("[Esc] back".into(), Strong));
             }
+            // The social screens answered above, in `social_lines`.
+            View::Rivals
+            | View::Input(_)
+            | View::Crew
+            | View::Arcs
+            | View::Scene(_)
+            | View::Street(_) => {}
             View::Debrief(report) => {
                 body.push(("DEBRIEF".into(), Accent));
                 for n in &report.notes {
@@ -878,12 +969,12 @@ impl Session {
     fn brief_lines(&self, contract: &Contract) -> Vec<Line> {
         use DoorStyle::{Accent, Bad, Dim, Plain};
         let c = &*self.content;
-        let tmpl = c.contract(contract.tmpl);
+        let tmpl = c.job(contract);
         let corp = c.corp(contract.corp);
         let mut out = vec![(
             format!(
                 "{}  ({})",
-                tmpl.map_or("?", |t| t.title.as_str()),
+                tmpl.as_ref().map_or("?", |t| t.title.as_str()),
                 self.fixer_name(contract.fixer)
             ),
             Accent,
@@ -898,7 +989,7 @@ impl Session {
             ));
             push_wrapped(&mut out, &crate::run::corp_intel(corp), Dim);
         }
-        if let Some(t) = tmpl {
+        if let Some(t) = &tmpl {
             push_wrapped(
                 &mut out,
                 &format!(
@@ -907,12 +998,17 @@ impl Session {
                 ),
                 Plain,
             );
+            if let Some((arc, step)) = t.arc
+                && let Some(st) = c.step(arc, step)
+            {
+                push_wrapped(&mut out, &st.brief, Dim);
+            }
         }
         out.push((
             format!(
                 "Pays {}.  Heat on success about +{}.",
                 contract.reward,
-                tmpl.map_or(0, |t| t.heat)
+                tmpl.as_ref().map_or(0, |t| t.heat)
             ),
             Plain,
         ));
@@ -998,6 +1094,16 @@ impl Session {
         }
         if !flags.is_empty() {
             body.push((flags.trim_end().to_owned(), Bad));
+        }
+        if let Some(link) = &active.crew {
+            body.push((
+                format!("CREW RUN: trace shared. {} in the run.", link.op.members.len()),
+                Accent,
+            ));
+            for (node, _, name) in social::mates(link) {
+                let at = run.net().nodes.get(usize::from(node)).map_or("?", |n| n.name.as_str());
+                body.push((format!("  crewmate {name} is at {at}"), Plain));
+            }
         }
         body.push((format!("At {}", run.describe(c, run.at)), Strong));
         let exits = run.exits();
@@ -1243,10 +1349,13 @@ impl Session {
         let (corp, tier, season) = (contract.corp, contract.tier, self.season);
         self.world.apply_run(corp, tier, &result);
         let applied = result.clone();
+        let (handle, day, content) = (self.p.name.clone(), ctx.today().as_raw(), Arc::clone(&self.content));
+        self.world.record_run(&handle, tier, &result, day);
         ctx.edit_world(move |old| {
             let mut world = old.and_then(save::decode_world).unwrap_or_default();
-            world.sync_season(season);
+            world.sync_season(&content, season);
             world.apply_run(corp, tier, &applied);
+            world.record_run(&handle, tier, &applied, day);
             Some(save::encode_world(&world))
         });
         self.view = View::Debrief(Box::new(Report {
@@ -1256,7 +1365,33 @@ impl Session {
         }));
     }
 
+    /// A run just stopped being active. A solo run is settled now; a crew member goes back to the
+    /// crew screen (the run settles when the whole crew is out and they collect).
+    fn run_ended(&mut self, ctx: &mut Ctx<'_>) {
+        let View::Run(finished) = std::mem::replace(&mut self.view, View::Home) else {
+            return;
+        };
+        if let Some(link) = &finished.crew {
+            if let Some(mine) = self.world.social.ops.iter_mut().find(|o| o.id == link.op.id) {
+                *mine = link.op.clone();
+            }
+            self.view = View::Crew;
+            let over = link.op.state == crate::crew::OpState::Done;
+            self.msgs = vec![(
+                if over {
+                    "The crew run is over. Collect your share: [c].".to_owned()
+                } else {
+                    "You are out. The rest of the crew is still in; collect when the run ends.".to_owned()
+                },
+                DoorStyle::Accent,
+            )];
+            return;
+        }
+        self.finish_run(ctx, &finished);
+    }
+
     fn run_key(&mut self, key: DoorKey, ctx: &mut Ctx<'_>) {
+        let (season, handle) = (self.season, self.p.name.clone());
         let View::Run(active) = &mut self.view else {
             return;
         };
@@ -1272,17 +1407,14 @@ impl Session {
                 _ => None,
             };
             if let Some(act) = act
-                && let Err(refused) = active.run.act(&content, act, ctx.rng())
+                && let Err(refused) = do_act(active, &content, act, ctx, season, &handle)
             {
                 let line = refused.text().to_owned();
                 active.run.log.push(line);
             }
             active.feed.sync(&active.run);
             if active.run.status != Status::Active {
-                let View::Run(finished) = std::mem::replace(&mut self.view, View::Home) else {
-                    return;
-                };
-                self.finish_run(ctx, &finished);
+                self.run_ended(ctx);
             }
             return;
         }
@@ -1325,7 +1457,7 @@ impl Session {
             _ => None,
         };
         let Some(act) = act else { return };
-        if let Err(refused) = active.run.act(&content, act, ctx.rng()) {
+        if let Err(refused) = do_act(active, &content, act, ctx, season, &handle) {
             let line = refused.text().to_owned();
             active.run.log.push(line);
             if matches!(refused, Refused::NoCycles) && active.run.status == Status::Active {
@@ -1334,10 +1466,7 @@ impl Session {
         }
         active.feed.sync(&active.run);
         if active.run.status != Status::Active {
-            let View::Run(finished) = std::mem::replace(&mut self.view, View::Home) else {
-                return;
-            };
-            self.finish_run(ctx, &finished);
+            self.run_ended(ctx);
         }
     }
 
@@ -1358,11 +1487,20 @@ impl Session {
             View::Heat => (11, 0),
             View::Profile => (12, 0),
             View::Black => (13, 0),
+            View::Rivals => (14, 0),
+            View::Input(_) => (15, 0),
+            View::Crew => (16, 0),
+            View::Arcs => (17, 0),
+            View::Scene(a) => (18, usize::from(*a)),
+            View::Street(t) => (19, usize::from(*t)),
         }
     }
 
     fn menu_key(&mut self, key: DoorKey, ctx: &mut Ctx<'_>) -> Flow {
         let c = Arc::clone(&self.content);
+        if let Some(flow) = self.social_key(key, ctx) {
+            return flow;
+        }
         match (&self.view, key) {
             (View::Home, DoorKey::Char(ch)) => match ch.to_ascii_lowercase() {
                 'c' => {
@@ -1455,6 +1593,7 @@ impl Session {
                         let r = self.p.buy_proxy(&c);
                         self.say(r);
                     }
+                    'g' => self.gather(ctx, contract),
                     'j' => match self.p.begin_run(&c, self.season, &self.world, &contract) {
                         Ok(run) => {
                             self.msgs.clear();
@@ -1464,6 +1603,7 @@ impl Session {
                                 contract,
                                 aim: None,
                                 feed,
+                                crew: None,
                             }));
                         }
                         Err(why) => self.say(Err(why)),
@@ -1631,6 +1771,10 @@ impl Session {
                     self.say(r);
                 }
             }
+            (View::Brief(contract), DoorKey::Escape) if social::is_arc(contract) => {
+                self.msgs.clear();
+                self.view = View::Arcs;
+            }
             (View::Contracts | View::Brief(_), DoorKey::Escape) => {
                 let back = matches!(self.view, View::Brief(_));
                 self.msgs.clear();
@@ -1676,6 +1820,7 @@ impl DoorSession for Session {
         if self.place() != before {
             self.sel = 0;
         }
+        self.repost(ctx);
         let bytes = save::encode(&self.p);
         if bytes != self.saved {
             self.saved.clone_from(&bytes);

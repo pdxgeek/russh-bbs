@@ -1,0 +1,1662 @@
+# Fixer arcs (M4-N4): five hand-written arcs, one per fixer, seven steps each; a step is a job and its choices.
+# A choice moves the character to a later step (`next`) or to an ending (`ending`). `gate` is a condition
+# (see `cond.rs`): the choice is shown shut, with its reason, when the character does not meet it. `open` on a step
+# gates the step itself. Flags are named once here; the order is the bit in the save: never reorder.
+
+flags = ["marrow_trusted", "marrow_cheated", "veil_found", "quill_confessor", "quill_exposed", "leak_found", "dovetail_partner", "dovetail_fenced", "parts_ring", "ostrander_double", "ostrander_cut_out", "treaty", "anna_listens", "anna_silenced", "tape_kept"]
+
+[[arc]]
+num = 0
+fixer = 0
+title = "The Old Ledger"
+blurb = "Marrow wants his old partner's books, and has never said why."
+first = 1
+
+[[arc]]
+num = 1
+fixer = 1
+title = "The Chapel Rumour"
+blurb = "Sister Quill hears everything. Someone is selling what she hears."
+first = 1
+
+[[arc]]
+num = 2
+fixer = 2
+title = "Parts and Parcels"
+blurb = "Dovetail pays in rig parts. The parts are coming from somewhere."
+first = 1
+
+[[arc]]
+num = 3
+fixer = 3
+title = "Both Ends"
+blurb = "Ostrander brokers peace between two corporations and sells arms to both."
+first = 1
+
+[[arc]]
+num = 4
+fixer = 4
+title = "What She Overhears"
+blurb = "Glass Anna sells secrets. Someone has begun selling hers."
+first = 1
+
+[[step]]
+arc = 0
+id = 1
+title = "A small errand"
+corp = 3
+tier = 1
+target = "VT"
+effect = "copy"
+reward = 70
+heat = 3
+open = ""
+brief = "Marrow wants a supplier list out of Pennywhistle, nothing more. He calls it a test, and says he will know if you read what you copy."
+done = "He weighs the data in his hand. Did you read it?"
+
+[[step.choice]]
+label = "Say you read nothing"
+next = 2
+ending = 0
+gate = ""
+set = ["marrow_trusted"]
+clear = []
+rep = 2
+marks = 0
+heat = 0
+standing = [[0, 1]]
+note = "Marrow almost smiles."
+
+[[step.choice]]
+label = "Admit one name kept coming up"
+next = 2
+ending = 0
+gate = ""
+set = ["veil_found"]
+clear = []
+rep = 1
+marks = 0
+heat = 0
+standing = []
+note = "He goes very still. Then he pays you."
+
+[[step]]
+arc = 0
+id = 2
+title = "Prop a door"
+corp = 0
+tier = 1
+target = "AC"
+effect = "plant"
+reward = 85
+heat = 4
+open = ""
+brief = "Leave a door ajar at Kestrel. Marrow says the building still knows his old partner's habits."
+done = "Marrow nods. In thirty years he has not said the partner's name aloud."
+
+[[step.choice]]
+label = "Ask who the partner is"
+next = 3
+ending = 0
+gate = ""
+set = []
+clear = []
+rep = 1
+marks = 0
+heat = 0
+standing = []
+note = "Veil, he says. Just Veil."
+
+[[step.choice]]
+label = "Do not ask"
+next = 4
+ending = 0
+gate = ""
+set = []
+clear = []
+rep = 1
+marks = 0
+heat = 0
+standing = []
+note = "You keep your questions. He notices."
+
+[[step]]
+arc = 0
+id = 3
+title = "The foundry accounts"
+corp = 9
+tier = 2
+target = "VT"
+effect = "copy"
+reward = 150
+heat = 8
+open = "rep>=10"
+brief = "Ironmonger Arms kept a second set of books. Copy them and you will see what Veil took."
+done = "The numbers are old and clean, which is what is wrong with them."
+
+[[step.choice]]
+label = "Show Marrow every page"
+next = 5
+ending = 0
+gate = ""
+set = ["marrow_trusted"]
+clear = []
+rep = 3
+marks = 0
+heat = 0
+standing = [[0, 1]]
+note = "He reads for a long time."
+
+[[step.choice]]
+label = "Hold back the second page"
+next = 5
+ending = 0
+gate = ""
+set = ["marrow_cheated"]
+clear = []
+rep = 0
+marks = 60
+heat = 2
+standing = [[0, -1]]
+note = "A page of figures is worth more than he knows."
+
+[[step]]
+arc = 0
+id = 4
+title = "The cold room"
+corp = 0
+tier = 2
+target = "SR"
+effect = "plant"
+reward = 145
+heat = 8
+open = "rep>=10"
+brief = "Wire the cold-storage room at Kestrel where Veil's records sleep. Quiet work; do not wake the walls."
+done = "Someone has already been in. The dust is wrong."
+
+[[step.choice]]
+label = "Tell Marrow someone beat you"
+next = 5
+ending = 0
+gate = ""
+set = ["marrow_trusted"]
+clear = []
+rep = 2
+marks = 0
+heat = 0
+standing = [[0, 1]]
+note = "His jaw works. He thanks you."
+
+[[step.choice]]
+label = "Keep the access to yourself"
+next = 5
+ending = 0
+gate = ""
+set = ["veil_found"]
+clear = []
+rep = 0
+marks = 40
+heat = 3
+standing = []
+note = "You now hold a key nobody knows is missing."
+
+[[step]]
+arc = 0
+id = 5
+title = "A name in the dust"
+corp = 3
+tier = 2
+target = "VT"
+effect = "shred"
+reward = 175
+heat = 9
+open = "rep>=10"
+brief = "Whoever got there first left a trail into Pennywhistle. Wipe it before anyone else follows, or follow it yourself."
+done = "The trail is gone, or you have it. Either way Marrow is waiting."
+
+[[step.choice]]
+label = "Follow the trail yourself"
+next = 6
+ending = 0
+gate = "skill.probe>=2"
+set = []
+clear = []
+rep = 3
+marks = 0
+heat = 2
+standing = []
+note = "Your scans were quiet enough to read it."
+
+[[step.choice]]
+label = "Wipe it and report"
+next = 7
+ending = 0
+gate = ""
+set = []
+clear = []
+rep = 2
+marks = 0
+heat = 0
+standing = []
+note = "You tell him it is done. It is."
+
+[[step]]
+arc = 0
+id = 6
+title = "Veil's door"
+corp = 0
+tier = 3
+target = "AC"
+effect = "plant"
+reward = 360
+heat = 15
+open = "rep>=25"
+brief = "Veil's real vault sits under Kestrel's third floor, and you are the only one with a way in. Marrow will want whatever is in it."
+done = "The vault holds one thing: a ledger with both their names."
+
+[[step.choice]]
+label = "Give Marrow the ledger"
+next = 0
+ending = 1
+gate = "flag:marrow_trusted"
+set = []
+clear = []
+rep = 10
+marks = 200
+heat = 0
+standing = [[0, 3]]
+note = "He sets it on the table and does not open it."
+
+[[step.choice]]
+label = "Burn it where it lies"
+next = 0
+ending = 2
+gate = ""
+set = []
+clear = []
+rep = 6
+marks = 0
+heat = 0
+standing = [[0, -5]]
+note = "Neither of them will ever know what it said."
+
+[[step.choice]]
+label = "Sell it back to Veil"
+next = 0
+ending = 3
+gate = "flag:veil_found"
+set = []
+clear = []
+rep = 4
+marks = 500
+heat = 5
+standing = [[0, -5]]
+note = "Veil pays double and thanks you for your discretion."
+
+[[step]]
+arc = 0
+id = 7
+title = "The long way round"
+corp = 4
+tier = 3
+target = "VT"
+effect = "copy"
+reward = 340
+heat = 15
+open = "rep>=25"
+brief = "You never found the vault, but Veil's money went through Orrery Health. Take the transfer log; it will do."
+done = "A few lines of transfers. Enough to hurt whoever reads them."
+
+[[step.choice]]
+label = "Give Marrow the log"
+next = 0
+ending = 1
+gate = "flag:marrow_trusted"
+set = []
+clear = []
+rep = 8
+marks = 150
+heat = 0
+standing = [[0, 3]]
+note = "He reads it twice and files it."
+
+[[step.choice]]
+label = "Burn the log"
+next = 0
+ending = 2
+gate = ""
+set = []
+clear = []
+rep = 5
+marks = 0
+heat = 0
+standing = [[0, -5]]
+note = "The only copy goes into a bin."
+
+[[step.choice]]
+label = "Sell the log back to Veil"
+next = 0
+ending = 3
+gate = "flag:veil_found"
+set = []
+clear = []
+rep = 4
+marks = 450
+heat = 5
+standing = [[0, -5]]
+note = "Veil does not ask how you found him."
+
+[[step]]
+arc = 1
+id = 1
+title = "A quiet word"
+corp = 4
+tier = 1
+target = "VT"
+effect = "copy"
+reward = 70
+heat = 3
+open = ""
+brief = "Sister Quill wants a visitor log from Orrery Health. She says a name there has begun to know her sins."
+done = "She folds the page into her sleeve. 'Thank you, child. Tell no one.'"
+
+[[step.choice]]
+label = "Promise to tell no one"
+next = 2
+ending = 0
+gate = ""
+set = ["quill_confessor"]
+clear = []
+rep = 2
+marks = 0
+heat = 0
+standing = [[1, 1]]
+note = "She presses a candle stub into your hand."
+
+[[step.choice]]
+label = "Ask what her sins are worth"
+next = 2
+ending = 0
+gate = ""
+set = []
+clear = []
+rep = 1
+marks = 30
+heat = 0
+standing = []
+note = "She laughs until it stops being a laugh."
+
+[[step]]
+arc = 1
+id = 2
+title = "Plant an ear"
+corp = 1
+tier = 1
+target = "AC"
+effect = "plant"
+reward = 85
+heat = 4
+open = ""
+brief = "Leave a listening post in Halcyon Freight's helpdesk. The rumours leave through there, she thinks."
+done = "A week of tapes will tell. For now she hums."
+
+[[step.choice]]
+label = "Say you will listen too"
+next = 3
+ending = 0
+gate = ""
+set = ["leak_found"]
+clear = []
+rep = 1
+marks = 0
+heat = 0
+standing = []
+note = "You hear the first tape before she does."
+
+[[step.choice]]
+label = "Leave the tapes to her"
+next = 4
+ending = 0
+gate = ""
+set = []
+clear = []
+rep = 1
+marks = 0
+heat = 0
+standing = []
+note = "She does not offer you a copy."
+
+[[step]]
+arc = 1
+id = 3
+title = "The confession archive"
+corp = 11
+tier = 2
+target = "VT"
+effect = "copy"
+reward = 155
+heat = 8
+open = "rep>=10"
+brief = "Ninefold Bank has been collecting Quill's flock. Copy what they hold and see who sold it."
+done = "Four hundred names. One of them is a fixer."
+
+[[step.choice]]
+label = "Tell Quill who it was"
+next = 5
+ending = 0
+gate = ""
+set = ["quill_confessor"]
+clear = []
+rep = 3
+marks = 0
+heat = 0
+standing = [[1, 1]]
+note = "She closes her eyes and thanks you."
+
+[[step.choice]]
+label = "Keep the name for yourself"
+next = 5
+ending = 0
+gate = ""
+set = ["leak_found", "quill_exposed"]
+clear = []
+rep = 0
+marks = 70
+heat = 2
+standing = [[1, -1]]
+note = "A name is worth more unspoken."
+
+[[step]]
+arc = 1
+id = 4
+title = "The vestry wall"
+corp = 4
+tier = 2
+target = "SR"
+effect = "plant"
+reward = 150
+heat = 8
+open = "rep>=10"
+brief = "Wire the server room at Orrery Health. The rumours are being shaved there, one at a time, and sold on."
+done = "The rack hums a hymn you half remember."
+
+[[step.choice]]
+label = "Report the whole rack"
+next = 5
+ending = 0
+gate = ""
+set = ["quill_confessor"]
+clear = []
+rep = 2
+marks = 0
+heat = 0
+standing = [[1, 1]]
+note = "Quill writes your name in a book."
+
+[[step.choice]]
+label = "Report only half"
+next = 5
+ending = 0
+gate = ""
+set = []
+clear = []
+rep = 0
+marks = 40
+heat = 2
+standing = []
+note = "Half is always safer than all."
+
+[[step]]
+arc = 1
+id = 5
+title = "The seal"
+corp = 11
+tier = 2
+target = "VT"
+effect = "shred"
+reward = 180
+heat = 9
+open = "rep>=10"
+brief = "Strike the Ninefold copies of Quill's flock from the books, or take them and make her pay for the rest."
+done = "Her hands shake when you tell her."
+
+[[step.choice]]
+label = "Wipe them and say nothing"
+next = 7
+ending = 0
+gate = ""
+set = []
+clear = []
+rep = 2
+marks = 0
+heat = 0
+standing = []
+note = "The mercy is real and you carry it alone."
+
+[[step.choice]]
+label = "Keep a copy for leverage"
+next = 6
+ending = 0
+gate = "skill.hide>=2"
+set = ["quill_exposed"]
+clear = []
+rep = 3
+marks = 0
+heat = 3
+standing = [[1, -1]]
+note = "Nobody sees you keep it."
+
+[[step]]
+arc = 1
+id = 6
+title = "The open book"
+corp = 1
+tier = 3
+target = "VT"
+effect = "copy"
+reward = 370
+heat = 15
+open = "rep>=25"
+brief = "Halcyon Freight holds the only complete record of who sold what. Take it, and decide what Quill's flock gets to know."
+done = "Everything is in your hands now, and so is the choice."
+
+[[step.choice]]
+label = "Hide it all to protect the chapel"
+next = 0
+ending = 4
+gate = "flag:quill_confessor"
+set = []
+clear = []
+rep = 10
+marks = 100
+heat = 0
+standing = [[1, 3]]
+note = "Quill weeps, and the chapel keeps its doors."
+
+[[step.choice]]
+label = "Publish everything"
+next = 0
+ending = 5
+gate = ""
+set = []
+clear = []
+rep = 8
+marks = 0
+heat = 10
+standing = [[1, -5]]
+note = "By morning the whole city has read it."
+
+[[step.choice]]
+label = "Sell the record to Ninefold"
+next = 0
+ending = 6
+gate = "flag:quill_exposed"
+set = []
+clear = []
+rep = 4
+marks = 520
+heat = 6
+standing = [[1, -5]]
+note = "Ninefold pays in a bank draft and a smile."
+
+[[step]]
+arc = 1
+id = 7
+title = "A last confession"
+corp = 4
+tier = 3
+target = "AC"
+effect = "plant"
+reward = 345
+heat = 15
+open = "rep>=25"
+brief = "Quill is dying. The last of the records are at Orrery Health. Plant what she asks and say nothing to anyone."
+done = "She gives you the keys to the chapel and a list of names."
+
+[[step.choice]]
+label = "Burn the list, keep the keys"
+next = 0
+ending = 4
+gate = "flag:quill_confessor"
+set = []
+clear = []
+rep = 9
+marks = 120
+heat = 0
+standing = [[1, 3]]
+note = "The chapel is yours to keep honest."
+
+[[step.choice]]
+label = "Hand the list to the street"
+next = 0
+ending = 5
+gate = ""
+set = []
+clear = []
+rep = 6
+marks = 0
+heat = 8
+standing = [[1, -5]]
+note = "The street takes it in an hour."
+
+[[step.choice]]
+label = "Sell the list"
+next = 0
+ending = 6
+gate = "flag:quill_exposed"
+set = []
+clear = []
+rep = 4
+marks = 500
+heat = 6
+standing = [[1, -5]]
+note = "You are paid, and the bells are rung for someone else."
+
+[[step]]
+arc = 2
+id = 1
+title = "A box of chips"
+corp = 10
+tier = 1
+target = "VT"
+effect = "copy"
+reward = 70
+heat = 3
+open = ""
+brief = "Dovetail needs a shipping manifest from Paper Lantern Media. Quickly, and from a number he has never used before."
+done = "He counts out a handful of chips and does not meet your eye."
+
+[[step.choice]]
+label = "Take the chips"
+next = 2
+ending = 0
+gate = ""
+set = ["dovetail_partner"]
+clear = []
+rep = 2
+marks = 0
+heat = 0
+standing = [[2, 1]]
+note = "Fast fingers, fast pay."
+
+[[step.choice]]
+label = "Take the marks instead"
+next = 2
+ending = 0
+gate = ""
+set = []
+clear = []
+rep = 1
+marks = 45
+heat = 0
+standing = []
+note = "He shrugs. Marks are slower to move."
+
+[[step]]
+arc = 2
+id = 2
+title = "The dock door"
+corp = 5
+tier = 1
+target = "AC"
+effect = "plant"
+reward = 85
+heat = 4
+open = ""
+brief = "Prop a loading-bay door at Tallow and Vane. Dovetail's cargo is coming in, he says, and the cargo is shy."
+done = "The cargo was not shy. The cargo was a rack of rigs, and they were not his."
+
+[[step.choice]]
+label = "Ask where the rigs came from"
+next = 3
+ending = 0
+gate = ""
+set = ["parts_ring"]
+clear = []
+rep = 1
+marks = 0
+heat = 0
+standing = []
+note = "He laughs, and tells you."
+
+[[step.choice]]
+label = "Take one and say nothing"
+next = 4
+ending = 0
+gate = ""
+set = []
+clear = []
+rep = 0
+marks = 0
+heat = 3
+standing = []
+note = "You are now a part of what he is."
+
+[[step]]
+arc = 2
+id = 3
+title = "The manifests"
+corp = 5
+tier = 2
+target = "VT"
+effect = "copy"
+reward = 150
+heat = 8
+open = "rep>=10"
+brief = "Copy Tallow and Vane's real manifests. Dovetail needs to know which of his suppliers are theirs."
+done = "Six of his best suppliers are one company."
+
+[[step.choice]]
+label = "Give Dovetail the list"
+next = 5
+ending = 0
+gate = ""
+set = ["dovetail_partner"]
+clear = []
+rep = 3
+marks = 0
+heat = 0
+standing = [[2, 1]]
+note = "He pays well and buys you a drink."
+
+[[step.choice]]
+label = "Sell the list to Tallow"
+next = 5
+ending = 0
+gate = ""
+set = []
+clear = []
+rep = 0
+marks = 90
+heat = 4
+standing = [[2, -1]]
+note = "Tallow is grateful. Dovetail will not be."
+
+[[step]]
+arc = 2
+id = 4
+title = "Cold stock"
+corp = 2
+tier = 2
+target = "SR"
+effect = "plant"
+reward = 150
+heat = 8
+open = "rep>=10"
+brief = "Wire Mirrorglass's server room. Dovetail stores the stolen stock there, in decoys, where nobody counts."
+done = "The decoys hold. Thirty rigs sit in the dark."
+
+[[step.choice]]
+label = "Stay quiet about the count"
+next = 5
+ending = 0
+gate = ""
+set = ["parts_ring"]
+clear = []
+rep = 2
+marks = 0
+heat = 0
+standing = []
+note = "Thirty rigs is thirty rigs."
+
+[[step.choice]]
+label = "Tell Dovetail it was fifty"
+next = 5
+ending = 0
+gate = ""
+set = ["dovetail_fenced"]
+clear = []
+rep = 0
+marks = 60
+heat = 3
+standing = [[2, -1]]
+note = "Twenty rigs find a new owner."
+
+[[step]]
+arc = 2
+id = 5
+title = "The fence"
+corp = 10
+tier = 2
+target = "VT"
+effect = "shred"
+reward = 175
+heat = 9
+open = "rep>=10"
+brief = "Paper Lantern keeps the receipts of everything Dovetail ever moved. Wipe them, or keep them as insurance."
+done = "He is waiting in the back of a van you did not order."
+
+[[step.choice]]
+label = "Wipe them"
+next = 6
+ending = 0
+gate = ""
+set = ["dovetail_partner"]
+clear = []
+rep = 3
+marks = 0
+heat = 0
+standing = [[2, 2]]
+note = "Partners clean up after partners."
+
+[[step.choice]]
+label = "Keep the receipts"
+next = 7
+ending = 0
+gate = "skill.hide>=2"
+set = ["dovetail_fenced"]
+clear = []
+rep = 3
+marks = 0
+heat = 3
+standing = [[2, -1]]
+note = "A good fence always keeps a second set."
+
+[[step]]
+arc = 2
+id = 6
+title = "The final shipment"
+corp = 5
+tier = 3
+target = "AC"
+effect = "plant"
+reward = 360
+heat = 15
+open = "rep>=25"
+brief = "Dovetail's last run: a whole cargo of rigs through Tallow's big dock. He is leaving after, and says so."
+done = "The cargo is yours to deliver or to lose."
+
+[[step.choice]]
+label = "Deliver it and become his partner"
+next = 0
+ending = 7
+gate = "flag:dovetail_partner"
+set = []
+clear = []
+rep = 10
+marks = 300
+heat = 0
+standing = [[2, 3]]
+note = "He hands you a key to a locker you do not yet know about."
+
+[[step.choice]]
+label = "Take the cargo and fence it yourself"
+next = 0
+ending = 8
+gate = "flag:dovetail_fenced"
+set = []
+clear = []
+rep = 6
+marks = 550
+heat = 6
+standing = [[2, -5]]
+note = "You are rich, and you are on a list."
+
+[[step.choice]]
+label = "Warn Tallow"
+next = 0
+ending = 9
+gate = ""
+set = []
+clear = []
+rep = 4
+marks = 0
+heat = 0
+standing = [[2, -5]]
+note = "The dock is waiting with lights on."
+
+[[step]]
+arc = 2
+id = 7
+title = "The bonded vault"
+corp = 2
+tier = 3
+target = "VT"
+effect = "copy"
+reward = 340
+heat = 15
+open = "rep>=25"
+brief = "Dovetail's money sits in a decoy vault at Mirrorglass. Find the real one and take what is in it."
+done = "He is already waiting at the exit. He knows what you took."
+
+[[step.choice]]
+label = "Give him his half and stay"
+next = 0
+ending = 7
+gate = "flag:dovetail_partner"
+set = []
+clear = []
+rep = 9
+marks = 250
+heat = 0
+standing = [[2, 3]]
+note = "A partner is a partner."
+
+[[step.choice]]
+label = "Keep all of it"
+next = 0
+ending = 8
+gate = "flag:dovetail_fenced"
+set = []
+clear = []
+rep = 6
+marks = 520
+heat = 6
+standing = [[2, -5]]
+note = "He never forgives, and never finds you."
+
+[[step.choice]]
+label = "Leave it for Mirrorglass to find"
+next = 0
+ending = 9
+gate = ""
+set = []
+clear = []
+rep = 4
+marks = 0
+heat = 0
+standing = [[2, -5]]
+note = "The decoy collapses. So does the ring."
+
+[[step]]
+arc = 3
+id = 1
+title = "An introduction"
+corp = 5
+tier = 1
+target = "VT"
+effect = "copy"
+reward = 70
+heat = 3
+open = ""
+brief = "Ostrander wants a supplier ledger out of Tallow and Vane. He will not say whose side he is on."
+done = "He reads it with a pen in his hand, and makes small tick marks."
+
+[[step.choice]]
+label = "Say whose ledger it is"
+next = 2
+ending = 0
+gate = ""
+set = ["treaty"]
+clear = []
+rep = 2
+marks = 0
+heat = 0
+standing = [[3, 1]]
+note = "He seems pleased with your honesty."
+
+[[step.choice]]
+label = "Say nothing"
+next = 2
+ending = 0
+gate = ""
+set = ["ostrander_double"]
+clear = []
+rep = 1
+marks = 30
+heat = 0
+standing = []
+note = "He seems pleased with your discretion."
+
+[[step]]
+arc = 3
+id = 2
+title = "The other side"
+corp = 7
+tier = 1
+target = "AC"
+effect = "plant"
+reward = 85
+heat = 4
+open = ""
+brief = "Now Brackwater Bio. A door left ajar, for the other party. He calls it fairness."
+done = "Two copies of one conversation are now in two safes."
+
+[[step.choice]]
+label = "Ask what he is building"
+next = 3
+ending = 0
+gate = ""
+set = ["treaty"]
+clear = []
+rep = 1
+marks = 0
+heat = 0
+standing = []
+note = "A treaty, he says. A boring, lovely treaty."
+
+[[step.choice]]
+label = "Ask what he is selling"
+next = 4
+ending = 0
+gate = ""
+set = ["ostrander_double"]
+clear = []
+rep = 1
+marks = 0
+heat = 0
+standing = []
+note = "Everything, he says, to everyone."
+
+[[step]]
+arc = 3
+id = 3
+title = "The draft"
+corp = 7
+tier = 2
+target = "VT"
+effect = "copy"
+reward = 150
+heat = 8
+open = "rep>=10"
+brief = "Brackwater's lawyers have a draft of the treaty. Copy it before Tallow's lawyers can."
+done = "The draft is fair. That is the worst thing about it."
+
+[[step.choice]]
+label = "Pass it to Ostrander as it is"
+next = 5
+ending = 0
+gate = ""
+set = ["treaty"]
+clear = []
+rep = 3
+marks = 0
+heat = 0
+standing = [[3, 1]]
+note = "The peace takes one step forward."
+
+[[step.choice]]
+label = "Alter two clauses first"
+next = 5
+ending = 0
+gate = ""
+set = ["ostrander_double"]
+clear = []
+rep = 0
+marks = 80
+heat = 3
+standing = [[3, -1]]
+note = "Your edits are small, and decisive."
+
+[[step]]
+arc = 3
+id = 4
+title = "The second set"
+corp = 5
+tier = 2
+target = "SR"
+effect = "plant"
+reward = 150
+heat = 8
+open = "rep>=10"
+brief = "Wire Tallow's server room. Ostrander keeps a second set of orders there, for the weapons nobody admits to."
+done = "The orders are older than the treaty, and larger."
+
+[[step.choice]]
+label = "Tell Ostrander what you saw"
+next = 5
+ending = 0
+gate = ""
+set = ["ostrander_double"]
+clear = []
+rep = 2
+marks = 0
+heat = 0
+standing = [[3, 1]]
+note = "He thanks you and pays for the silence."
+
+[[step.choice]]
+label = "Copy the orders for yourself"
+next = 5
+ending = 0
+gate = ""
+set = ["ostrander_cut_out"]
+clear = []
+rep = 0
+marks = 60
+heat = 3
+standing = [[3, -1]]
+note = "Leverage grows in unexpected places."
+
+[[step]]
+arc = 3
+id = 5
+title = "The signing"
+corp = 11
+tier = 2
+target = "VT"
+effect = "shred"
+reward = 180
+heat = 9
+open = "rep>=10"
+brief = "Ninefold Bank holds the treaty's escrow. Wipe the record, or make sure it is kept."
+done = "He is on the phone to both sides at once."
+
+[[step.choice]]
+label = "Keep the escrow safe"
+next = 6
+ending = 0
+gate = ""
+set = []
+clear = []
+rep = 3
+marks = 0
+heat = 0
+standing = [[3, 2]]
+note = "The treaty is signed on a Thursday."
+
+[[step.choice]]
+label = "Wipe it"
+next = 7
+ending = 0
+gate = "skill.break>=2"
+set = ["ostrander_cut_out"]
+clear = []
+rep = 3
+marks = 0
+heat = 3
+standing = [[3, -1]]
+note = "Now someone must start again."
+
+[[step]]
+arc = 3
+id = 6
+title = "The weapon list"
+corp = 7
+tier = 3
+target = "AC"
+effect = "plant"
+reward = 360
+heat = 15
+open = "rep>=25"
+brief = "Ostrander's weapons are on Brackwater's network under a clean name. You can end the treaty, end Ostrander or end the weapons."
+done = "The list is in your hands. He knows you hold it."
+
+[[step.choice]]
+label = "Keep the treaty and the weapons secret"
+next = 0
+ending = 10
+gate = "flag:treaty"
+set = []
+clear = []
+rep = 10
+marks = 300
+heat = 0
+standing = [[3, 3]]
+note = "The peace holds, and it is built on a lie you now share."
+
+[[step.choice]]
+label = "Sell the list to both corporations"
+next = 0
+ending = 11
+gate = "flag:ostrander_double"
+set = []
+clear = []
+rep = 6
+marks = 600
+heat = 8
+standing = [[3, -5]]
+note = "Both buy. Both regret it."
+
+[[step.choice]]
+label = "Burn the list and walk away"
+next = 0
+ending = 12
+gate = ""
+set = []
+clear = []
+rep = 5
+marks = 0
+heat = 0
+standing = [[3, -5]]
+note = "The list is gone and so is the leverage."
+
+[[step]]
+arc = 3
+id = 7
+title = "The empty chair"
+corp = 11
+tier = 3
+target = "VT"
+effect = "copy"
+reward = 340
+heat = 15
+open = "rep>=25"
+brief = "The signing was cancelled and nobody will say why. Ninefold's records will. Take them."
+done = "A line of deposits, some in your name."
+
+[[step.choice]]
+label = "Complete the treaty alone"
+next = 0
+ending = 10
+gate = "flag:treaty"
+set = []
+clear = []
+rep = 9
+marks = 250
+heat = 0
+standing = [[3, 3]]
+note = "You sign as a witness. It holds."
+
+[[step.choice]]
+label = "Stoke the war for profit"
+next = 0
+ending = 11
+gate = "flag:ostrander_double"
+set = []
+clear = []
+rep = 6
+marks = 550
+heat = 8
+standing = [[3, -5]]
+note = "Business is excellent."
+
+[[step.choice]]
+label = "Cut Ostrander out of everything"
+next = 0
+ending = 12
+gate = ""
+set = []
+clear = []
+rep = 5
+marks = 0
+heat = 0
+standing = [[3, -5]]
+note = "Without a broker, nobody talks."
+
+[[step]]
+arc = 4
+id = 1
+title = "A careful errand"
+corp = 8
+tier = 1
+target = "VT"
+effect = "copy"
+reward = 70
+heat = 3
+open = ""
+brief = "Glass Anna wants a client list from Sable Court. Care counts more than speed, she says, and she will know the difference."
+done = "She turns the page over and holds it to the light."
+
+[[step.choice]]
+label = "Say you were careful"
+next = 2
+ending = 0
+gate = ""
+set = ["anna_listens"]
+clear = []
+rep = 2
+marks = 0
+heat = 0
+standing = [[4, 1]]
+note = "She likes careful."
+
+[[step.choice]]
+label = "Say you were quick"
+next = 2
+ending = 0
+gate = ""
+set = []
+clear = []
+rep = 1
+marks = 30
+heat = 0
+standing = []
+note = "She does not like quick."
+
+[[step]]
+arc = 4
+id = 2
+title = "A small tap"
+corp = 6
+tier = 1
+target = "AC"
+effect = "plant"
+reward = 85
+heat = 4
+open = ""
+brief = "Leave a tap on Lumen Grid's meter hub. Anna wants to hear who buys her old secrets, and when."
+done = "The tap hears a voice she knows."
+
+[[step.choice]]
+label = "Say whose voice it is"
+next = 3
+ending = 0
+gate = ""
+set = ["anna_listens"]
+clear = []
+rep = 1
+marks = 0
+heat = 0
+standing = [[4, 1]]
+note = "She says nothing for a long minute."
+
+[[step.choice]]
+label = "Say you cannot tell"
+next = 4
+ending = 0
+gate = ""
+set = []
+clear = []
+rep = 0
+marks = 40
+heat = 0
+standing = []
+note = "She knows you are lying and pays you anyway."
+
+[[step]]
+arc = 4
+id = 3
+title = "The tape room"
+corp = 8
+tier = 2
+target = "VT"
+effect = "copy"
+reward = 150
+heat = 8
+open = "rep>=10"
+brief = "Sable Court has recordings of Anna's calls. Copy them before they are used against her."
+done = "Her own voice, years ago, on a line she thought was safe."
+
+[[step.choice]]
+label = "Bring her every tape"
+next = 5
+ending = 0
+gate = ""
+set = ["anna_listens"]
+clear = []
+rep = 3
+marks = 0
+heat = 0
+standing = [[4, 1]]
+note = "She plays them all, alone."
+
+[[step.choice]]
+label = "Keep one"
+next = 5
+ending = 0
+gate = ""
+set = ["tape_kept"]
+clear = []
+rep = 0
+marks = 70
+heat = 3
+standing = [[4, -1]]
+note = "One tape is worth three of her secrets."
+
+[[step]]
+arc = 4
+id = 4
+title = "Static"
+corp = 6
+tier = 2
+target = "SR"
+effect = "plant"
+reward = 150
+heat = 8
+open = "rep>=10"
+brief = "Wire Lumen Grid's server room. The static in her calls comes from there, and from nobody else."
+done = "The rack is quiet and the line is not."
+
+[[step.choice]]
+label = "Tell her it is internal"
+next = 5
+ending = 0
+gate = ""
+set = ["anna_listens"]
+clear = []
+rep = 2
+marks = 0
+heat = 0
+standing = [[4, 1]]
+note = "She nods. She expected it."
+
+[[step.choice]]
+label = "Tell her it is you"
+next = 5
+ending = 0
+gate = ""
+set = ["anna_silenced"]
+clear = []
+rep = 0
+marks = 0
+heat = 0
+standing = [[4, -1]]
+note = "Not many people try honesty with her."
+
+[[step]]
+arc = 4
+id = 5
+title = "The silence"
+corp = 8
+tier = 2
+target = "VT"
+effect = "shred"
+reward = 180
+heat = 9
+open = "rep>=10"
+brief = "Strike the recordings from Sable Court's books. Anna says she is tired of being listened to."
+done = "She is listening to her own breathing."
+
+[[step.choice]]
+label = "Wipe them"
+next = 6
+ending = 0
+gate = ""
+set = ["anna_silenced"]
+clear = []
+rep = 3
+marks = 0
+heat = 0
+standing = [[4, 2]]
+note = "The room goes quiet."
+
+[[step.choice]]
+label = "Keep the originals"
+next = 7
+ending = 0
+gate = "flag:tape_kept"
+set = []
+clear = []
+rep = 3
+marks = 0
+heat = 3
+standing = [[4, -1]]
+note = "Silence has a price, and you hold the receipt."
+
+[[step]]
+arc = 4
+id = 6
+title = "The recording"
+corp = 8
+tier = 3
+target = "AC"
+effect = "plant"
+reward = 360
+heat = 15
+open = "rep>=25"
+brief = "Sable Court's deepest archive holds the call that made Anna. Take it, and decide who hears it."
+done = "It is thirty seconds long. It is the end of a career."
+
+[[step.choice]]
+label = "Give Anna the only copy"
+next = 0
+ending = 13
+gate = "flag:anna_listens"
+set = []
+clear = []
+rep = 10
+marks = 250
+heat = 0
+standing = [[4, 3]]
+note = "She plays it once and breaks the disc."
+
+[[step.choice]]
+label = "Bury it"
+next = 0
+ending = 14
+gate = ""
+set = []
+clear = []
+rep = 6
+marks = 0
+heat = 0
+standing = [[4, -5]]
+note = "Nobody will ever hear it."
+
+[[step.choice]]
+label = "Sell it to Sable Court"
+next = 0
+ending = 15
+gate = "flag:tape_kept"
+set = []
+clear = []
+rep = 4
+marks = 540
+heat = 6
+standing = [[4, -5]]
+note = "Sable Court buys it at a fair price, which is the worst kind."
+
+[[step]]
+arc = 4
+id = 7
+title = "A voice she knew"
+corp = 6
+tier = 3
+target = "VT"
+effect = "copy"
+reward = 340
+heat = 15
+open = "rep>=25"
+brief = "Lumen Grid's call logs show who has been selling Anna. Take them. She will ask you to read them aloud."
+done = "The name is one you know."
+
+[[step.choice]]
+label = "Read her the name"
+next = 0
+ending = 13
+gate = "flag:anna_listens"
+set = []
+clear = []
+rep = 9
+marks = 200
+heat = 0
+standing = [[4, 3]]
+note = "She thanks you and asks you to leave."
+
+[[step.choice]]
+label = "Delete the log"
+next = 0
+ending = 14
+gate = ""
+set = []
+clear = []
+rep = 5
+marks = 0
+heat = 0
+standing = [[4, -5]]
+note = "It would be kinder not to know."
+
+[[step.choice]]
+label = "Sell the name"
+next = 0
+ending = 15
+gate = "flag:tape_kept"
+set = []
+clear = []
+rep = 4
+marks = 500
+heat = 6
+standing = [[4, -5]]
+note = "A name is the best merchandise there is."
+
+[[ending]]
+num = 1
+arc = 0
+title = "Square the books"
+text = "Marrow keeps the ledger on a shelf he never opens. He pays you on time for the rest of his life, and speaks of you as the one who did not read it."
+
+[[ending]]
+num = 2
+arc = 0
+title = "The ledger burns"
+text = "Nobody ever learns what Veil took. Marrow stops speaking to you, and sends nothing. The old man dies with the question, and you with the quiet."
+
+[[ending]]
+num = 3
+arc = 0
+title = "Veil's price"
+text = "Veil makes you rich and never calls again. Marrow does, once, from a payphone, and says only that he understands. Then he hangs up."
+
+[[ending]]
+num = 4
+arc = 1
+title = "Absolution"
+text = "The chapel keeps its secrets and its doors. Quill's last years are quiet, and the rumours stop. People take you for a quiet kind of saint, which you are not."
+
+[[ending]]
+num = 5
+arc = 1
+title = "The open book"
+text = "Everything is told. Some marriages end, some debts are forgiven, and a fixer disappears. The city is crueller and cleaner for a season."
+
+[[ending]]
+num = 6
+arc = 1
+title = "A quiet sale"
+text = "Ninefold gets the flock, and the flock gets nothing. You get the money, and the memory of a woman who trusted you with it."
+
+[[ending]]
+num = 7
+arc = 2
+title = "Partner"
+text = "Dovetail goes into the dark with a new number and you go with him. He pays in parts and in trust, which is the better currency, and the harder to counterfeit."
+
+[[ending]]
+num = 8
+arc = 2
+title = "Fence"
+text = "You inherit the ring, its debts and its list of enemies. You are rich for a season. Then you are busy for the rest of your life."
+
+[[ending]]
+num = 9
+arc = 2
+title = "Collapse"
+text = "The ring comes down in an afternoon. Dovetail runs, and the people who owned the rigs get them back. You are paid by someone you will never meet."
+
+[[ending]]
+num = 10
+arc = 3
+title = "The treaty holds"
+text = "Two corporations stay at peace because a freelancer lied well enough, once, and then kept to the truth. Ostrander sends flowers. You do not know who paid."
+
+[[ending]]
+num = 11
+arc = 3
+title = "War contract"
+text = "The treaty collapses and the war is quick and profitable. You are paid well by both sides, and neither side thanks you."
+
+[[ending]]
+num = 12
+arc = 3
+title = "Cut out"
+text = "Ostrander is out and the doors close behind him. Nobody brokers anything for a season. You find that peace was never the interesting part."
+
+[[ending]]
+num = 13
+arc = 4
+title = "Eavesdropper's share"
+text = "Anna makes you her heir in all but name. You learn what she knows, which is more than you wanted, and less than she is worth."
+
+[[ending]]
+num = 14
+arc = 4
+title = "Silence"
+text = "Anna's secrets stay buried and she goes quiet for good. Nobody ever tells you what you saved her from, which is the point."
+
+[[ending]]
+num = 15
+arc = 4
+title = "The recording"
+text = "You sell the one tape that mattered. The buyer is gracious. Anna is not, and does not have to be."
+

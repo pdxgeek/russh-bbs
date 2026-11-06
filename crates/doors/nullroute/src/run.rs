@@ -76,6 +76,9 @@ pub struct RunSetup {
     pub learned: Vec<(u16, u32)>,
     /// The warden (a countermeasure number) this run will wake, if any.
     pub warden: Option<u8>,
+    /// Percent of trace this run adds: 100 alone, less in a crew, where the trace is shared and
+    /// each member's noise is a smaller part of it (see `crew`).
+    pub trace_share: u32,
 }
 
 /// One script in the loaded deck.
@@ -379,6 +382,94 @@ impl Run {
         Some(run)
     }
 
+    /// Crew seam: set the shared trace. The member's own run keeps no meter of its own in a crew.
+    pub(crate) fn crew_set_trace(&mut self, trace: u32) {
+        if self.status != Status::Active {
+            return;
+        }
+        self.trace = trace.min(TRACE_MAX);
+        self.peak = self.peak.max(self.trace);
+        if self.trace >= TRACE_MAX {
+            self.status = Status::Burned;
+            self.say("TRACE COMPLETE. The crew's address is out. You are burned.".to_owned());
+        }
+    }
+
+    /// Crew seam: the locks a crewmate opened are open for this member too.
+    pub(crate) fn crew_open(&mut self, nodes: &[NodeId]) {
+        for id in nodes {
+            self.opened |= bit(*id);
+        }
+    }
+
+    /// Crew seam: take on what a crewmate's scans found (nodes known, nodes scanned, hidden links
+    /// revealed), so the map is the crew's map.
+    pub(crate) fn crew_learn(&mut self, other: &Self) {
+        self.known |= other.known;
+        self.scanned |= other.scanned;
+        for link in &other.revealed {
+            if !self.revealed.contains(link) {
+                self.revealed.push(*link);
+            }
+        }
+        if other.alarm {
+            self.alarm = true;
+        }
+    }
+
+    /// Crew seam: the crew's warden arrives for this member.
+    pub(crate) fn crew_summon_warden(&mut self, content: &Content, cm: u8) {
+        if self.status != Status::Active || self.enc.is_some() {
+            return;
+        }
+        self.warden = Some(Warden {
+            cm,
+            awake: true,
+            arrives_in: 1,
+            down: false,
+            paused: None,
+        });
+        let at = self.at;
+        self.warden_step(content, at);
+    }
+
+    /// Crew seam: the crew's trace reached 100 (or the line went cold): this member is out.
+    pub(crate) fn crew_end(&mut self, burned: bool) {
+        if self.status != Status::Active {
+            return;
+        }
+        if burned {
+            self.status = Status::Burned;
+            self.say("TRACE COMPLETE. The crew is burned.".to_owned());
+        } else {
+            self.status = Status::Out;
+            self.say("The line went cold. You are out.".to_owned());
+        }
+    }
+
+    /// The name of the node you stand on.
+    #[must_use]
+    pub fn name_here(&self) -> String {
+        self.setup
+            .net
+            .nodes
+            .get(usize::from(self.at))
+            .map(|n| n.name.clone())
+            .unwrap_or_default()
+    }
+
+    /// The locks this run opened so far.
+    #[must_use]
+    pub fn broken_nodes(&self) -> &[NodeId] {
+        &self.broken
+    }
+
+    /// Nodes known so far (a bit set).
+    #[must_use]
+    pub const fn known_mask(&self) -> u32 {
+        self.known
+    }
+
     /// The network.
     #[must_use]
     pub const fn net(&self) -> &Network {
@@ -550,6 +641,7 @@ impl Run {
         // Deeper tiers are watched harder: x1.0, x1.3, x1.6.
         let tier_pct = 100 + 30 * (u32::from(self.setup.net.tier.clamp(1, 3)) - 1);
         let mut value = base * self.corp_trace_pct / 100 * tier_pct / 100;
+        value = value * self.setup.trace_share / 100;
         if self.alarm {
             value = value * 3 / 2;
         }

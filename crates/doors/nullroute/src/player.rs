@@ -11,6 +11,7 @@ use crate::content::{Content, Family, ScriptDef};
 use crate::net::Network;
 use crate::run::{Run, RunResult, RunSetup, Status};
 use crate::world::{Contract, World};
+use crate::social::PROTECT_DAYS;
 
 /// Marks a new character starts with: enough for one tool script and a proxy.
 pub const START_MARKS: u32 = 90;
@@ -56,6 +57,160 @@ pub mod part {
     pub const IFACE: usize = 3;
     /// Trace resistance.
     pub const SHIELD: usize = 4;
+}
+
+/// Fixer arcs (one per fixer).
+pub const ARCS_MAX: usize = 5;
+/// Edits waiting for their receipt, at most.
+pub const SENT_MAX: usize = 6;
+/// Past seasons a character remembers.
+pub const LEGEND_MAX: usize = 6;
+/// Counters in [`Ties::stats`].
+pub const STATS: usize = 8;
+/// Rig modules that can be fitted.
+pub const MODS: usize = 3;
+
+/// Stat slots: hacks sent, hacks that got in, hacks a honeypot caught, bounties claimed, crew runs
+/// joined, crew jobs done, wardens put down, finale heists.
+pub mod stat {
+    /// Hacks filed.
+    pub const HACKS: usize = 0;
+    /// Hacks that got in.
+    pub const IN: usize = 1;
+    /// Hacks your honeypot caught.
+    pub const CAUGHT: usize = 2;
+    /// Bounties claimed.
+    pub const BOUNTIES: usize = 3;
+    /// Crew runs joined.
+    pub const CREW_RUNS: usize = 4;
+    /// Crew jobs done.
+    pub const CREW_JOBS: usize = 5;
+    /// Wardens put down.
+    pub const WARDENS: usize = 6;
+    /// Finale heists done.
+    pub const FINALE: usize = 7;
+}
+
+/// An edit the character sent into the world and has not seen the receipt for.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Sent {
+    /// Ties the edit to its receipt.
+    pub nonce: u32,
+    /// 0 for a hack, 1 for a bounty.
+    pub kind: u8,
+    /// The day it was sent.
+    pub day: i64,
+    /// Marks taken for it (given back if it never ran).
+    pub marks: u32,
+    /// Cycles taken for it.
+    pub cycles: u8,
+}
+
+/// Cycles committed to a crew run that the character joined.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Stake {
+    /// The run's id.
+    pub op: u32,
+    /// Cycles committed (and taken from the day).
+    pub cycles: u32,
+}
+
+/// Where a character is in one fixer's arc.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct ArcState {
+    /// The step the character is on (1-based; 0 before the arc starts).
+    pub step: u8,
+    /// The job of that step is done and its choice not yet made.
+    pub awaiting: bool,
+    /// The day the step opened or the choice was made: the next step opens a day later.
+    pub since: i64,
+    /// The ending reached (0 while the arc runs).
+    pub ending: u8,
+}
+
+/// A season the character played, as they remember it.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Legend {
+    /// The season.
+    pub season: u32,
+    /// The character's epilogue (a `epilogue` number).
+    pub ending: u8,
+    /// Reputation at the end.
+    pub rep: u32,
+    /// Jobs done that season.
+    pub jobs: u32,
+}
+
+/// Everything the social layer and the story add to a character (save version 3).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Ties {
+    /// The day the character was made: the protection week counts from it.
+    pub born: i64,
+    /// On the rivals board: can hack, be hacked, claim bounties. The opt-out is this being false.
+    pub pvp: bool,
+    /// Takes crew invitations.
+    pub crews_open: bool,
+    /// The day PvP was last switched off (it cannot come back for a couple of days).
+    pub pvp_off_on: i64,
+    /// Honeypot levels at the hideout, 0 to 3.
+    pub honeypot: u8,
+    /// The highest delivery applied.
+    pub credited_to: u32,
+    /// Edits waiting for a receipt.
+    pub sent: Vec<Sent>,
+    /// A crew run the character has stakes in.
+    pub stake: Option<Stake>,
+    /// The fixer arcs.
+    pub arcs: [ArcState; ARCS_MAX],
+    /// Story flags (named in `arcs.toml`).
+    pub flags: u32,
+    /// Arc endings reached, a bit per ending number, over every season.
+    pub endings: u32,
+    /// Past seasons.
+    pub legend: Vec<Legend>,
+    /// Counters (see [`stat`]).
+    pub stats: [u16; STATS],
+    /// Hideout upgrades bought, a bit each.
+    pub perks: u16,
+    /// Rig modules fitted (0 for none).
+    pub mods: [u8; MODS],
+}
+
+impl Ties {
+    /// A new character's ties.
+    #[must_use]
+    pub const fn new(born: i64) -> Self {
+        Self {
+            born,
+            pvp: true,
+            crews_open: true,
+            pvp_off_on: 0,
+            honeypot: 0,
+            credited_to: 0,
+            sent: Vec::new(),
+            stake: None,
+            arcs: [ArcState { step: 0, awaiting: false, since: 0, ending: 0 }; ARCS_MAX],
+            flags: 0,
+            endings: 0,
+            legend: Vec::new(),
+            stats: [0; STATS],
+            perks: 0,
+            mods: [0; MODS],
+        }
+    }
+
+    /// The ties of a character who played before the social layer: the protection week is over.
+    #[must_use]
+    pub const fn grandfathered(day: i64) -> Self {
+        Self::new(day.saturating_sub(PROTECT_DAYS))
+    }
+
+    /// Bump a counter.
+    pub fn bump(&mut self, slot: usize) {
+        if let Some(s) = self.stats.get_mut(slot) {
+            *s = s.saturating_add(1);
+        }
+    }
 }
 
 /// A character.
@@ -115,6 +270,8 @@ pub struct Player {
     pub fragments: Vec<u8>,
     /// Coded scripts: slot `n` is script number `CODED_BASE + n`.
     pub coded: [Option<Build>; CODED_MAX],
+    /// The social layer and the story (save version 3).
+    pub ties: Ties,
 }
 
 /// The skill level for `xp` uses.
@@ -162,6 +319,7 @@ impl Player {
             earned: 0,
             fragments: Vec::new(),
             coded: [None; CODED_MAX],
+            ties: Ties::new(today),
         };
         // A sensible first deck: one scan, the first two breaks and a copier, within memory.
         for num in [1u8, 5, 8, 23] {
@@ -174,6 +332,8 @@ impl Player {
     /// A character carried into a new season: the name, the skills, the scripts and the rig stay;
     /// money, heat, standing, bots and jobs start over.
     pub fn new_season(&mut self, content: &Content, season: u32, today: i64) {
+        self.close_season(content);
+        self.reset_ties_for_season();
         let keep = Self::new(content, self.seed, &self.name, season, today);
         self.season = season;
         self.day = today;
@@ -613,6 +773,15 @@ impl Player {
         if standing <= -3 {
             return Some(format!("{} will not deal with you.", fixer.name));
         }
+        if contract.tmpl == crate::story::ARC_TMPL {
+            // A story step has its own gate (the step's `open`); heat still shuts the door.
+            if (contract.tier == 3 && self.heat >= HEAT_TIER3)
+                || (contract.tier == 2 && self.heat >= HEAT_TIER2)
+            {
+                return Some("Too hot: the fixer is staying away from you.".into());
+            }
+            return None;
+        }
         if contract.tier >= 2 && self.rep < if contract.tier == 2 { 10 } else { 40 } {
             return Some(format!(
                 "Needs reputation {}.",
@@ -661,7 +830,7 @@ impl Player {
                 "Your deck no longer fits the rig (a part is fried). Unload something.".into(),
             );
         }
-        let tmpl = content.contract(contract.tmpl).ok_or("Unknown contract.")?;
+        let tmpl = content.job(contract).ok_or("Unknown contract.")?;
         if !self
             .deck
             .iter()
@@ -698,6 +867,7 @@ impl Player {
                 .collect(),
             learned: world.learned_by(contract.corp),
             warden: self.warden_for(content, corp, contract),
+            trace_share: 100,
         };
         let run = Run::new(content, setup).ok_or("The network will not load.")?;
         self.cycles -= JACK_IN_CYCLES;
@@ -776,16 +946,21 @@ impl Player {
                     pay += contract.reward;
                     self.jobs += 1;
                     self.rep += 3 * u32::from(contract.tier);
-                    let heat = u32::from(contract.tier).pow(2)
-                        + content.contract(contract.tmpl).map_or(0, |t| t.heat);
+                    let job = content.job(contract);
+                    let heat = u32::from(contract.tier).pow(2) + job.as_ref().map_or(0, |j| j.heat);
                     let heat = heat + if result.peak >= 80 { 3 } else { 0 };
                     let heat = heat.saturating_sub(result.heat_cut);
                     self.heat = (self.heat + heat).min(HEAT_MAX);
                     self.touch_standing(content, contract);
-                    if self.done.len() >= DONE_MAX {
-                        self.done.remove(0);
+                    if let Some((arc, step)) = job.as_ref().and_then(|j| j.arc) {
+                        self.arc_done(arc, step);
+                        notes.push("The fixer has something to ask you. See the arcs [a].".into());
+                    } else {
+                        if self.done.len() >= DONE_MAX {
+                            self.done.remove(0);
+                        }
+                        self.done.push(contract.id);
                     }
-                    self.done.push(contract.id);
                     notes.push(format!(
                         "Job done: {} paid, {sold} for the data. Heat +{heat}.",
                         contract.reward

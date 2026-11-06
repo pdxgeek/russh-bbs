@@ -172,7 +172,7 @@ fn only_the_corporation_that_was_hit_learns() {
 fn scripts_recover_over_the_nights_and_a_new_season_starts_clean() {
     let c = content();
     let mut w = World::default();
-    w.sync_season(1);
+    w.sync_season(&content(), 1);
     for _ in 0..LEARNED_AT + 4 {
         w.apply_run(0, 1, &used(u16::from(HEAP_SPRAY)));
     }
@@ -201,16 +201,16 @@ fn scripts_recover_over_the_nights_and_a_new_season_starts_clean() {
     assert!(w.learned.is_empty() || stage_of(&w) == Stage::Fresh);
     // A new season forgets everything, including what was open.
     let mut w2 = World::default();
-    w2.sync_season(1);
+    w2.sync_season(&content(), 1);
     for _ in 0..LEARNED_AT {
         w2.apply_run(0, 1, &used(u16::from(HEAP_SPRAY)));
     }
-    w2.sync_season(2);
+    w2.sync_season(&content(), 2);
     assert!(w2.learned.is_empty());
     assert_eq!(w2.season, 2);
     // The same season changes nothing.
     let before = w2.clone();
-    w2.sync_season(2);
+    w2.sync_season(&content(), 2);
     assert_eq!(w2, before);
 }
 

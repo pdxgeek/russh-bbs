@@ -42,6 +42,7 @@ mod fight;
 mod gear;
 mod hack;
 mod map;
+mod social;
 mod town;
 
 /// Signal green: good, open, fresh.
@@ -369,6 +370,12 @@ pub(super) fn draw(s: &Session, canvas: &mut Canvas<'_>, env: &DoorEnv) {
         View::Rig => gear::rig(&mut pen, s, area),
         View::Hideout => gear::hideout(&mut pen, s, area),
         View::Code(draft) => gear::code(&mut pen, s, *draft, area),
+        View::Rivals
+        | View::Input(_)
+        | View::Crew
+        | View::Arcs
+        | View::Scene(_)
+        | View::Street(_) => social::draw(&mut pen, s, area),
     }
 }
 

@@ -174,7 +174,7 @@ impl Network {
             .nodes
             .node
             .iter()
-            .filter(|n| n.role == Role::Mid && n.weight > 0)
+            .filter(|n| n.role == Role::Mid && n.weight > 0 && n.corp.is_none_or(|c| c == corp.num))
             .collect();
         let objectives: Vec<&NodeDef> = content
             .nodes
@@ -242,6 +242,34 @@ impl Network {
         layers.push(floor);
         net.link_layers(&layers, corp, &mut rng);
         net.guarantee_routes(content, corp, &mut rng);
+        Some(net)
+    }
+
+    /// The season's finale network: the corporation's tier 3 network with every layer locked in
+    /// one family (crack, spoof, overflow, crack, spoof) and no link that skips a layer, so every
+    /// path crosses every lock. A deck with one break family cannot get through; a crew whose
+    /// decks between them carry all three can. This is the one network the generator does *not*
+    /// make fair to a single deck, on purpose: it is built to need crews.
+    #[must_use]
+    pub fn generate_finale(content: &Content, season: u32, corp: &CorpDef) -> Option<Self> {
+        let mut net = Self::generate(content, season ^ 0x00F1_9A1E, corp, 3)?;
+        let families = [Lock::Crack, Lock::Spoof, Lock::Overflow];
+        for node in &mut net.nodes {
+            if node.layer == 0 || node.honeypot {
+                continue;
+            }
+            node.lock = Some(families[usize::from(node.layer - 1) % 3]);
+            node.security = 3 + node.layer.min(5) / 2 + u8::from(node.layer >= 5);
+            node.security = node.security.min(6);
+        }
+        let layer_of: Vec<u8> = net.nodes.iter().map(|n| n.layer).collect();
+        net.links.retain(|l| {
+            let (a, b) = (
+                layer_of.get(usize::from(l.a)).copied().unwrap_or(0),
+                layer_of.get(usize::from(l.b)).copied().unwrap_or(0),
+            );
+            a.abs_diff(b) <= 1
+        });
         Some(net)
     }
 

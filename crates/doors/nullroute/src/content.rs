@@ -260,6 +260,11 @@ pub struct NodeDef {
     pub noise: u32,
     /// A live camera feed.
     pub watches: bool,
+    /// The one corporation whose networks use this node type (its home template); `None` is a
+    /// type every corporation uses. A corporation's own types are added to its pool only, so the
+    /// networks of the other corporations are unchanged by them.
+    #[serde(default)]
+    pub corp: Option<u8>,
 }
 
 /// A script.
@@ -1102,6 +1107,12 @@ pub struct Content {
     pub cms: CmTable,
     /// Fragments for coding.
     pub fragments: FragmentsTable,
+    /// The fixers' arcs and their endings.
+    pub story: crate::story::StoryTable,
+    /// Season endings and character epilogues.
+    pub seasons: crate::story::SeasonsTable,
+    /// The lines the social layer says.
+    pub lines: crate::story::LinesTable,
 }
 
 impl Content {
@@ -1129,6 +1140,9 @@ impl Content {
             rig: content::load("rig", RIG_TOML)?,
             cms: content::load("countermeasures", COUNTERMEASURES_TOML)?,
             fragments: content::load("fragments", FRAGMENTS_TOML)?,
+            story: content::load("arcs", crate::story::ARCS_TOML)?,
+            seasons: content::load("seasons", crate::story::SEASONS_TOML)?,
+            lines: content::load("social", crate::story::SOCIAL_TOML)?,
         })
     }
 
