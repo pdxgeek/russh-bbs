@@ -1,0 +1,25 @@
+import sys, re, os
+sys.path.insert(0, "/home/user/russh-bbs/docs/qa/m4-s4-screens"); sys.path.insert(0, "/home/user/russh-bbs/docs/qa/m4-s3-screens")
+import importlib.util
+sp = importlib.util.spec_from_file_location("s4walk", "/home/user/russh-bbs/docs/qa/m4-s4-screens/walk.py")
+s4 = importlib.util.module_from_spec(sp); sp.loader.exec_module(s4)
+Term = s4.Term
+port = int(sys.argv[1])
+HOST = "hi ◉[〚]‮​\x07\u009b31m⁦ done"
+c = Term(port, "/tmp/qa/keys/carol", 80, 24, user="carol")
+s4.found_or_report(c); s4.dismiss_report(c)
+s4.court(c); s4.room(c, "The post")
+print(c.press("Write a letter"), c.press("Next words"), c.press("Add a line of your own"))
+c.send(HOST, quiet=0.8); print(c.text()[-900:])
+c.send("\r", quiet=0.8)
+print("send:", c.press("Send the letter to")); print(c.text()[-500:])
+raw = bytes(c.raw)
+print("raw: BEL", raw.count(b"\x07"), "C2 9B", raw.count(b"\xc2\x9b"), "RLO", raw.count(b"\xe2\x80\xae"), "ZWSP", raw.count(b"\xe2\x80\x8b"))
+c.close()
+b = Term(port, "/tmp/qa/keys/bob", 80, 24, user="bob")
+s4.found_or_report(b); s4.dismiss_report(b)
+s4.court(b); s4.room(b, "The post")
+print(b.text())
+raw = bytes(b.raw)
+print("bob raw: BEL", raw.count(b"\x07"), "C2 9B", raw.count(b"\xc2\x9b"), "RLO", raw.count(b"\xe2\x80\xae"), "ZWSP", raw.count(b"\xe2\x80\x8b"), "PUA", raw.count(b"\xee\x82\xb0"), "301A", raw.count("〚".encode()), "bold+rev", b.sgr_counts())
+b.close()

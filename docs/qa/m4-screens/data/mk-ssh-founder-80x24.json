@@ -1,0 +1,62 @@
+{
+ "Saltmarch": {
+  "keys": 99,
+  "distinct_screens": 42,
+  "bad_text_hits": [],
+  "bold_rev_off_status": 0,
+  "bytes": 115974,
+  "osc_dcs_apc": 0,
+  "nonascii_in_ascii_tier": null,
+  "deaths": 0,
+  "marker_row_mismatch": 0,
+  "marker_example": null
+ },
+ "Emberdeep": {
+  "keys": 99,
+  "distinct_screens": 55,
+  "bad_text_hits": [],
+  "bold_rev_off_status": 0,
+  "bytes": 199792,
+  "osc_dcs_apc": 0,
+  "nonascii_in_ascii_tier": null,
+  "deaths": 0,
+  "marker_row_mismatch": 0,
+  "marker_example": null
+ },
+ "Nullroute": {
+  "keys": 99,
+  "distinct_screens": 21,
+  "bad_text_hits": [],
+  "bold_rev_off_status": 0,
+  "bytes": 84134,
+  "osc_dcs_apc": 0,
+  "nonascii_in_ascii_tier": null,
+  "deaths": 0,
+  "marker_row_mismatch": 0,
+  "marker_example": null
+ },
+ "Long Haul": {
+  "keys": 99,
+  "distinct_screens": 25,
+  "bad_text_hits": [],
+  "bold_rev_off_status": 0,
+  "bytes": 122739,
+  "osc_dcs_apc": 0,
+  "nonascii_in_ascii_tier": null,
+  "deaths": 0,
+  "marker_row_mismatch": 0,
+  "marker_example": null
+ },
+ "Hallpass": {
+  "keys": 99,
+  "distinct_screens": 28,
+  "bad_text_hits": [],
+  "bold_rev_off_status": 0,
+  "bytes": 83601,
+  "osc_dcs_apc": 0,
+  "nonascii_in_ascii_tier": null,
+  "deaths": 0,
+  "marker_row_mismatch": 0,
+  "marker_example": null
+ }
+}
