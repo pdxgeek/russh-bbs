@@ -1303,10 +1303,10 @@ fn the_logoff_screen_says_goodbye_under_art_and_a_quote_the_sysop_wrote() {
     let screen = text(&buffer);
     assert!(screen.contains("Goodbye, alice."), "{screen}");
     assert!(screen.contains("Keep the line open."), "{screen}");
-    // No logoff art ships, so the style's login banner is shown instead.
-    let login = ui.art().pick(Slot::Login, name("amber"), 80, 24).unwrap();
+    // The style ships its own logoff picture (ART-1); it is what the screen draws.
+    let logoff = ui.art().pick(Slot::Logoff, name("amber"), 80, 24).unwrap();
     assert!(
-        screen.contains(login.grid().row_text(0, false).trim()),
+        screen.contains(logoff.grid().row_text(0, false).trim()),
         "{screen}"
     );
 }
