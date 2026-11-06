@@ -20,4 +20,4 @@
 │                                      ││Medic Test    Medic     ●○○○○   │
 ╰──────────────────────────────────────╯╰────────────────────────────────╯
 [v] chart  [j] route  [m] market  [b] jobs  [y] yard  [l] loan  [f] fuel
-[r] repair  [u] undock  [c] crew  [a] standing  [n] news  [q] leave
+[r] repair  [u] undock  [c] crew  [a] standing  [o] society  [n] news

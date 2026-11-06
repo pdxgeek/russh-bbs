@@ -1,0 +1,19 @@
+* LONG HAUL  Tester0  18,450 cr  debt 20,000  days ********** 10
++ SOCIETY: CONVOYS, PIRACY, OUTPOSTS ------------------------------------+
+| Convoy  [Piracy]  Outposts   Hall   Journal                            |
+|Everything here is visible to the server and, where it says so, to other|
+|captains.                                                               |
+|Your colours are down. Nobody can hunt you, and you hunt nobody.        |
+|Only flagged captains meet. Caps: 2 hunts a day, 2 hits on one target a |
+|day, 3 days before the same pair meet again, prizes at most 1500 cr and |
+|8% of the purse. An unflagged hauler is never touched, whatever it      |
+|carries.                                                                |
+|Raids won 0, driven off 0, robbed 0, fought off 0.                      |
+|Flagged captains:                                                       |
+|  none in the lanes                                                     |
+|                                                                        |
+|                                                                        |
+|                                                                        |
++------------------------------------------------------------------------+
+[Left/Right] tab  [Up/Down] choose  [Enter] join/hunt  [n] form  [x] leave
+[t] say  [1-8] note  [f] colours  [p/P] pledge  [Esc] back

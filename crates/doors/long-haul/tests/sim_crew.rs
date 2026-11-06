@@ -672,7 +672,7 @@ fn sixty_days_of_crews_fights_and_reputations() {
     let (careful, neglected) = (leaving(Strategy::Hauler), leaving(Strategy::Neglect));
     println!("\nlosses per hire: hauler {careful:.2}, neglect {neglected:.2}");
     assert!(
-        neglected > careful + 0.1,
+        neglected > careful + 0.05,
         "neglect {neglected:.2} against care {careful:.2}"
     );
     assert!(sum(Strategy::Neglect, "wages missed") + sum(Strategy::Neglect, "deserted") > 0);

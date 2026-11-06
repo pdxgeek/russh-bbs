@@ -284,11 +284,16 @@ fn play(season: u32, seed: u64, steps: usize) -> std::collections::BTreeSet<Stri
         let nw_before = p.net_worth(&h.content);
         let survey_value: i64 = p.survey.iter().map(|s| i64::from(s.value)).sum();
         // Settle on its own first, so the refusal check below compares like with like.
-        h.settle(&mut p);
+        let settle_events = h.settle(&mut p);
         let (settled, world_settled, rng_settled) = (p.clone(), h.world.clone(), h.rng.state());
         let nw_settled = p.net_worth(&h.content);
+        // A repossession swaps the ship for a hand-me-down and takes part of its value off the
+        // loan, which can leave a captain with a worthless hull a little better off.
+        let repossessed = settle_events
+            .iter()
+            .any(|e| matches!(e, Event::Repossessed { .. }));
         assert!(
-            nw_settled <= nw_before,
+            nw_settled <= nw_before || repossessed,
             "interest and payments cannot raise net worth"
         );
         let earned_before = earned_total(&p);

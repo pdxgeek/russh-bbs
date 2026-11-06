@@ -51,6 +51,8 @@ pub const MIN_CREDIT_LIMIT: i64 = 9_000;
 pub const BAR_STANDING: i16 = -40;
 /// At or above this Free Captains standing the military posts refuse the ship.
 pub const SMUGGLER_STANDING: i16 = 50;
+/// Fuel units a tug leaves in the tank of a ship it towed.
+pub const TOW_FUEL: u16 = 14;
 /// The Guild's fee to the first captain to chart a system: a base and a sum per point of richness.
 pub const CHARTER_FEE_BASE: i64 = 400;
 /// See [`CHARTER_FEE_BASE`].
@@ -987,6 +989,10 @@ impl Player {
         let target = frontier.station(station).ok_or(Refusal::NoSuchThing)?;
         self.at = target.system;
         self.docked = None;
+        // The tug tops the tank enough for a short hop, which the fee covers (balance: a
+        // stranded ship used to be towed over and over because it arrived with nothing).
+        let cap = self.stats(env.content).fuel_cap;
+        self.ship.fuel = self.ship.fuel.max(TOW_FUEL.min(cap));
         self.pay_or_owe(Cause::Tow, fee);
         self.stats.tows += 1;
         self.spend_days(days);

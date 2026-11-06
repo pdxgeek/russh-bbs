@@ -22,6 +22,9 @@ use serde::Deserialize;
 use crate::codec::{Reader, Writer};
 use crate::content::{Content, Faction, SlotKind};
 
+/// A shot does `weapon power * (weapons points + gunner bonus) / DAMAGE_DIVISOR` (balance: it was
+/// 3, and a single lance could not wreck a raider inside the round limit).
+pub const DAMAGE_DIVISOR: u32 = 2;
 /// Credits the patrol offices pay for each hull point of a wrecked pirate ship.
 pub const KILL_BOUNTY_PER_HULL: i64 = 14;
 use crate::crew::{DANGER, Role};
@@ -705,7 +708,7 @@ impl Player {
                 - if evasive { 15 } else { 0 })
             .clamp(15, 95);
             if env.rng.chance(u32::try_from(hit).unwrap_or(15), 100) {
-                let raw = (power * (u32::from(orders.weapons) + u32::from(gunner)) / 3).max(1);
+                let raw = (power * (u32::from(orders.weapons) + u32::from(gunner)) / DAMAGE_DIVISOR).max(1);
                 let mut dmg = i32::try_from(raw).unwrap_or(i32::MAX);
                 if fight.intent == Intent::Brace {
                     dmg = dmg * 6 / 10;
