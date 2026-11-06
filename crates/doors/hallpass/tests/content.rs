@@ -49,16 +49,16 @@ fn the_shipped_content_loads_and_has_the_amount_this_slice_promises() {
     assert_eq!(c.cliques.len(), 6);
     assert!(c.places.len() >= 25, "{}", c.places.len());
     assert!(c.npcs.len() >= 26, "{}", c.npcs.len());
-    assert!(c.methods.iter().filter(|m| !m.big).count() >= 23);
+    assert!(c.methods.iter().filter(|m| !m.big).count() >= 54);
     assert_eq!(
         c.methods.iter().filter(|m| m.big).count(),
-        4,
+        6,
         "one big scheme per world effect"
     );
     assert_eq!(
         c.effects.len(),
-        18,
-        "four big schemes, one storyline ending, five endings of the east wing, four of the election and four from the term's events"
+        20,
+        "six big schemes, one storyline ending, five endings of the east wing, four of the election and four from the term's events"
     );
     assert!(c.twists.len() >= 6 && c.getaways.len() >= 6);
     assert!(c.endings.len() >= 5);
