@@ -158,6 +158,23 @@ mod tests {
         assert_eq!(pacer.gate(Instant::now()), Gate::Open);
     }
 
+    /// H-2: a client can forge any number of replies; the count is attacker-controlled
+    /// (`u32`), the work is bounded by the probes actually sent, and nothing underflows.
+    #[test]
+    fn a_forged_flood_of_replies_is_bounded_and_only_opens_the_gate() {
+        let t0 = Instant::now();
+        let mut pacer = Pacer::default();
+        for _ in 0..MAX_PROBES {
+            pacer.sent(t0, 4096);
+        }
+        assert_eq!(pacer.gate(t0), Gate::Held);
+        pacer.acked(u32::MAX);
+        assert_eq!(pacer.in_flight(), 0);
+        assert_eq!(pacer.gate(t0), Gate::Open);
+        pacer.acked(u32::MAX);
+        assert_eq!(pacer.in_flight(), 0);
+    }
+
     #[test]
     fn the_probe_list_is_bounded() {
         let t0 = Instant::now();

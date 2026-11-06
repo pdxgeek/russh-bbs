@@ -1,0 +1,25 @@
+
+┌─────────────────────────────────────── russh-bbs ────────────────────────────────────────┐
+│Nullroute                                                                                 │
+│                                                                                          │
+│memory  ██████████████████▍░░ 7/8            noise   ██████▏░░░░░░░░░░░░░░ 14             │
+│slots   █████████████████████ 4/4            corporations K H M P O T L B S I P N   . fres│
+│╭ SCRIPTS  page 1 ───────────────────────────────────────────────────────────────────────╮│
+││      script                      family  effect   pow mem noi K H M P O T L B S I P N  ││
+││[a] * ping-sweep                  Probe   scan     p2  m1  n2  . . . . . . . . . . . .  ││
+││[b] * dictionary                  Break   crack    p2  m2  n4  . . . . . . . . . . . .  ││
+││[c] * badge-clone                 Break   spoof    p2  m2  n3  . . . . . . . . . . . .  ││
+││[d]   stack-smash                 Break   overflow p2  m2  n6  . . . . . . . . . . . .  ││
+││[e]   siphon                      Utility copy     p1  m2  n4  . . . . . . . . . . . .  ││
+││[f] * implant                     Utility plant    p1  m2  n5  . . . . . . . . . . . .  ││
+││                                                                                        ││
+││                                                                                        ││
+││                                                                                        ││
+││                                                                                        ││
+││                                                                                        ││
+││                                                                                        ││
+│╰────────────────────────────────────────────────────────────────────────────────────────╯│
+│implant loaded.                                                                           │
+│[a-l]load/unload  [Enter]toggle  [A-L]scrap coded  [n/p]page  [Esc]back                   │
+└──────────────────────────────────────────────────────────────────────────────────────────┘
+

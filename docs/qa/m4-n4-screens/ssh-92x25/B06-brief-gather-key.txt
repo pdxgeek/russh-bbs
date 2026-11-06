@@ -1,0 +1,25 @@
+
+┌─────────────────────────────────────── russh-bbs ────────────────────────────────────────┐
+│Nullroute                                                                                 │
+│                                                                                          │
+│╭ THE JOB ───────────────────────────────────────╮╭ YOUR DECK AGAINST THEM ──────────────╮│
+││Leave a door ajar  (Ostrander)                  ││  ping-sweep        p2 fresh          ││
+││Target: Ninefold Bank (tier 1)                  ││  dictionary        p2 fresh          ││
+││The one everybody respects and nobody hires on. ││  badge-clone       p2 fresh          ││
+││Leans on badge                                  ││* implant           p1 fresh          ││
+││locks.                                          ││* can do the objective                ││
+││Objective: Plant at the AC node; the deck needs ││                                      ││
+││a Plant script.                                 ││                                      ││
+││Pays 53.  Heat on success about +4.             ││                                      ││
+││Street word: nothing has been broken there      ││                                      ││
+││lately.                                         ││                                      ││
+││Proxies bought: 0 (each 15 marks, soaks 8       │╰──────────────────────────────────────╯│
+││trace). Jacking in costs 5                      │╭ STREET WORD ─────────────────────────╮│
+││cycles.                                         ││alert  □ □                            ││
+││                                                ││0 open hole(s)                        ││
+││                                                ││                                      ││
+│╰────────────────────────────────────────────────╯╰──────────────────────────────────────╯│
+│                                                                                          │
+│[j]jack in  [p]buy a proxy  [Esc]back                                                     │
+└──────────────────────────────────────────────────────────────────────────────────────────┘
+

@@ -1,0 +1,24 @@
+ ◆ Tidepool BBS ◆ │ Chat                                              UTC 04:52
+       .       +     .            *          .        *       .       ·
+         ·                   ╱         ╲         ╱         ╲            +
+        .       ·       *      .     +      *        .          *        .
+  *     .       .        *                               .          . .  *
+┌────────── C H A T   R O O M S ───────────┐╭──────── C O M M A N D S ─────────╮
+│  Room                                    ││Inside a room, type to talk.      │
+│> #lobby                                  ││                                  │
+│                                          ││/w name text  whisper to someone i│
+│                                          ││/who          list who is here    │
+│                                          ││/leave        back to the room lis│
+│                                          ││/help         this list           │
+│                                          ││                                  │
+│                                          ││                                  │
+│                                          ││                                  │
+│                                          ││                                  │
+│                                          ││                                  │
+│                                          ││                                  │
+│                                          ││                                  │
+│                                          ││                                  │
+│                                          ││                                  │
+│                                          ││                                  │
+└──────────────────────────────────────────┘╰──────────────────────────────────╯
+ Up/Down choose  Enter join  n new room  x close room  Esc back

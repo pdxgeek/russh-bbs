@@ -211,7 +211,7 @@ cycles = 0
 pierce = 0
 charges = 0
 rank = 2
-weight = 5
+weight = 9
 blurb = "Tunes a script to wardens."
 
 [[fragment]]
@@ -271,7 +271,7 @@ cycles = 0
 pierce = 0
 charges = 0
 rank = 3
-weight = 5
+weight = 8
 blurb = "A sharper warden tuning."
 
 [[fragment]]

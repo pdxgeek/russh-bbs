@@ -505,6 +505,8 @@ mod blocks_tests;
 #[cfg(test)]
 mod gallery_tests;
 #[cfg(test)]
+mod kit_tests;
+#[cfg(test)]
 mod layout_tests;
 #[cfg(test)]
 mod resolve_tests;

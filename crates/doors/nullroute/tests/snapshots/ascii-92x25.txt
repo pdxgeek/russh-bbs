@@ -8,14 +8,14 @@
 ||[c] Contracts  6 open       ||CPU            o o o        ||Marrow    ....|.... +0        |
 ||[f] Fixers                  ||Memory         o o o        ||Sister Qu~....|.... +0        |
 ||[d] Deck 4/4                ||Cooling        o o o        ||Dovetail  ....|.... +0        |
-||[s] Market                  ||Deck interface o o o        ||                              |
-||[b] Black market            ||Shield         o o o        ||DECK                          |
-||[r] Rig                     ||                            ||ping-sweep p2                 |
-||[h] Hideout                 ||Probe  L0 ........ 0/4      ||dictionary p2                 |
-||[p] Profile                 ||Break  L0 ........ 0/4      ||badge-clone p2                |
-||[t] Heat 0                  ||Hide   L0 ........ 0/4      ||siphon p1                     |
-||[l] Lie low                 ||Fight  L0 ........ 0/4      ||                              |
-||[q] Leave                   ||Utility L0 ........ 0/4     ||                              |
+||[s] Market                  ||Deck interface o o o        ||Ostrander ....|.... +0        |
+||[b] Black market            ||Shield         o o o        ||Glass Anna....|.... +0        |
+||[r] Rig                     ||                            ||                              |
+||[h] Hideout                 ||Probe  L0 ........ 0/4      ||DECK                          |
+||[p] Profile                 ||Break  L0 ........ 0/4      ||ping-sweep p2                 |
+||[t] Heat 0                  ||Hide   L0 ........ 0/4      ||dictionary p2                 |
+||[l] Lie low                 ||Fight  L0 ........ 0/4      ||badge-clone p2                |
+||[q] Leave                   ||Utility L0 ........ 0/4     ||siphon p1                     |
 ||                            ||                            ||                              |
 ||                            ||                            ||                              |
 ||                            ||                            ||                              |
@@ -34,14 +34,14 @@
 ||[c] Contracts  6 open       ||CPU            # # o        ||Marrow    ....|###. +3        |
 ||[f] Fixers                  ||Memory         # o o        ||Sister Qu~...#|.... -1        |
 ||[d] Deck 4/5                ||Cooling        # o o FRIED  ||Dovetail  ####|.... -4        |
-||[s] Market                  ||Deck interface o o o        ||                              |
-||[b] Black market            ||Shield         # o o        ||DECK                          |
-||[r] Rig                     ||                            ||ping-sweep p2                 |
-||[h] Hideout                 ||Probe  L2 #....... 14/30    ||dictionary p2                 |
-||[p] Profile                 ||Break  L3 #....... 33/60    ||badge-clone p2                |
-||[t] Heat 52                 ||Hide   L1 #....... 5/12     ||siphon p1                     |
-||[l] Lie low                 ||Fight  L4 |....... 61/100   ||                              |
-||[q] Leave                   ||Utility L0 ####.... 2/4     ||                              |
+||[s] Market                  ||Deck interface o o o        ||Ostrander ....|#... +1        |
+||[b] Black market            ||Shield         # o o        ||Glass Anna....|.... +0        |
+||[r] Rig                     ||                            ||                              |
+||[h] Hideout                 ||Probe  L2 #....... 14/30    ||DECK                          |
+||[p] Profile                 ||Break  L3 #....... 33/60    ||ping-sweep p2                 |
+||[t] Heat 52                 ||Hide   L1 #....... 5/12     ||dictionary p2                 |
+||[l] Lie low                 ||Fight  L4 |....... 61/100   ||badge-clone p2                |
+||[q] Leave                   ||Utility L0 ####.... 2/4     ||siphon p1                     |
 ||                            ||                            ||                              |
 ||                            ||                            ||                              |
 ||                            ||                            ||                              |
@@ -53,22 +53,22 @@
 === contracts 92x25
 |+ JOBS ------------------------------------------------------------------------------------+
 ||#  job     target                                           T  pays  fixer         status |
-||1  Wipe    Halcyon Freight                                  T1    56 Marrow        no tool|
-||2  Ransom  Orrery Health                                    T1    55 Marrow        no tool|
-||3  Steal   Mirrorglass Ltd                                  T1    45 Sister Quill  ready  |
-||4  Wipe    Pennywhistle Savings                             T1    44 Sister Quill  no tool|
-||5  Wipe    Kestrel Dynamics                                 T1    42 Dovetail      no tool|
-||6  Steal   Halcyon Freight                                  T1    36 Marrow        ready  |
-||7  Steal   Mirrorglass Ltd                                  T3   253 Marrow        closed |
-||8  Wipe    Mirrorglass Ltd                                  T2    99 Marrow        closed |
+||1  Ransom  Pennywhistle Savings                             T1    55 Ostrander     no tool|
+||2  Steal   Lumen Grid Utilities                             T1    55 Sister Quill  ready  |
+||3  Wipe    Paper Lantern Media                              T1    53 Marrow        no tool|
+||4  Plant   Kestrel Dynamics                                 T1    51 Ostrander     no tool|
+||5  Steal   Brackwater Bio                                   T1    45 Glass Anna    ready  |
+||6  Wipe    Paper Lantern Media                              T1    39 Ostrander     no tool|
+||7  Wipe    Sable Court Law                                  T3   222 Dovetail      closed |
+||8  Steal   Brackwater Bio                                   T2   115 Dovetail      closed |
 |+------------------------------------------------------------------------------------------+
 |+ BRIEF -----------------------------------------------------------------------------------+
-||Lose a payment record  (Marrow)                                                           |
-||Target: Halcyon Freight (tier 1)                                                          |
-||Aggressive tracers: every second hop is being counted. Leans on                           |
+||Hold a server room hostage  (Ostrander)                                                   |
+||Target: Pennywhistle Savings (tier 1)                                                     |
+||Badly configured, but a human is watching every packet. Leans on                          |
 ||password locks.                                                                           |
-||Objective: Wipe at the VT node; the deck needs a Shred script.                            |
-||Pays 56.  Heat on success about +4.                                                       |
+||Objective: Ransom at the SR node; the deck needs a Plant script.                          |
+||Pays 55.  Heat on success about +5.                                                       |
 ||Street word: nothing has been broken there lately.                                        |
 ||Deck: ping-sweep, dictionary, badge-clone, siphon                                         |
 ||Proxies bought: 0 (each 15 marks, soaks 8 trace). Jacking in costs 5                      |
@@ -79,22 +79,22 @@
 === contracts-cursor 92x25
 |+ JOBS ------------------------------------------------------------------------------------+
 ||#  job     target                                           T  pays  fixer         status |
-||1  Wipe    Mirrorglass Ltd                                  T2    99 Marrow        no tool|
-||2  Wipe    Halcyon Freight                                  T1    56 Marrow        no tool|
-||3  Ransom  Orrery Health                                    T1    55 Marrow        no tool|
-||4  Steal   Mirrorglass Ltd                                  T1    45 Sister Quill  ready  |
-||5  Wipe    Pennywhistle Savings                             T1    44 Sister Quill  no tool|
-||6  Steal   Halcyon Freight                                  T1    36 Marrow        ready  |
-||7  Steal   Mirrorglass Ltd                                  T3   253 Marrow        closed |
-||8  Wipe    Kestrel Dynamics                                 T1    42 Dovetail      closed |
+||1  Ransom  Pennywhistle Savings                             T1    55 Ostrander     no tool|
+||2  Steal   Lumen Grid Utilities                             T1    55 Sister Quill  ready  |
+||3  Wipe    Paper Lantern Media                              T1    53 Marrow        no tool|
+||4  Plant   Kestrel Dynamics                                 T1    51 Ostrander     no tool|
+||5  Steal   Brackwater Bio                                   T1    45 Glass Anna    ready  |
+||6  Wipe    Paper Lantern Media                              T1    39 Ostrander     no tool|
+||7  Wipe    Sable Court Law                                  T3   222 Dovetail      closed |
+||8  Steal   Brackwater Bio                                   T2   115 Dovetail      closed |
 |+------------------------------------------------------------------------------------------+
 |+ BRIEF -----------------------------------------------------------------------------------+
-||Hold a server room hostage  (Marrow)                                                      |
-||Target: Orrery Health (tier 1)                                                            |
-||Even-handed, patient, and fond of black walls on the deep floors.                         |
-||Leans on badge locks.                                                                     |
-||Objective: Ransom at the SR node; the deck needs a Plant script.                          |
-||Pays 55.  Heat on success about +5.                                                       |
+||Clean a sensor history  (Marrow)                                                          |
+||Target: Paper Lantern Media (tier 1)                                                      |
+||Sloppy locks, fast patches, a lot of cheap patrols. Leans on                              |
+||password locks.                                                                           |
+||Objective: Wipe at the VT node; the deck needs a Shred script.                            |
+||Pays 53.  Heat on success about +4.                                                       |
 ||Street word: nothing has been broken there lately.                                        |
 ||Deck: ping-sweep, dictionary, badge-clone, siphon                                         |
 ||Proxies bought: 0 (each 22 marks, soaks 8 trace). Jacking in costs 5                      |
@@ -104,14 +104,14 @@
 |[Up/Down]choose  [Enter]brief  [1-9]open  [Esc]back
 === brief 92x25
 |+ THE JOB ----------------------------------------++ YOUR DECK AGAINST THEM ---------------+
-||Lose a payment record  (Marrow)                  ||  ping-sweep        p2 fresh           |
-||Target: Halcyon Freight (tier 1)                 ||  dictionary        p2 fresh           |
-||Aggressive tracers: every second hop is being    ||  badge-clone       p2 fresh           |
-||counted. Leans on                                ||  siphon            p1 fresh           |
+||Hold a server room hostage  (Ostrander)          ||  ping-sweep        p2 fresh           |
+||Target: Pennywhistle Savings (tier 1)            ||  dictionary        p2 fresh           |
+||Badly configured, but a human is watching every  ||  badge-clone       p2 fresh           |
+||packet. Leans on                                 ||  siphon            p1 fresh           |
 ||password locks.                                  ||* can do the objective                 |
-||Objective: Wipe at the VT node; the deck needs a ||                                       |
-||Shred script.                                    ||                                       |
-||Pays 56.  Heat on success about +4.              ||                                       |
+||Objective: Ransom at the SR node; the deck needs ||                                       |
+||a Plant script.                                  ||                                       |
+||Pays 55.  Heat on success about +5.              ||                                       |
 ||Street word: nothing has been broken there       ||                                       |
 ||lately.                                          ||                                       |
 ||Proxies bought: 0 (each 15 marks, soaks 8 trace).||                                       |
@@ -133,12 +133,12 @@
 ||  Marrow      .......|#####.. +3                            ||Dovetail                    |
 ||  Sister Qui~ .....##|....... -1                            ||Talks fast, pays in parts,  |
 ||> Dovetail    .######|....... -4 CLOSED                     ||never uses the same number  |
-||                                                            ||twice.                      |
-||                                                            ||                            |
-||                                                            ||Clients: Mirrorglass Ltd    |
-||                                                            ||Jobs on the board: 1        |
+||  Ostrander   .......|##..... +1                            ||twice.                      |
+||  Glass Anna  .......|....... +0                            ||                            |
+||                                                            ||Clients: Mirrorglass Ltd,   |
+||                                                            ||Paper Lantern Media         |
+||                                                            ||Jobs on the board: 2        |
 ||                                                            ||Will not deal with you.     |
-||                                                            ||                            |
 ||                                                            ||                            |
 ||                                                            ||                            |
 ||                                                            ||                            |
@@ -208,7 +208,7 @@
 |[Esc]back
 === deck 92x25
 |memory  #############......... 7/12           noise   #####................. 13
-|slots   ##################.... 4/5            corporations K H M P O   . fresh  w wary  X pa
+|slots   ##################.... 4/5            corporations K H M P O T L B S I P N   . fresh
 |+ SCRIPTS  page 1 ---------------------------------------++ DETAIL ------------------------+
 ||      script     family  effect  pow mem noi K H M P O  ||badge-clone                     |
 ||[a] * ping-sweep Probe   scan    p2  m1  n2  . . . . .  ||Break / Spoof                   |
@@ -440,20 +440,358 @@
 |
 |
 |[Enter]code it  [Esc]back
+=== rivals 92x25
+|+ RIVALS ----------------------------------------------------------------------------------+
+||RIVALS  you are on the board                                                              |
+||>Kestrelfan     T3 heat hot  ICE 1 ~1200 marks  BOUNTY 190                                |
+|| Brindle        T2 heat cool ICE 1 ~400 marks                                             |
+|| newbie         T1 heat cool ICE 1 ~90 marks                                              |
+||Hack Kestrelfan: 6 cycles, runs tonight, you hear tomorrow.                               |
+||New characters are safe for 7 days. You can hack twice a day; a                           |
+||hideout takes two. A honeypot may catch you. Nothing here is                              |
+||private: the board can read every post.                                                   |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||[Up/Down] pick  [h] hack  [b] bounty 100  [B] bounty 300  [t] rivals                      |
+||on/off  [Esc]                                                                             |
+|+------------------------------------------------------------------------------------------+
+=== rivals-cursor 92x25
+|+ RIVALS ----------------------------------------------------------------------------------+
+||RIVALS  you are on the board                                                              |
+|| Kestrelfan     T3 heat hot  ICE 1 ~1200 marks  BOUNTY 190                                |
+|| Brindle        T2 heat cool ICE 1 ~400 marks                                             |
+||>newbie         T1 heat cool ICE 1 ~90 marks                                              |
+||Not now: they are new: protected for their first week.                                    |
+||New characters are safe for 7 days. You can hack twice a day; a                           |
+||hideout takes two. A honeypot may catch you. Nothing here is                              |
+||private: the board can read every post.                                                   |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||[Up/Down] pick  [h] hack  [b] bounty 100  [B] bounty 300  [t] rivals                      |
+||on/off  [Esc]                                                                             |
+|+------------------------------------------------------------------------------------------+
+=== crew-invited 92x25
+|+ CREW ------------------------------------------------------------------------------------+
+||CREW                                                                                      |
+||You are not in a crew.                                                                    |
+||[1] join Night Shift (led by Brindle, 1 members)                                          |
+||The Null Vault stands: a heist built for a crew of three or more (rep 40).                |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||[n] found  [1-5] accept  [i] invite  [o] open a run  [j] join  [s]                        |
+||start  [e] enter  [c] collect  [f] finale  [l] leave  [m] invites                         |
+||on/off  [Esc]                                                                             |
+|+------------------------------------------------------------------------------------------+
+=== crew-in 92x25
+|+ CREW ------------------------------------------------------------------------------------+
+||CREW                                                                                      |
+||Night Shift  led by Brindle  0 job(s) done                                                |
+||Members: Brindle, ann                                                                     |
+||No crew run is open.                                                                      |
+||The Null Vault stands: a heist built for a crew of three or more (rep 40).                |
+||You are in the crew.                                                                      |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||[n] found  [1-5] accept  [i] invite  [o] open a run  [j] join  [s]                        |
+||start  [e] enter  [c] collect  [f] finale  [l] leave  [m] invites                         |
+||on/off  [Esc]                                                                             |
+|+------------------------------------------------------------------------------------------+
+=== crew-name 92x25
+|+ TYPE ------------------------------------------------------------------------------------+
+||Name your crew (up to 20 letters):                                                        |
+||> _                                                                                       |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||[Enter] done   [Esc] cancel                                                               |
+|+------------------------------------------------------------------------------------------+
+=== arcs 92x25
+|+ ARCS ------------------------------------------------------------------------------------+
+||ARCS: each fixer's story                                                                  |
+||>The Old Ledger       Marrow       step 1 of 7: a choice is waiting                       |
+|| The Chapel Rumour    Sister Quill step 1 of 7: a job is open                             |
+|| Parts and Parcels    Dovetail     step 7 of 7: ended: Fence                              |
+|| Both Ends            Ostrander    step 1 of 7: a job is open                             |
+|| What She Overhears   Glass Anna   step 1 of 7: a job is open                             |
+||Marrow wants his old partner's books, and has never said why.                             |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||[Up/Down] pick  [Enter] open its job or its choice  [Esc] back                            |
+|+------------------------------------------------------------------------------------------+
+=== arcs-cursor 92x25
+|+ ARCS ------------------------------------------------------------------------------------+
+||ARCS: each fixer's story                                                                  |
+|| The Old Ledger       Marrow       step 1 of 7: a choice is waiting                       |
+|| The Chapel Rumour    Sister Quill step 1 of 7: a job is open                             |
+||>Parts and Parcels    Dovetail     step 7 of 7: ended: Fence                              |
+|| Both Ends            Ostrander    step 1 of 7: a job is open                             |
+|| What She Overhears   Glass Anna   step 1 of 7: a job is open                             |
+||Dovetail pays in rig parts. The parts are coming from somewhere.                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||[Up/Down] pick  [Enter] open its job or its choice  [Esc] back                            |
+|+------------------------------------------------------------------------------------------+
+=== scene 92x25
+|+ A CHOICE --------------------------------------------------------------------------------+
+||The Old Ledger: A small errand                                                            |
+||He weighs the data in his hand. Did you read it?                                          |
+||[1] Say you read nothing                                                                  |
+||[2] Admit one name kept coming up                                                         |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||[1-3] choose   [Esc] later                                                                |
+|+------------------------------------------------------------------------------------------+
+=== street-word 92x25
+|+ THE STREET ------------------------------------------------------------------------------+
+||THE STREET  [1] word  [2] bounties  [3] crews  [4] hall    season 1                       |
+||day 20001: Brindle breached a tier 3 network.                                             |
+||day 20001: Kestrelfan put a corporate warden down.                                        |
+||This season: 40 jobs (0 deep), 2 wardens down, 0 crew jobs, 0 hacks in, 0 caught, 0 bount~|
+||If the season ended now: A slow season.                                                   |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||[1-4] page   [Esc] back                                                                   |
+|+------------------------------------------------------------------------------------------+
+=== street-bounties 92x25
+|+ THE STREET ------------------------------------------------------------------------------+
+||THE STREET  [1] word  [2] bounties  [3] crews  [4] hall    season 1                       |
+||Kestrelfan T3 190 marks via Sister Quill until day 20005                                  |
+||A bounty is paid to a hack that gets in, from someone at the                              |
+||target's tier or below. It fries a rig part. The target is told.                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||[1-4] page   [Esc] back                                                                   |
+|+------------------------------------------------------------------------------------------+
+=== street-crews 92x25
+|+ THE STREET ------------------------------------------------------------------------------+
+||THE STREET  [1] word  [2] bounties  [3] crews  [4] hall    season 1                       |
+||Night Shift          1 members, 0 jobs, led by Brindle                                    |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||[1-4] page   [Esc] back                                                                   |
+|+------------------------------------------------------------------------------------------+
+=== street-hall 92x25
+|+ THE STREET ------------------------------------------------------------------------------+
+||THE STREET  [1] word  [2] bounties  [3] crews  [4] hall    season 1                       |
+||Season 0: A slow season. Top: Brindle 120, ann 90                                         |
+||Yours, season 0: A rising name (rep 90)                                                   |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||[1-4] page   [Esc] back                                                                   |
+|+------------------------------------------------------------------------------------------+
+=== hideout-honeypot 92x25
+|+ HIDEOUT  marks 640 (safe 120) -----------------------------------------------------------+
+||bots       # # o o o 7 marks each a night                   + FRAGMENT CASE -------------+|
+||workbench  built; 12 fragment(s) in the case                |crack-core     x1           ||
+||fence      Pawnshop contact at 65 percent                   |spoof-core     x1           ||
+||                                                            |overflow-core  x1           ||
+||Heat 50 and up brings raids; the safe is never touched.     |jam-core       x1           ||
+||                                                            |sentry-lens    x1           ||
+||                                                            |tracer-lens    x1           ||
+||                                                            |wall-lens      x1           ||
+||                                                            |warden-lens    x1           ||
+||                                                            |overclock      x1           ||
+||                                                            |quiet          x1           ||
+||                                                            |lean           x1           ||
+||                                                            |volatile       x1           ||
+||                                                            |                            ||
+||                                                            |                            ||
+||                                                            |                            ||
+||                                                            |                            ||
+||                                                            |                            ||
+||                                                            |                            ||
+||                                                            +----------------------------+|
+|+------------------------------------------------------------------------------------------+
+|
+|[b]bot  [w]workbench  [c]code  [f]fence  [s]safe +  [t]take  [Esc]back
+|
 === debrief 92x25
 |+ DEBRIEF ---------------------------------------------------------------------------------+
-||                                     E X T R A C T E D                                    |
+||                                    J A C K E D   O U T                                   |
 |+------------------------------------------------------------------------------------------+
 |+ THE RUN -----------------------------++ WHAT HAPPENED -----------------------------------+
-||peak trace ###................. 15    ||> Into RT-5.                                      |
-||job pays     45                       ||> ping-sweep: sweeping the neighbours.            |
-||data copied  66                       ||> Into VT-6.                                      |
-||fights       0 (0 put down)           ||+ siphon: 66 marks of data copied out.            |
-||locks broken 0                        ||+ Objective done. Get out.                        |
-||fragments    0                        ||+ You jack out clean.                             |
-||cycles left  27                       ||                                                  |
-||                                      ||. Job done: 45 paid, 33 for the data. Heat +4.    |
-||                                      ||                                                  |
+||peak trace #####............... 24    ||> ping-sweep: sweeping the neighbours.            |
+||job pays     55                       ||> Into SB-3.                                      |
+||data copied  0                        ||> ping-sweep: sweeping the neighbours.            |
+||fights       1 (1 put down)           ||> Into AC-6.                                      |
+||locks broken 0                        ||> ping-sweep: sweeping the neighbours.            |
+||fragments    1                        ||+ You jack out clean.                             |
+||cycles left  25                       ||                                                  |
+||                                      ||. You got out with nothing.                       |
+||                                      ||. 1 fragment(s) brought out.                      |
 ||                                      ||                                                  |
 ||                                      ||                                                  |
 ||                                      ||                                                  |
@@ -467,8 +805,8 @@
 |+--------------------------------------++--------------------------------------------------+
 |[Enter]continue
 === fight 92x25
-| NULLROUTE // Kestrel Dynamics T1 // Copy @ VT                                        CY 29
-|###>.................................... TRACE  10 ....................................<###
+| NULLROUTE // Lumen Grid Utilities T1 // Copy @ VT                                    CY 33
+|#>...................................... TRACE   4 ......................................<#
 |quiet
 |+ COUNTERMEASURE ----------------------------++ YOUR DECK ---------------------------------+
 ||Sniffer (tracer)                            ||    script        cost damage        state  |
@@ -478,43 +816,43 @@
 ||INTEGRITY ########################## 8/8    ||[d] siphon        cy2  .......... 0         |
 ||armor 0   weak to badge locks               ||                                            |
 ||                                            ||[w] brace: next strike at 3/4, costs a cycle|
-||IT WILL    TRACE                            ||[x] break off: costs trace, damage stays    |
-||          starts a tracer                   ||                                            |
+||IT WILL    PROBE                            ||[x] break off: costs trace, damage stays    |
+||          light touch                       ||                                            |
 ||THEN      ? ? ?                             ||                                            |
 ||SEEN      nothing yet                       ||                                            |
 ||MOVE      # o o o o o o o 1/8               ||                                            |
 |+--------------------------------------------++--------------------------------------------+
 |+ FIGHT LOG -------------------------------------------------------------------------------+
-||T+03 > ping-sweep: sweeping the neighbours.                                               |
-||T+04 > Into AC-8.                                                                         |
-||T+05 > ping-sweep: sweeping the neighbours.                                               |
-||T+06 > Into RT-6.                                                                         |
-||T+06 ~ tracer Sniffer has you. Its first beat: TRACE.                                     |
+||T+00 > Jacked in to Lumen Grid Utilities.                                                 |
+||T+01 > ping-sweep: sweeping the neighbours.                                               |
+||T+02 > Into SB-1.                                                                         |
+||T+02 ~ tracer Sniffer has you. Its first beat: PROBE.                                     |
+||                                                                                          |
 |+------------------------------------------------------------------------------------------+
 |[a-f]play a script  [w]brace  [x]break off                                  8 integrity left
 === run 92x25
-| NULLROUTE // Mirrorglass Ltd T1 // Copy @ VT                                         CY 29
-|####>................................... TRACE  11 ...................................<####
+| NULLROUTE // Lumen Grid Utilities T1 // Copy @ VT                                    CY 28
+|#######>................................ TRACE  18 ................................<#######
 |quiet
 |+ NODE MAP ------------------------------------------++ HERE ------------------------------+
-||                                                    ||VT-6 Data vault d3                  |
-||                oFW -\                          @VT ||1 RT-4  open                        |
-||             ---      -\        oRT1--==---==---    ||2 RT-5  open                        |
-||          --/           -\  ----       -----\/      ||                                    |
-||oGW -\----------#FW --\----\              -/ ---oAC ||                                    |
-||      ---\             ------\          -/  ----    ||                                    |
-||          ---\               ---oRT2-----\-/        ||                                    |
-||              --oFW ------------          ------oSR ||                                    |
+||                                                    ||SB-3 Substation bridge d2           |
+||                                                    ||1 SB-1  open                        |
+||                oSB1-\-==---==--@SB --\             ||2 AC-6  open                        |
+||            ----      --\              ==---\       ||                                    |
+||oGW --\----/             -\                  =--oAC2||                                    |
+||       -----\              --\                      ||                                    |
+||             ---oCM ------------oSB                 ||                                    |
+||                                                    ||                                    |
 ||                                                    ||                                    |
 ||d0              d1              d2              d3  ||                                    |
 |+----------------------------------------------------++------------------------------------+
 |+ RUN LOG -------------------------------------------++ DECK ------------------------------+
-||T+00 > Jacked in to Mirrorglass Ltd.                ||    script          pow left state  |
-||T+01 > ping-sweep: sweeping the neighbours.         ||[a] ping-sweep      p2  inf  fresh  |
-||T+02 > Into FW-1.                                   ||[b] dictionary      p2  inf  fresh  |
-||T+03 > ping-sweep: sweeping the neighbours.         ||[c] badge-clone     p2  inf  fresh  |
-||T+04 > Into RT-5.                                   ||[d] siphon          p1  inf  fresh  |
-||T+05 > ping-sweep: sweeping the neighbours.         ||                                    |
-||T+06 > Into VT-6.                                   ||                                    |
+||T+04 ~ Sniffer: TRACE, trace +1. Every hop is count~||    script          pow left state  |
+||T+05 * badge-clone: -3 on Sniffer.                  ||[a] ping-sweep      p2  inf  fresh  |
+||T+05 + Sniffer goes down after 3 moves.             ||[b] dictionary      p2  inf  fresh  |
+||T+05 ~ The tracer is cut loose.                     ||[c] badge-clone     p2  inf  fresh  |
+||T+05 + Found a fragment: jam-core.                  ||[d] siphon          p1  inf  fresh  |
+||T+06 > ping-sweep: sweeping the neighbours.         ||                                    |
+||T+07 > Into SB-3.                                   ||                                    |
 |+----------------------------------------------------++------------------------------------+
 |[1-9]move  [a-f]script  [o]jack out

@@ -1,0 +1,107 @@
+# What the social layer says (M4-N4). Player-to-player text is only ever one of these lines; `{a}` is the other
+# player's handle (already vetted by the framework) and `{n}` a number. Numbers are stable: they are stored in the
+# world. Lines 1-18 are deliveries to a player, 30-36 the street feed, 40 an invitation.
+
+[[line]]
+num = 1
+text = "Your hack on {a} is filed. It runs tonight."
+
+[[line]]
+num = 2
+text = "Your hack on {a} was refused. Your cycles are back."
+
+[[line]]
+num = 3
+text = "You got into {a}'s hideout and took {n} marks."
+
+[[line]]
+num = 4
+text = "{a} got into your hideout and took {n} marks."
+
+[[line]]
+num = 5
+text = "{a}'s hideout shrugged you off. Heat +{n}."
+
+[[line]]
+num = 6
+text = "{a} probed your hideout and bounced off."
+
+[[line]]
+num = 7
+text = "{a}'s honeypot caught you. Fined {n} marks."
+
+[[line]]
+num = 8
+text = "They traced you back. Heat +{n}."
+
+[[line]]
+num = 9
+text = "Your honeypot caught {a}. Reputation +{n}."
+
+[[line]]
+num = 10
+text = "{a} left the board before your hack ran. Cycles back."
+
+[[line]]
+num = 11
+text = "You claimed the bounty on {a}: {n} marks."
+
+[[line]]
+num = 12
+text = "{a} claimed the bounty on you. A rig part is fried."
+
+[[line]]
+num = 13
+text = "The bounty drew attention. Heat +{n}."
+
+[[line]]
+num = 14
+text = "Your bounty on {a} was paid out."
+
+[[line]]
+num = 15
+text = "A fixer took your stake and put a price on {a}."
+
+[[line]]
+num = 16
+text = "The bounty on {a} was refused. Your stake is back."
+
+[[line]]
+num = 17
+text = "Your bounty on {a} ran out. {n} marks came back, less the fixer's cut."
+
+[[line]]
+num = 18
+text = "A fixer has put a price on your head: {n} marks."
+
+[[line]]
+num = 30
+text = "A fixer put a price on {a}: {n} marks."
+
+[[line]]
+num = 31
+text = "{a} collected a bounty of {n} marks."
+
+[[line]]
+num = 32
+text = "{a} put a corporate warden down."
+
+[[line]]
+num = 33
+text = "{a} was burned on a tier {n} network."
+
+[[line]]
+num = 34
+text = "The crew {a} finished a tier {n} job."
+
+[[line]]
+num = 35
+text = "The crew {a} cracked the Null Vault."
+
+[[line]]
+num = 36
+text = "{a} breached a tier 3 network."
+
+[[line]]
+num = 40
+text = "{a} has invited you to a crew."

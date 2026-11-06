@@ -25,16 +25,35 @@ use russh_bbs_door_nullroute::save::{decode, decode_world};
 use russh_bbs_door_nullroute::world::NIGHTLY_CONTRACTS;
 use russh_bbs_door_nullroute::{DOOR_ID, Nullroute};
 
-/// A day whose first-visit board has a tier-1 Steal job, which the starter deck can finish.
+/// A day on which the screen bot (a plain player with the starter deck) finishes a job in one
+/// visit: the board changes with the content, so the tests look for one instead of assuming it.
 fn day() -> i64 {
-    let c = content();
-    (20_000..20_200)
-        .find(|d| {
-            russh_bbs_door_nullroute::world::first_board(&c, *d)
-                .iter()
-                .any(|k| k.tier == 1 && c.contract(k.tmpl).is_some_and(|t| t.verb == "Steal"))
-        })
-        .unwrap()
+    static DAY: std::sync::OnceLock<i64> = std::sync::OnceLock::new();
+    *DAY.get_or_init(|| {
+        let door = Nullroute::new().unwrap();
+        (20_000..20_400)
+            .find(|d| {
+                let env = env();
+                let mut dr = driver_on(&door, &env, *d, 3, None);
+                let mut bot = ScreenBot::default();
+                let mut save = None;
+                for sent in 0..400 {
+                    let screen = dr.look_around(&env);
+                    let Some(key) = bot.next_key(&screen, 1, sent) else {
+                        break;
+                    };
+                    let flow = dr.key(key);
+                    if let Some(bytes) = dr.take_effects().save() {
+                        save = Some(bytes.to_vec());
+                    }
+                    if flow == Flow::Exit {
+                        break;
+                    }
+                }
+                save.and_then(|b| decode(&b)).is_some_and(|p| p.jobs >= 1)
+            })
+            .unwrap()
+    })
 }
 
 fn env() -> DoorEnv {
@@ -46,17 +65,27 @@ fn clock(day: i64) -> Arc<ManualClock> {
 }
 
 fn driver<'a>(door: &'a Nullroute, env: &'a DoorEnv, seed: u64, save: Option<&'a [u8]>) -> Driver {
+    driver_on(door, env, day(), seed, save)
+}
+
+fn driver_on<'a>(
+    door: &'a Nullroute,
+    env: &'a DoorEnv,
+    day: i64,
+    seed: u64,
+    save: Option<&'a [u8]>,
+) -> Driver {
     Driver::open(
         door,
         Start {
             save: save.map_or(Save::Fresh, |bytes| Save::Loaded { bytes, season: 1 }),
             world: None,
             env,
-            today: Day::from_raw(day()),
+            today: Day::from_raw(day),
             season: 1,
         },
         seed,
-        clock(day()),
+        clock(day),
     )
 }
 
@@ -133,8 +162,9 @@ fn every_screen_fits_the_door_area_with_its_key_hints_in_view() {
         if text.get(1).is_some_and(|r| r.contains("TRACE")) {
             // The key hints are the last line of the run screen and must be on screen.
             assert!(
-                text.iter()
-                    .any(|r| r.contains("[o]jack out") || r.contains("Aim ")),
+                text.iter().any(|r| r.contains("[o]jack out")
+                    || r.contains("Aim ")
+                    || r.contains("[x]break off")),
                 "{text:#?}"
             );
         }
@@ -234,11 +264,10 @@ fn a_pinned_log_pins_a_whole_branch_of_play() {
     );
 }
 
-/// scan, step, scan, step, scan, step, copy the vault, jack out: one clean job.
-const PINNED: &str =
-    "door=nullroute seed=3 start=1728086400 season=1 save=- keys=c 3 j a 1 a 2 a 4 d o enter q";
+/// scan, a fight won with two breaks and a brace, then on to the vault, copy it, jack out: one clean job (re-recorded in M4-N4: the content changed, so the board and the networks did).
+const PINNED: &str = "door=nullroute seed=3 start=1728172800 season=1 save=- keys=c 1 j a 1 c c w c c w c x 1 c a 4 d o enter q";
 /// runs, jobs, burns, marks, cycles, heat
-const PINNED_STATE: (u32, u32, u32, u32, u32, u32) = (1, 1, 0, 168, 27, 4);
+const PINNED_STATE: (u32, u32, u32, u32, u32, u32) = (1, 1, 0, 191, 20, 4);
 
 #[test]
 fn the_pinned_branch_changes_when_the_build_changes() {

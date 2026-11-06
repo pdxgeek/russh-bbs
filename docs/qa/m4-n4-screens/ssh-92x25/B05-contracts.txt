@@ -1,0 +1,25 @@
+
+┌─────────────────────────────────────── russh-bbs ────────────────────────────────────────┐
+│Nullroute                                                                                 │
+│                                                                                          │
+│╭ JOBS ──────────────────────────────────────────────────────────────────────────────────╮│
+││#  job     target                                         T  pays  fixer         status ││
+││1  Plant   Ninefold Bank                                  T1    53 Ostrander     ready  ││
+││2  Wipe    Orrery Health                                  T1    50 Dovetail      no tool││
+││3  Plant   Paper Lantern Media                            T3   235 Ostrander     closed ││
+││4  Plant   Kestrel Dynamics                               T2   163 Glass Anna    closed ││
+││5  Steal   Brackwater Bio                                 T2   153 Glass Anna    closed ││
+││6  Wipe    Kestrel Dynamics                               T2   139 Ostrander     closed ││
+││7  Wipe    Mirrorglass Ltd                                T2   114 Sister Quill  closed ││
+││8  Ransom  Sable Court Law                                T2   104 Marrow        closed ││
+│╰────────────────────────────────────────────────────────────────────────────────────────╯│
+│╭ BRIEF ─────────────────────────────────────────────────────────────────────────────────╮│
+││Leave a door ajar  (Ostrander)                                                          ││
+││Target: Ninefold Bank (tier 1)                                                          ││
+││The one everybody respects and nobody hires on. Leans on badge                          ││
+││locks.                                                                                  ││
+│╰────────────────────────────────────────────────────────────────────────────────────────╯│
+│                                                                                          │
+│[Up/Down]choose  [Enter]brief  [1-9]open  [Esc]back                                       │
+└──────────────────────────────────────────────────────────────────────────────────────────┘
+

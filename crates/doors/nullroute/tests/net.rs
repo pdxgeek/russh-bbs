@@ -111,7 +111,7 @@ proptest! {
     #![proptest_config(ProptestConfig::with_cases(400))]
 
     #[test]
-    fn every_generated_network_is_well_formed(season in 0u32..200, corp in 0u8..5, tier in 1u8..=3) {
+    fn every_generated_network_is_well_formed(season in 0u32..200, corp in 0u8..12, tier in 1u8..=3) {
         let c = content();
         let net = make(&c, season, corp, tier);
         // Shape.
@@ -162,7 +162,7 @@ proptest! {
     }
 
     #[test]
-    fn the_full_toolkit_reaches_every_objective(season in 0u32..200, corp in 0u8..5, tier in 1u8..=3) {
+    fn the_full_toolkit_reaches_every_objective(season in 0u32..200, corp in 0u8..12, tier in 1u8..=3) {
         let c = content();
         let net = make(&c, season, corp, tier);
         let reach = net.reachable(&Capability::full(), &Overlay::default());
@@ -172,7 +172,7 @@ proptest! {
     }
 
     #[test]
-    fn the_fairness_guarantee_holds_for_the_tier(season in 0u32..200, corp in 0u8..5, tier in 1u8..=3) {
+    fn the_fairness_guarantee_holds_for_the_tier(season in 0u32..200, corp in 0u8..12, tier in 1u8..=3) {
         let c = content();
         let net = make(&c, season, corp, tier);
         let objs = objectives(&c, &net);
@@ -193,7 +193,7 @@ proptest! {
     }
 
     #[test]
-    fn tier_one_is_open_to_the_starter_scripts(season in 0u32..200, corp in 0u8..5) {
+    fn tier_one_is_open_to_the_starter_scripts(season in 0u32..200, corp in 0u8..12) {
         // The three starter breaks are power 2 and the scan is 2: that must be enough at tier 1.
         let c = content();
         let net = make(&c, season, corp, 1);
@@ -205,7 +205,7 @@ proptest! {
     }
 
     #[test]
-    fn holes_only_ever_widen_what_a_deck_reaches_and_alert_only_narrows(season in 0u32..60, corp in 0u8..5, tier in 1u8..=3, mask in 0u32..(1 << 12)) {
+    fn holes_only_ever_widen_what_a_deck_reaches_and_alert_only_narrows(season in 0u32..60, corp in 0u8..12, tier in 1u8..=3, mask in 0u32..(1 << 12)) {
         let c = content();
         let net = make(&c, season, corp, tier);
         let cap = Capability { breaks: [3, 3, 3], purge: 3, scan: 3 };
@@ -332,4 +332,27 @@ fn holes_and_alerts_move_the_reach_of_the_same_deck() {
             alert: 0
         }
     ));
+}
+
+proptest! {
+    #![proptest_config(ProptestConfig::with_cases(400))]
+
+    /// The best scripts anyone can buy (power 6 in every family, a power 6 purge, a power 6 scan)
+    /// reach every objective on every network of every tier: no contract is one the shop cannot
+    /// answer (M4-N4: tier 3 locks asked for power 7 and one network in five could not be opened).
+    #[test]
+    fn the_best_scripts_in_the_shop_reach_every_objective(season in 0u32..200, corp in 0u8..12, tier in 1u8..=3) {
+        let c = content();
+        let net = make(&c, season, corp, tier);
+        let cap = Capability { breaks: [6; 3], purge: 6, scan: 6 };
+        let mask = net.reachable(&cap, &Overlay::default());
+        for code in ["VT", "AC", "SR"] {
+            let reached = net
+                .nodes
+                .iter()
+                .filter(|n| !n.honeypot && c.node(n.kind).is_some_and(|d| d.code == code))
+                .any(|n| mask & (1 << n.id) != 0);
+            prop_assert!(reached, "{code} on season {season} corp {corp} tier {tier}");
+        }
+    }
 }

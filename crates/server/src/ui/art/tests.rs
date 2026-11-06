@@ -676,7 +676,8 @@ fn the_six_styles_have_different_art() {
             piece.set()
         );
     }
-    assert_eq!(seen.len(), 12);
+    // Login, menu, area and logoff for each of the six styles.
+    assert_eq!(seen.len(), 24);
 }
 
 // ---- choosing ----
@@ -751,6 +752,29 @@ fn hostile_art_files_are_refused_with_reasons_and_never_stop_the_boot() {
     assert!(set.problems().iter().all(|p| !p.reason.is_empty()));
     // A directory that does not exist adds nothing and is not a problem.
     assert_eq!(set.add_dir(&dir.path().join("missing")), 0);
+}
+
+#[test]
+fn problem_text_from_hostile_file_names_is_sanitized() {
+    // H-3: the theme preview draws these. A name with an RTL override, a Nerd Font glyph
+    // and the reserved marker delimiters must not reach the screen.
+    let dir = tempfile::tempdir().unwrap();
+    let name = "x\u{202E}\u{F07C}\u{27E6}\u{2299}\u{27E7}\u{200B}.art.toml";
+    std::fs::write(dir.path().join(name), b"format = 1\nbogus = true\n").unwrap();
+    let mut set = ArtSet::default();
+    set.add_dir(dir.path());
+    let problems = set.problems();
+    assert_eq!(problems.len(), 1);
+    for text in [&problems[0].file, &problems[0].reason] {
+        assert!(
+            !text.chars().any(|c| matches!(
+                c,
+                '\u{202E}' | '\u{F07C}' | '\u{27E6}' | '\u{27E7}' | '\u{2299}' | '\u{200B}'
+            )),
+            "{text:?}"
+        );
+    }
+    assert!(problems[0].file.contains('\u{FFFD}'));
 }
 
 #[test]
@@ -1302,10 +1326,10 @@ fn the_logoff_screen_says_goodbye_under_art_and_a_quote_the_sysop_wrote() {
     let screen = text(&buffer);
     assert!(screen.contains("Goodbye, alice."), "{screen}");
     assert!(screen.contains("Keep the line open."), "{screen}");
-    // No logoff art ships, so the style's login banner is shown instead.
-    let login = ui.art().pick(Slot::Login, name("amber"), 80, 24).unwrap();
+    // The style ships its own logoff picture (ART-1); it is what the screen draws.
+    let logoff = ui.art().pick(Slot::Logoff, name("amber"), 80, 24).unwrap();
     assert!(
-        screen.contains(login.grid().row_text(0, false).trim()),
+        screen.contains(logoff.grid().row_text(0, false).trim()),
         "{screen}"
     );
 }
