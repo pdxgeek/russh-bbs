@@ -154,13 +154,14 @@ impl Game {
         if sent_today >= rules.plots_per_day {
             return Some("You have done enough scheming for one day.".into());
         }
-        if p
-            .social
+        if p.social
             .sent
             .iter()
             .any(|(t, d)| t == to && today - d < rules.pair_days)
         {
-            return Some(format!("You have just had a go at {to}; give it a few days."));
+            return Some(format!(
+                "You have just had a go at {to}; give it a few days."
+            ));
         }
         let c = &self.world.commons;
         if c.waiting_for(to) >= PLOT_PER_TARGET || c.plots.len() >= PLOT_CAP {
@@ -248,10 +249,7 @@ impl Game {
                 }
                 plot_state::LANDED
             };
-            self.push_world(WorldDelta::PlotResolve {
-                id: plot.id,
-                state,
-            });
+            self.push_world(WorldDelta::PlotResolve { id: plot.id, state });
         }
         let done: Vec<Plot> = self
             .world
@@ -304,7 +302,12 @@ impl Game {
     pub fn rumour_block(&self, rumour: &str, about: &str) -> Option<String> {
         let spec = self.content.rumour(rumour)?;
         let p = &self.player;
-        if !self.content.rumour_subjects(spec).iter().any(|s| s == about) {
+        if !self
+            .content
+            .rumour_subjects(spec)
+            .iter()
+            .any(|s| s == about)
+        {
             return Some("That is not something that can be said about them.".into());
         }
         if !self.all_hold(&spec.needs) {
@@ -499,7 +502,11 @@ impl Game {
             .map(|(_, v)| i32::from(*v))
             .max()
             .unwrap_or(0);
-        let add = (1 + best.max(0) / 8 + i32::from(self.player.cool).max(0) / 10).clamp(1, 6);
+        let base = (1 + best.max(0) / 16 + i32::from(self.player.cool).max(0) / 20).clamp(1, 4);
+        // Each door knocked on wins fewer as the campaign reaches the people who would listen.
+        let cap = i32::from(crate::commons::BACKING_CAP);
+        let have = i32::from(self.world.commons.backing(&self.player.name));
+        let add = ((base * (cap - have) + cap / 2) / cap).clamp(1, 4);
         self.push_world(WorldDelta::Backing {
             who: self.player.name.clone(),
             add: u16::try_from(add).unwrap_or(1),
@@ -553,13 +560,16 @@ impl Game {
 
     pub(crate) fn search(&mut self, rng: &mut DoorRng) -> Result<Vec<Event>, Refused> {
         let Some(clue) = self.next_clue().cloned() else {
-            return Err(Refused::new("You search, and find nothing worth the trouble."));
+            return Err(Refused::new(
+                "You search, and find nothing worth the trouble.",
+            ));
         };
         let day = self.player.day;
         let slot = self.current_slot().unwrap_or(0);
         let mut events = Vec::new();
         let rules = self.content.mystery.rules.clone();
-        let caught = (i32::from(clue.risk) * rules.risk_pct + 4 * self.patrol_level(&self.player.place)
+        let caught = (i32::from(clue.risk) * rules.risk_pct
+            + 4 * self.patrol_level(&self.player.place)
             - 5 * self.skill_level("sneak")
             - i32::from(self.player.cool).max(0) / 10)
             .clamp(0, 90);
@@ -628,13 +638,10 @@ impl Game {
             && self.player.social.told_finale != term
         {
             self.player.social.told_finale = term;
-            let line = self
-                .content
-                .verdict(&end)
-                .map_or_else(
-                    || self.content.mystery.rules.unsolved.clone(),
-                    |v| format!("The East Wing: {}.", v.blurb),
-                );
+            let line = self.content.verdict(&end).map_or_else(
+                || self.content.mystery.rules.unsolved.clone(),
+                |v| format!("The East Wing: {}.", v.blurb),
+            );
             events.push(Event::Say(line));
         }
         events
@@ -666,7 +673,13 @@ impl Game {
             if self.player.social.awards.len() >= 24 {
                 break;
             }
-            let Some(spec) = self.content.social.awards.iter().find(|a| a.id == win.award) else {
+            let Some(spec) = self
+                .content
+                .social
+                .awards
+                .iter()
+                .find(|a| a.id == win.award)
+            else {
                 continue;
             };
             let line = format!("Award, term {}: {}. {}", win.term, spec.name, spec.text);
@@ -744,10 +757,30 @@ pub fn ballot_of(content: &Content, world: &World) -> Vec<BallotLine> {
             .filter_map(|u| content.rumour(&u.id))
             .map(|u| u.backing)
             .sum();
+        let campaigning = (world.last_day - world.term_start - content.social.rules.nominate_from)
+            .clamp(
+                0,
+                content.social.rules.tally_day - content.social.rules.nominate_from,
+            );
+        let grown = r.grow * i32::try_from(campaigning).unwrap_or(0);
+        // The school's mood: each term it favours someone a little, in a fixed rotation, so the
+        // same character is not the favourite every term.
+        let slot = i32::try_from(
+            content
+                .social
+                .runners
+                .iter()
+                .position(|x| x.npc == r.npc)
+                .unwrap_or(0),
+        )
+        .unwrap_or(0);
+        let mood = (i32::try_from(world.term % 3).unwrap_or(0) + 2 * slot) % 3 * 2 - 2;
         out.push(BallotLine {
-            name: content.npc(&r.npc).map_or_else(|| r.npc.clone(), |n| n.name.clone()),
+            name: content
+                .npc(&r.npc)
+                .map_or_else(|| r.npc.clone(), |n| n.name.clone()),
             platform: r.platform.clone(),
-            backing: r.base + swing + talk,
+            backing: r.base + grown + mood + swing + talk,
             votes: c.votes_for(&id),
             player: false,
             id,
@@ -823,7 +856,11 @@ pub fn give_awards(world: &mut World, content: &Content) {
         }
         world.commons.awards.push(w);
     }
-    let over = world.commons.awards.len().saturating_sub(crate::commons::AWARD_CAP);
+    let over = world
+        .commons
+        .awards
+        .len()
+        .saturating_sub(crate::commons::AWARD_CAP);
     world.commons.awards.drain(..over);
 }
 

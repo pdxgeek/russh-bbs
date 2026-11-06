@@ -141,6 +141,9 @@ pub struct Runner {
     pub platform: String,
     /// Their first backing.
     pub base: i32,
+    /// Backing they add each day of the term after the nominations open (a character's campaign).
+    #[serde(default)]
+    pub grow: i32,
     /// World effects that keep them out of the race.
     #[serde(default)]
     pub withdrawn_by: Vec<String>,
@@ -294,7 +297,10 @@ impl Table for SocialFile {
                 }
             }
             if !p.seen.contains("{from}") || !p.countered.contains("{from}") {
-                out.push(format!("plot `{}`: texts must name the sender with {{from}}", p.id));
+                out.push(format!(
+                    "plot `{}`: texts must name the sender with {{from}}",
+                    p.id
+                ));
             }
         }
         for u in &self.rumour {
@@ -305,15 +311,20 @@ impl Table for SocialFile {
                 out.push(format!("rumour `{}` has empty or unplain text", u.id));
             }
             if u.about != "self" && !u.text.contains("{about}") {
-                out.push(format!("rumour `{}` must say who it is about with {{about}}", u.id));
+                out.push(format!(
+                    "rumour `{}` must say who it is about with {{about}}",
+                    u.id
+                ));
             }
         }
         for a in &self.award {
             if !ids.insert(format!("award {}", a.id)) {
                 out.push(format!("award id `{}` is used twice", a.id));
             }
-            if !["legend", "grades", "pulled", "clues", "merit", "friends", "clean"]
-                .contains(&a.stat.as_str())
+            if ![
+                "legend", "grades", "pulled", "clues", "merit", "friends", "clean",
+            ]
+            .contains(&a.stat.as_str())
             {
                 out.push(format!("award `{}` scores unknown stat `{}`", a.id, a.stat));
             }
@@ -344,8 +355,10 @@ impl Table for MysteryFile {
             }
             if c.kinds.is_empty()
                 || c.kinds.iter().any(|k| {
-                    !["class", "chapel", "lunch", "free", "after", "evening", "night"]
-                        .contains(&k.as_str())
+                    ![
+                        "class", "chapel", "lunch", "free", "after", "evening", "night",
+                    ]
+                    .contains(&k.as_str())
                 })
             {
                 out.push(format!("clue `{}` has no valid slot kind", c.id));
@@ -512,7 +525,9 @@ impl Content {
                         | Eff::File(..)
                         | Eff::Verdict(_)
                 ) {
-                    out.push(format!("{what}: a plot's own reward or cost may not do that"));
+                    out.push(format!(
+                        "{what}: a plot's own reward or cost may not do that"
+                    ));
                 }
             }
         }
@@ -543,7 +558,9 @@ impl Content {
             // Tone: a rumour never costs the Strays standing or friendship.
             if u.about != "self" && u.kind != "praise" && (u.stand < 0 || u.bond < 0) {
                 for s in self.rumour_subjects(u) {
-                    let stray = self.npc(&s).is_some_and(|n| n.clique.as_deref() == Some("strays"))
+                    let stray = self
+                        .npc(&s)
+                        .is_some_and(|n| n.clique.as_deref() == Some("strays"))
                         || s == "strays";
                     if stray {
                         out.push(format!("{what} can be about a Stray and costs them"));
@@ -629,7 +646,10 @@ impl Content {
                 out.push(format!("verdict `{}` names unknown world effect", v.id));
             }
             if !casts.contains(&v.id.as_str()) {
-                out.push(format!("verdict `{}` is cast by no ending: dead content", v.id));
+                out.push(format!(
+                    "verdict `{}` is cast by no ending: dead content",
+                    v.id
+                ));
             }
         }
         for c in casts {

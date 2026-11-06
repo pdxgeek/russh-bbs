@@ -68,7 +68,7 @@ fn sleuth(step: &str, term_day: i64) -> Sandbox {
 /// Put the pupil at `place` in a slot of `kind`, then search until the clue is found (a search
 /// can be caught, which is a real outcome; this retries it on a copy with other dice).
 fn find(sb: &mut Sandbox, place: &str, kind: &str, clue: &str) {
-    sb.game.player.place = place.to_owned();
+    place.clone_into(&mut sb.game.player.place);
     sb.game.player.slot = u8::try_from(slot_of(&sb.game, kind)).unwrap();
     sb.game.player.nerve = sb.game.player.nerve_max;
     for seed in 0..60 {
@@ -80,10 +80,6 @@ fn find(sb: &mut Sandbox, place: &str, kind: &str, clue: &str) {
         }
     }
     panic!("never found {clue}");
-}
-
-fn flag(sb: &Sandbox, clue: &str) -> bool {
-    sb.game.player.knows(&format!("clue_{clue}"))
 }
 
 fn step_of(sb: &Sandbox) -> String {
@@ -108,7 +104,10 @@ fn the_mystery_has_four_acts_over_weeks_and_every_clue_is_gated() {
     // c3 (old wing) wants c1 first; c12 wants day 26 and the truth step.
     sb.game.player.place = "old_wing".into();
     sb.game.player.slot = u8::try_from(slot_of(&sb.game, "evening")).unwrap();
-    assert!(sb.game.next_clue().is_none(), "c3 needs c1 first (and day 9)");
+    assert!(
+        sb.game.next_clue().is_none(),
+        "c3 needs c1 first (and day 9)"
+    );
     // Nothing to find where nothing is hidden.
     sb.game.player.place = "quad".into();
     assert!(sb.try_(Action::Search).is_err());
@@ -125,28 +124,48 @@ fn a_whole_investigation_by_search_reaches_the_choice_and_each_gate_holds_on_the
     // The key to the loft is not there until the arrows have led the way to the chapel.
     sb.game.player.place = "chapel".into();
     sb.game.player.slot = u8::try_from(slot_of(&sb.game, "evening")).unwrap();
-    assert!(sb.game.next_clue().is_none(), "c4 waits for c3 and the step");
+    assert!(
+        sb.game.next_clue().is_none(),
+        "c4 waits for c3 and the step"
+    );
     find(&mut sb, "old_wing", "evening", "c3_arrows");
     assert_eq!(step_of(&sb), "chalk");
     // Act two: the loft is locked until the key behind the pipes is found.
     sb.game.player.place = "organ_loft".into();
-    let loft_locked = !sb.game.place_open("organ_loft", sb.game.player.day, slot_of(&sb.game, "evening"));
+    let loft_locked = !sb.game.place_open(
+        "organ_loft",
+        sb.game.player.day,
+        slot_of(&sb.game, "evening"),
+    );
     assert!(loft_locked);
     find(&mut sb, "chapel", "evening", "c4_pipes");
-    assert!(sb.game.place_open("organ_loft", sb.game.player.day, slot_of(&sb.game, "evening")));
+    assert!(sb.game.place_open(
+        "organ_loft",
+        sb.game.player.day,
+        slot_of(&sb.game, "evening")
+    ));
     find(&mut sb, "organ_loft", "evening", "c5_loft");
     assert_eq!(step_of(&sb), "loft");
-    assert!(sb.game.player.count("tunnel_map") >= 1, "the map opens the tunnels and the cellars");
+    assert!(
+        sb.game.player.count("tunnel_map") >= 1,
+        "the map opens the tunnels and the cellars"
+    );
     find(&mut sb, "tunnels", "night", "c6_tunnel");
     find(&mut sb, "cellars", "night", "c7_trunk");
     assert_eq!(step_of(&sb), "key");
     assert!(sb.game.player.knows("ines_locket"));
     // Act three: the wing is shut and has no key yet.
-    assert!(!sb.game.place_open("east_wing", sb.game.player.day, slot_of(&sb.game, "night")));
+    assert!(
+        !sb.game
+            .place_open("east_wing", sb.game.player.day, slot_of(&sb.game, "night"))
+    );
     find(&mut sb, "caretaker_shed", "after", "c8_shed");
     assert_eq!(step_of(&sb), "wing");
     assert!(sb.game.player.count("east_wing_key") >= 1);
-    assert!(sb.game.place_open("east_wing", sb.game.player.day, slot_of(&sb.game, "night")));
+    assert!(
+        sb.game
+            .place_open("east_wing", sb.game.player.day, slot_of(&sb.game, "night"))
+    );
     find(&mut sb, "east_wing", "night", "c9_hall");
     find(&mut sb, "east_wing", "night", "c10_diary");
     assert_eq!(step_of(&sb), "truth");
@@ -156,14 +175,21 @@ fn a_whole_investigation_by_search_reaches_the_choice_and_each_gate_holds_on_the
     find(&mut sb, "admin_corridor", "after", "c12_report");
     assert_eq!(step_of(&sb), "choice");
     assert!(sb.game.player.knows("fire_report") && sb.game.player.knows("bolt_outside"));
-    assert_eq!(sb.game.stat(&russh_bbs_door_hallpass::cond::Stat::Clues), 12);
+    assert_eq!(
+        sb.game.stat(&russh_bbs_door_hallpass::cond::Stat::Clues),
+        12
+    );
     // A clue is found once.
     sb.game.player.place = "admin_corridor".into();
     sb.game.player.slot = u8::try_from(slot_of(&sb.game, "after")).unwrap();
     assert!(sb.game.next_clue().is_none());
     // The journal says where the story stands.
-    assert!(sb.game.journal().iter().any(|l| l.contains("What happened in the East Wing")
-        && l.contains("trusted with it")));
+    assert!(
+        sb.game
+            .journal()
+            .iter()
+            .any(|l| l.contains("What happened in the East Wing") && l.contains("trusted with it"))
+    );
 }
 
 #[test]
@@ -178,7 +204,10 @@ fn a_clue_cannot_be_found_before_its_day_and_a_risky_search_can_be_caught() {
     later.game.player.learn("clue_c1_register");
     later.game.player.place = "old_wing".into();
     later.game.player.slot = u8::try_from(slot_of(&later.game, "evening")).unwrap();
-    assert_eq!(later.game.next_clue().map(|c| c.id.as_str()), Some("c3_arrows"));
+    assert_eq!(
+        later.game.next_clue().map(|c| c.id.as_str()),
+        Some("c3_arrows")
+    );
     // A clumsy searcher at a risky place is sometimes caught: a line on the file, no clue, a period gone.
     let mut caught = 0;
     for seed in 0..60 {
@@ -222,18 +251,31 @@ fn there_are_three_ways_to_the_key_and_a_build_with_none_stays_locked_out() {
     b.game.player.life.add_bond("fenn", 8);
     meet(&mut b.game, "fenn");
     let talks: Vec<String> = b.game.talks_here().iter().map(|t| t.id.clone()).collect();
-    let at = talks.iter().position(|t| t == "wing_fenn_key").unwrap_or_else(|| panic!("{talks:?}"));
+    let at = talks
+        .iter()
+        .position(|t| t == "wing_fenn_key")
+        .unwrap_or_else(|| panic!("{talks:?}"));
     b.ok(Action::Talk(talks[at].clone()));
     b.ok(Action::Choose(0));
     assert_eq!(b.game.player.count("east_wing_key"), 1);
     assert_eq!(step_of(&b), "wing");
-    assert!(!b.game.player.knows("key_lifted"), "it was given, not lifted");
-    // (c) the chaplain gives it to a pupil he trusts (the East Light story's `shared` ending).
+    assert!(
+        !b.game.player.knows("key_lifted"),
+        "it was given, not lifted"
+    );
+    // (c) the chaplain gives it to a pupil he likes (the choir, the East Light story's `shared` ending).
     let mut c = sleuth("key", 25);
     c.game.player.xp.clear();
     c.game.player.learn("soames_trust");
+    c.game.player.life.add_bond("soames", 6);
     meet(&mut c.game, "soames");
-    let id = c.game.talks_here().iter().find(|t| t.id == "wing_soames_key").map(|t| t.id.clone()).unwrap();
+    let id = c
+        .game
+        .talks_here()
+        .iter()
+        .find(|t| t.id == "wing_soames_key")
+        .map(|t| t.id.clone())
+        .unwrap();
     c.ok(Action::Talk(id));
     c.ok(Action::Choose(0));
     assert_eq!(c.game.player.count("east_wing_key"), 1);
@@ -243,11 +285,26 @@ fn there_are_three_ways_to_the_key_and_a_build_with_none_stays_locked_out() {
     none.game.player.learn("clue_c7_trunk");
     none.game.player.place = "caretaker_shed".into();
     none.game.player.slot = u8::try_from(slot_of(&none.game, "after")).unwrap();
-    assert!(none.game.next_clue().is_none(), "the nail is for someone who can sneak");
+    assert!(
+        none.game.next_clue().is_none(),
+        "the nail is for someone who can sneak"
+    );
     meet(&mut none.game, "fenn");
-    assert!(!none.game.talks_here().iter().any(|t| t.id == "wing_fenn_key"));
+    assert!(
+        !none
+            .game
+            .talks_here()
+            .iter()
+            .any(|t| t.id == "wing_fenn_key")
+    );
     meet(&mut none.game, "soames");
-    assert!(!none.game.talks_here().iter().any(|t| t.id == "wing_soames_key"));
+    assert!(
+        !none
+            .game
+            .talks_here()
+            .iter()
+            .any(|t| t.id == "wing_soames_key")
+    );
     assert!(!none.game.place_open("east_wing", day, 8));
 }
 
@@ -277,8 +334,16 @@ fn at_the_choice(talk: &str, term_day: i64) -> Player {
         satisfy(&mut sb.game, cond);
     }
     // `satisfy` moves the world's term start for a day condition; keep the pupil in the same term day.
-    sb.game.player.knowledge.retain(|k| !k.starts_with("clue_filler"));
-    for f in ["diary_page", "bolt_outside", "fire_report", "clue_c10_diary"] {
+    sb.game
+        .player
+        .knowledge
+        .retain(|k| !k.starts_with("clue_filler"));
+    for f in [
+        "diary_page",
+        "bolt_outside",
+        "fire_report",
+        "clue_c10_diary",
+    ] {
         sb.game.player.learn(f);
     }
     meet(&mut sb.game, &spec.npc);
@@ -362,7 +427,13 @@ async fn every_ending_of_the_pupils_story_is_replayable_and_casts_its_own_verdic
         let player = at_the_choice(talk, term_day);
         let world = world_at(term_day);
         // Which entry in the talk list is this conversation?
-        let (probe, _) = Game::open(&c, &player.name, Some(player.clone()), Some(&world.to_bytes()), player.day);
+        let (probe, _) = Game::open(
+            &c,
+            &player.name,
+            Some(player.clone()),
+            Some(&world.to_bytes()),
+            player.day,
+        );
         let here: Vec<String> = probe.talks_here().iter().map(|t| t.id.clone()).collect();
         let at = here
             .iter()
@@ -380,14 +451,30 @@ async fn every_ending_of_the_pupils_story_is_replayable_and_casts_its_own_verdic
         let arc = one.player.life.arc("the_wing").unwrap();
         assert_eq!(arc.ended.as_deref(), Some(*ending), "{talk}");
         if verdict.is_empty() {
-            assert_eq!(one.player.social.verdict, None, "walking away casts nothing");
+            assert_eq!(
+                one.player.social.verdict, None,
+                "walking away casts nothing"
+            );
             assert!(one.world.commons.verdicts.is_empty());
         } else {
-            assert_eq!(one.player.social.verdict.as_deref(), Some(*verdict), "{talk}");
-            assert_eq!(one.world.commons.verdict_of(&one.player.name), Some(*verdict));
+            assert_eq!(
+                one.player.social.verdict.as_deref(),
+                Some(*verdict),
+                "{talk}"
+            );
+            assert_eq!(
+                one.world.commons.verdict_of(&one.player.name),
+                Some(*verdict)
+            );
         }
         // The choice closes the doors of the other branches: no other ending's talk is offered.
-        let (after, _) = Game::open(&c, &one.player.name, Some(one.player.clone()), Some(&one.world.to_bytes()), one.player.day);
+        let (after, _) = Game::open(
+            &c,
+            &one.player.name,
+            Some(one.player.clone()),
+            Some(&one.world.to_bytes()),
+            one.player.day,
+        );
         for other in ENDINGS.iter().filter(|e| e.0 != *talk) {
             let mut g = after.clone();
             meet(&mut g, &c.talk(other.0).unwrap().npc);
@@ -406,7 +493,13 @@ fn each_ending_is_closed_to_the_builds_that_have_not_earned_it() {
     let open = |talk: &str, f: &dyn Fn(&mut Game)| -> bool {
         let p = at_the_choice(talk, 30);
         let name = p.name.clone();
-        let (mut g, _) = Game::open(&c, &name, Some(p), Some(&world_at(30).to_bytes()), monday() + 30);
+        let (mut g, _) = Game::open(
+            &c,
+            &name,
+            Some(p),
+            Some(&world_at(30).to_bytes()),
+            monday() + 30,
+        );
         f(&mut g);
         meet(&mut g, &c.talk(talk).unwrap().npc);
         g.talks_here().iter().any(|t| t.id == talk)
@@ -414,25 +507,55 @@ fn each_ending_is_closed_to_the_builds_that_have_not_earned_it() {
     // Trusting the headmistress is for a pupil with a clean file who is not a known troublemaker.
     assert!(open("wing_vane_choice", &|_| {}));
     assert!(!open("wing_vane_choice", &|g| {
-        g.player.file.push(russh_bbs_door_hallpass::state::FileEntry { day: 1, kind: "caught".into(), sev: 6 });
+        g.player
+            .file
+            .push(russh_bbs_door_hallpass::state::FileEntry {
+                day: 1,
+                kind: "caught".into(),
+                sev: 6,
+            });
     }));
     assert!(!open("wing_vane_choice", &|g| {
         g.player.traits.push("known_troublemaker".into());
     }));
     // The paper wants a name in the Ink Society; the chaplain wants his trust; the caretaker a friendship.
-    assert!(!open("wing_wren_choice", &|g| g.player.add_standing("ink_society", -100)));
-    assert!(!open("wing_soames_choice", &|g| g.player.knowledge.retain(|k| k != "soames_trust")));
-    assert!(!open("wing_fenn_choice", &|g| g.player.life.add_bond("fenn", -100)));
+    assert!(!open("wing_wren_choice", &|g| g
+        .player
+        .add_standing("ink_society", -100)));
+    assert!(!open("wing_soames_choice", &|g| g
+        .player
+        .life
+        .add_bond("soames", -100)));
+    assert!(!open("wing_fenn_choice", &|g| g
+        .player
+        .life
+        .add_bond("fenn", -100)));
     // Burning it needs the diary; walking away needs only to have read it.
-    assert!(!open("wing_sol_choice", &|g| g.player.knowledge.retain(|k| k != "diary_page")));
+    assert!(!open("wing_sol_choice", &|g| g
+        .player
+        .knowledge
+        .retain(|k| k != "diary_page")));
     // No ending is offered before the story gets there, however the build.
     for (talk, ..) in ENDINGS {
         let p = at_the_choice(talk, 30);
         let name = p.name.clone();
-        let (mut g, _) = Game::open(&c, &name, Some(p), Some(&world_at(30).to_bytes()), monday() + 30);
-        g.player.life.arcs.iter_mut().for_each(|a| a.step = "truth".into());
+        let (mut g, _) = Game::open(
+            &c,
+            &name,
+            Some(p),
+            Some(&world_at(30).to_bytes()),
+            monday() + 30,
+        );
+        g.player
+            .life
+            .arcs
+            .iter_mut()
+            .for_each(|a| a.step = "truth".into());
         meet(&mut g, &c.talk(talk).unwrap().npc);
-        assert!(!g.talks_here().iter().any(|t| t.id == *talk), "{talk} before the choice");
+        assert!(
+            !g.talks_here().iter().any(|t| t.id == *talk),
+            "{talk} before the choice"
+        );
     }
 }
 
@@ -450,7 +573,12 @@ fn finale_with(verdicts: &[(&str, &str, i64)]) -> World {
         }
         .apply(&mut w, &c);
     }
-    tick_day(&mut w, &c, monday() + c.mystery.rules.finale_day, &mut DoorRng::from_seed(1));
+    tick_day(
+        &mut w,
+        &c,
+        monday() + c.mystery.rules.finale_day,
+        &mut DoorRng::from_seed(1),
+    );
     w
 }
 
@@ -458,7 +586,11 @@ fn pupil_can_enter(w: &World, place: &str, with_key: bool) -> bool {
     let c = content();
     let day = monday() + c.mystery.rules.finale_day;
     let (mut g, _) = Game::open(&c, "visitor", None, Some(&w.to_bytes()), day);
-    g.apply(&Action::Enrol("fast_runner".into()), &mut DoorRng::from_seed(1)).unwrap();
+    g.apply(
+        &Action::Enrol("fast_runner".into()),
+        &mut DoorRng::from_seed(1),
+    )
+    .unwrap();
     if with_key {
         map_set(&mut g.player.inventory, "east_wing_key", 1);
         map_set(&mut g.player.inventory, "tunnel_map", 1);
@@ -471,7 +603,11 @@ fn pupil_can_enter(w: &World, place: &str, with_key: bool) -> bool {
 fn each_verdict_the_school_reaches_changes_the_east_wing_for_everyone() {
     let c = content();
     // Opened for all: the caretaker's truth, the chaplain's vigil, the paper's front page.
-    for (trust, effect) in [("fenn", "wing_opened"), ("soames", "wing_vigil"), ("wren", "truth_printed")] {
+    for (trust, effect) in [
+        ("fenn", "wing_opened"),
+        ("soames", "wing_vigil"),
+        ("wren", "truth_printed"),
+    ] {
         let w = finale_with(&[("ann", trust, 31)]);
         assert!(w.has(effect), "{trust}");
         assert_eq!(w.commons.finale.as_deref(), Some(trust));
@@ -479,7 +615,11 @@ fn each_verdict_the_school_reaches_changes_the_east_wing_for_everyone() {
             pupil_can_enter(&w, "east_wing", false) && pupil_can_enter(&w, "tunnels", false),
             "{trust}: the wing and the tunnels open to a pupil with no key"
         );
-        assert!(w.paper.iter().any(|h| h.text.contains("ann")), "the paper names whoever brought it: {:?}", w.paper);
+        assert!(
+            w.paper.iter().any(|h| h.text.contains("ann")),
+            "the paper names whoever brought it: {:?}",
+            w.paper
+        );
     }
     // Shut for good: the headmistress's bricks and the bonfire close it even to a pupil with the key.
     for (trust, effect) in [("vane", "wing_sealed"), ("bonfire", "bonfire")] {
@@ -497,14 +637,22 @@ fn each_verdict_the_school_reaches_changes_the_east_wing_for_everyone() {
     assert!(!pupil_can_enter(&w, "east_wing", false));
     assert!(w.paper.iter().any(|h| h.text.contains("stays shut")));
     // The effects differ in what they do to the term too.
-    assert!(c.effect("wing_sealed").unwrap().patrol_mod > c.effect("wing_vigil").unwrap().patrol_mod);
-    assert!(c.effect("truth_printed").unwrap().legend_pct > c.effect("bonfire").unwrap().legend_pct);
+    assert!(
+        c.effect("wing_sealed").unwrap().patrol_mod > c.effect("wing_vigil").unwrap().patrol_mod
+    );
+    assert!(
+        c.effect("truth_printed").unwrap().legend_pct > c.effect("bonfire").unwrap().legend_pct
+    );
 }
 
 #[test]
 fn the_school_counts_verdicts_most_trusted_wins_and_a_tie_goes_by_the_table_order() {
     // Two for the paper beat one for the caretaker.
-    let w = finale_with(&[("ann", "fenn", 31), ("bea", "wren", 32), ("cal", "wren", 33)]);
+    let w = finale_with(&[
+        ("ann", "fenn", 31),
+        ("bea", "wren", 32),
+        ("cal", "wren", 33),
+    ]);
     assert_eq!(w.commons.finale.as_deref(), Some("wren"));
     assert!(w.has("truth_printed") && !w.has("wing_opened"));
     // A tie: the lower order (the caretaker) wins, whoever cast first.
@@ -514,14 +662,24 @@ fn the_school_counts_verdicts_most_trusted_wins_and_a_tie_goes_by_the_table_orde
     let c = content();
     let mut w = world_at(30);
     for (by, trust) in [("ann", "vane"), ("ann", "fenn"), ("bea", "nonsense")] {
-        WorldDelta::Verdict { by: by.into(), trust: trust.into(), day: 1 }.apply(&mut w, &c);
+        WorldDelta::Verdict {
+            by: by.into(),
+            trust: trust.into(),
+            day: 1,
+        }
+        .apply(&mut w, &c);
     }
     assert_eq!(w.commons.verdicts.len(), 1);
     assert_eq!(w.commons.verdicts[0].trust, "vane");
     // Once the finale has happened, a late verdict changes nothing.
     let mut w = finale_with(&[("ann", "vane", 31)]);
     let before = w.clone();
-    WorldDelta::Verdict { by: "late".into(), trust: "fenn".into(), day: 40 }.apply(&mut w, &c);
+    WorldDelta::Verdict {
+        by: "late".into(),
+        trust: "fenn".into(),
+        day: 40,
+    }
+    .apply(&mut w, &c);
     tick_day(&mut w, &c, monday() + 40, &mut DoorRng::from_seed(1));
     assert_eq!(w.commons.finale, before.commons.finale);
     assert!(w.has("wing_sealed") && !w.has("wing_opened"));
@@ -531,7 +689,10 @@ fn the_school_counts_verdicts_most_trusted_wins_and_a_tie_goes_by_the_table_orde
 fn the_finale_is_told_to_everyone_once_through_the_real_board() {
     // Two pupils choose on the same board through the real keys, the daily tick counts them, and a
     // third pupil who never touched the mystery wakes to a different school.
-    let rt = tokio::runtime::Builder::new_current_thread().enable_all().build().unwrap();
+    let rt = tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+        .unwrap();
     rt.block_on(async {
         let store = MemoryDoorStore::new();
         let door: Arc<dyn Door> = Hallpass::shared().unwrap();
@@ -553,7 +714,11 @@ fn the_finale_is_told_to_everyone_once_through_the_real_board() {
             )
             .await
             .unwrap();
-        for (account, name, talk) in [(1, "ann", "wing_wren_choice"), (2, "bea", "wing_sol_choice"), (3, "cal", "wing_wren_choice")] {
+        for (account, name, talk) in [
+            (1, "ann", "wing_wren_choice"),
+            (2, "bea", "wing_sol_choice"),
+            (3, "cal", "wing_wren_choice"),
+        ] {
             let mut p = at_the_choice(talk, term_day);
             p.name = name.to_owned();
             store
@@ -570,9 +735,16 @@ fn the_finale_is_told_to_everyone_once_through_the_real_board() {
                 .await
                 .unwrap();
             let env = DoorEnv::for_tests(name);
-            let mut run = Running::open(&store, door.clone(), AccountId::from_raw(account), &env, dyn_clock.clone(), account as u64)
-                .await
-                .unwrap();
+            let mut run = Running::open(
+                &store,
+                door.clone(),
+                AccountId::from_raw(account),
+                &env,
+                dyn_clock.clone(),
+                u64::try_from(account).unwrap(),
+            )
+            .await
+            .unwrap();
             let (probe, _) = Game::open(&c, name, Some(p.clone()), None, p.day);
             let _ = probe;
             for k in keys("t") {
@@ -591,8 +763,21 @@ fn the_finale_is_told_to_everyone_once_through_the_real_board() {
                 run.flush(&store).await.unwrap();
             }
         }
-        let mid = decode_world(&store.load_world(&door.info().id).await.unwrap().unwrap().bytes).unwrap();
-        assert_eq!(mid.commons.verdicts.len(), 3, "three pupils cast: {:?}", mid.commons.verdicts);
+        let mid = decode_world(
+            &store
+                .load_world(&door.info().id)
+                .await
+                .unwrap()
+                .unwrap()
+                .bytes,
+        )
+        .unwrap();
+        assert_eq!(
+            mid.commons.verdicts.len(),
+            3,
+            "three pupils cast: {:?}",
+            mid.commons.verdicts
+        );
         assert!(mid.commons.finale.is_none());
         // The board's daily tick, once the finale day comes.
         for d in (monday() + term_day + 1)..=finale_day {
@@ -602,19 +787,57 @@ fn the_finale_is_told_to_everyone_once_through_the_real_board() {
                 .await
                 .unwrap();
         }
-        let after = decode_world(&store.load_world(&door.info().id).await.unwrap().unwrap().bytes).unwrap();
-        assert_eq!(after.commons.finale.as_deref(), Some("wren"), "two of three: {:?}", after.commons.verdicts);
+        let after = decode_world(
+            &store
+                .load_world(&door.info().id)
+                .await
+                .unwrap()
+                .unwrap()
+                .bytes,
+        )
+        .unwrap();
+        assert_eq!(
+            after.commons.finale.as_deref(),
+            Some("wren"),
+            "two of three: {:?}",
+            after.commons.verdicts
+        );
         assert!(after.has("truth_printed"));
         assert!(pupil_can_enter(&after, "east_wing", false));
         // A fourth pupil who has done nothing hears of it in the morning, once.
         let (mut dee, events) = Game::open(&c, "dee", None, Some(&after.to_bytes()), finale_day);
-        dee.apply(&Action::Enrol("fast_runner".into()), &mut DoorRng::from_seed(1)).unwrap();
+        dee.apply(
+            &Action::Enrol("fast_runner".into()),
+            &mut DoorRng::from_seed(1),
+        )
+        .unwrap();
         let _ = events;
-        let (_, events) = Game::open(&c, "dee", Some(dee.player.clone()), Some(&after.to_bytes()), finale_day + 1);
-        assert!(events.iter().any(|e| e.describe().contains("the paper prints the diary")), "{events:?}");
+        let (_, events) = Game::open(
+            &c,
+            "dee",
+            Some(dee.player.clone()),
+            Some(&after.to_bytes()),
+            finale_day + 1,
+        );
+        assert!(
+            events
+                .iter()
+                .any(|e| e.describe().contains("the paper prints the diary")),
+            "{events:?}"
+        );
         let mut told = dee.clone();
         told.player.social.told_finale = told.player.term;
-        let (_, events) = Game::open(&c, "dee", Some(told.player), Some(&after.to_bytes()), finale_day + 2);
-        assert!(!events.iter().any(|e| e.describe().contains("the paper prints the diary")));
+        let (_, events) = Game::open(
+            &c,
+            "dee",
+            Some(told.player),
+            Some(&after.to_bytes()),
+            finale_day + 2,
+        );
+        assert!(
+            !events
+                .iter()
+                .any(|e| e.describe().contains("the paper prints the diary"))
+        );
     });
 }

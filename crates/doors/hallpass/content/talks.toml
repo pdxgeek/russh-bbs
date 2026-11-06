@@ -844,6 +844,99 @@ effects = ["bond:wren:+5", "stand:ink_society:+3", "merit:paper:+2"]
 label = "Say it was her paper, not yours"
 say = "'False modesty,' says Wren, 'but welcome.'"
 
+# ---------------------------------------------------------------- on-ramps (H4 balance)
+# H2's simulation showed nobody joining the paper or the Candle Society: nothing early raised the
+# standing they asked for. These two are the first conversations that do.
+
+[[talk]]
+id = "wren_tryout"
+npc = "wren"
+title = "Wren needs a proofreader"
+when = ["day>=2"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Wren Okonjo is surrounded by galleys and ink. 'The paper is two proofreaders short and one deadline from disaster. Do you know which end of a comma goes up?'"
+[[talk.node.choice]]
+label = "Offer to proofread an issue"
+say = "You find eleven mistakes and one libel. Wren puts your name in the small print."
+effects = ["stand:ink_society:+3", "bond:wren:+3", "xp:bluff:1"]
+[[talk.node.choice]]
+label = "Offer a story tip instead"
+needs = ["skill:bluff>=1"]
+say = "She writes it on her cuff. 'If it is true, you are a reporter.' It is, so you are."
+effects = ["stand:ink_society:+4", "bond:wren:+2"]
+[[talk.node.choice]]
+label = "Say you will think about it"
+say = "'Think quickly,' says Wren."
+
+[[talk]]
+id = "sol_dare"
+npc = "sol"
+title = "Sol dares you to climb the bike shed"
+when = ["day>=2"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Sol Marchetti is lying on the roof of the bike shed with a view of everything. 'Up here,' they say, 'is where the school stops looking. Coming?'"
+[[talk.node.choice]]
+label = "Climb up and sit with them"
+say = "The view is the best in the school and nobody in it is watching you. Sol says you will do."
+effects = ["stand:the_bench:+5", "bond:sol:+4", "xp:sneak:1"]
+[[talk.node.choice]]
+label = "Hand them a message from a friend, from the ground"
+say = "Sol takes it with a grin and does not ask whose it is."
+effects = ["stand:the_bench:+3", "bond:sol:+2"]
+[[talk.node.choice]]
+label = "Stay where you are"
+say = "'Another time,' says Sol, and does not seem to mind."
+
+[[talk]]
+id = "fenn_leaves"
+npc = "fenn"
+title = "Mr. Fenn and the leaves"
+when = ["day>=3"]
+once = false
+cooldown = 4
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Mr. Fenn is sweeping the same corner of the quad he swept yesterday. 'The lake sends the leaves in,' he says, 'and the school does not thank anyone for sending them out.'"
+[[talk.node.choice]]
+label = "Take a broom and help"
+say = "An hour of sweeping, a tin mug of tea, and a story about the old boathouse that he plainly tells to very few."
+effects = ["bond:fenn:+4", "stand:strays:+1"]
+[[talk.node.choice]]
+label = "Ask him what the school was like before"
+say = "He looks at the lake for a while. 'Louder,' he says, and that is all."
+effects = ["bond:fenn:+2"]
+[[talk.node.choice]]
+label = "Say good morning and move on"
+say = "'Morning,' says Mr. Fenn, to the leaves."
+
+[[talk]]
+id = "soames_choir"
+npc = "soames"
+title = "Reverend Soames and the choir stalls"
+when = ["day>=3"]
+once = false
+cooldown = 4
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Reverend Soames is tuning the organ by ear, one note at a time. 'The trebles have gone to the match and taken their breath with them. Can you carry a tune?'"
+[[talk.node.choice]]
+label = "Sing the alto line for him"
+say = "You are not good, and neither of you minds. He says it is the first time the chapel has sounded alive in a month."
+effects = ["bond:soames:+4", "stat:cool:+1"]
+[[talk.node.choice]]
+label = "Offer to turn the pages"
+say = "He lets you, and nods at the right moments, and does not say a word about the lamp in the loft."
+effects = ["bond:soames:+2"]
+[[talk.node.choice]]
+label = "Say you cannot sing a note"
+say = "'Nobody can,' says Reverend Soames, 'until the second verse.'"
+
 # ---------------------------------------------------------------- the east wing (H4)
 # Where the mystery's key comes from, and the end of it. The clues themselves are searches
 # (content/mystery.toml); these are the people who matter to it.
@@ -876,7 +969,7 @@ say = "He nods slowly and goes back to the hinge."
 id = "wing_soames_key"
 npc = "soames"
 title = "Reverend Soames and the old door"
-when = ["know:soames_trust"]
+when = ["bond:soames>=5"]
 arc = "the_wing"
 step = "key"
 first = "open"
@@ -899,7 +992,7 @@ say = "He looks at you kindly and says nothing either."
 id = "wing_fenn_choice"
 npc = "fenn"
 title = "Tell Mr. Fenn what you found"
-when = ["day>=27", "bond:fenn>=8"]
+when = ["day>=27", "bond:fenn>=6"]
 arc = "the_wing"
 step = "choice"
 first = "open"
@@ -924,7 +1017,7 @@ say = "'Whenever you are ready,' says Mr. Fenn."
 id = "wing_soames_choice"
 npc = "soames"
 title = "Tell Reverend Soames what you found"
-when = ["day>=27", "know:soames_trust"]
+when = ["day>=27", "bond:soames>=6"]
 arc = "the_wing"
 step = "choice"
 first = "open"
@@ -974,7 +1067,7 @@ say = "'Of course,' says Dame Vane, as though she had expected nothing else."
 id = "wing_wren_choice"
 npc = "wren"
 title = "Show Wren what you found"
-when = ["day>=27", "know:diary_page", "standing:ink_society>=6"]
+when = ["day>=27", "know:diary_page", "standing:ink_society>=4"]
 arc = "the_wing"
 step = "choice"
 first = "open"

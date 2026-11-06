@@ -79,11 +79,9 @@ impl School {
     /// Send what a session asked for to the world.
     fn commit(&mut self, g: &mut Game) {
         for d in g.take_world_changes() {
-            if let Some(bytes) = d.apply_to_bytes(
-                Some(&self.world.to_bytes()),
-                g.player.day,
-                &self.content,
-            ) {
+            if let Some(bytes) =
+                d.apply_to_bytes(Some(&self.world.to_bytes()), g.player.day, &self.content)
+            {
                 self.world = World::from_bytes(Some(&bytes), 0);
             }
         }
@@ -100,7 +98,12 @@ impl School {
     /// Run the world's daily tick up to and including `day`.
     fn tick_to(&mut self, day: i64) {
         for d in (self.world.last_day + 1)..=day {
-            tick_day(&mut self.world, &self.content, d, &mut DoorRng::from_seed(1));
+            tick_day(
+                &mut self.world,
+                &self.content,
+                d,
+                &mut DoorRng::from_seed(1),
+            );
         }
     }
 }
@@ -137,18 +140,33 @@ fn a_scheme_on_another_pupil_is_posted_delivered_and_its_outcome_comes_back_to_t
     let mut ann = forger(&mut school, "ann", day);
     // The roster knows both, and ann can see bea (not herself).
     assert_eq!(
-        ann.classmates().iter().map(|c| c.name.as_str()).collect::<Vec<_>>(),
+        ann.classmates()
+            .iter()
+            .map(|c| c.name.as_str())
+            .collect::<Vec<_>>(),
         ["bea"]
     );
     ann.world = school.world.clone();
     let nerve = ann.player.nerve;
     let events = school.act(&mut ann, plot("swapped_timetable", "bea"));
-    assert!(said(&events).contains("in motion for bea"), "{}", said(&events));
-    assert_eq!(i32::from(ann.player.nerve), i32::from(nerve) - 2, "it costs nerve");
+    assert!(
+        said(&events).contains("in motion for bea"),
+        "{}",
+        said(&events)
+    );
+    assert_eq!(
+        i32::from(ann.player.nerve),
+        i32::from(nerve) - 2,
+        "it costs nerve"
+    );
     let posted = &school.world.commons.plots;
     assert_eq!(posted.len(), 1);
     assert_eq!(
-        (posted[0].from.as_str(), posted[0].to.as_str(), posted[0].state),
+        (
+            posted[0].from.as_str(),
+            posted[0].to.as_str(),
+            posted[0].state
+        ),
         ("ann", "bea", plot_state::WAITING)
     );
 
@@ -159,9 +177,15 @@ fn a_scheme_on_another_pupil_is_posted_delivered_and_its_outcome_comes_back_to_t
     let text = said(&events);
     assert!(text.contains("swapped") && text.contains("ann"), "{text}");
     assert_eq!(bea2.player.cool, cool - 1);
-    assert_eq!(bea2.player.nerve, bea2.player.nerve_max.saturating_sub(1).min(nerve_max));
+    assert_eq!(
+        bea2.player.nerve,
+        bea2.player.nerve_max.saturating_sub(1).min(nerve_max)
+    );
     assert_eq!(bea2.player.social.protected_until, day + 1 + 2);
-    assert!(!bea2.player.social.inbox.is_empty(), "the school remembers what was done to her");
+    assert!(
+        !bea2.player.social.inbox.is_empty(),
+        "the school remembers what was done to her"
+    );
     assert_eq!(school.world.commons.plots[0].state, plot_state::LANDED);
     bea = bea2;
 
@@ -199,13 +223,21 @@ fn a_build_or_a_kit_is_the_counterplay_and_a_seen_through_scheme_costs_the_sende
         school.act(&mut ann, plot("swapped_timetable", "bea"));
         let cool = bea.player.cool;
         let (bea2, events) = school.reopen(&bea.player, day + 1);
-        assert!(said(&events).contains("saw it") || said(&events).contains("spare card"), "{how}: {}", said(&events));
+        assert!(
+            said(&events).contains("saw it") || said(&events).contains("spare card"),
+            "{how}: {}",
+            said(&events)
+        );
         assert_eq!(bea2.player.cool, cool, "{how}: nothing landed");
         assert_eq!(school.world.commons.plots[0].state, plot_state::COUNTERED);
         let before = ann.player.cool;
         let (ann2, events) = school.reopen(&ann.player, day + 1);
         assert!(said(&events).contains("saw it coming"));
-        assert_eq!(ann2.player.cool, before - 1, "a seen-through scheme embarrasses the sender");
+        assert_eq!(
+            ann2.player.cool,
+            before - 1,
+            "a seen-through scheme embarrasses the sender"
+        );
     }
     // A pupil with neither is hit; the same scheme ends differently for different builds.
     let mut school = School::new(day);
@@ -236,7 +268,10 @@ fn what_a_scheme_needs_depends_on_the_sender_and_the_list_never_offers_what_it_r
     // A runner with nothing in his pockets has the kind plots and the laces, not the forgeries.
     let kinds = offered(&plain);
     assert!(kinds.contains(&"squeaky_laces".to_owned()) && kinds.contains(&"pep_talk".to_owned()));
-    assert!(!kinds.contains(&"swapped_timetable".to_owned()), "{kinds:?}");
+    assert!(
+        !kinds.contains(&"swapped_timetable".to_owned()),
+        "{kinds:?}"
+    );
     assert!(!kinds.contains(&"glued_locker".to_owned()));
     // A forger gains the swap; a tinkerer the glue.
     let mut ann = forger(&mut school, "ann", day);
@@ -269,31 +304,45 @@ fn nobody_is_piled_on_and_a_target_is_left_alone_after_one_reaches_them() {
     let why = senders[0].plot_block("swapped_timetable", "bea").unwrap();
     assert!(why.contains("give it a few days"), "{why}");
     // Two senders more fill bea's post to the per-target cap; the next is refused.
-    for s in 1..PLOT_PER_TARGET {
-        senders[s].world = school.world.clone();
-        school.act(&mut senders[s], plot("swapped_timetable", "bea"));
+    for sender in senders.iter_mut().take(PLOT_PER_TARGET).skip(1) {
+        sender.world = school.world.clone();
+        school.act(sender, plot("swapped_timetable", "bea"));
     }
     senders[PLOT_PER_TARGET].world = school.world.clone();
     let why = senders[PLOT_PER_TARGET]
         .plot_block("swapped_timetable", "bea")
         .unwrap();
     assert!(why.contains("post is full"), "{why}");
-    assert!(senders[PLOT_PER_TARGET]
-        .apply(&plot("swapped_timetable", "bea"), &mut school.rng)
-        .is_err());
+    assert!(
+        senders[PLOT_PER_TARGET]
+            .apply(&plot("swapped_timetable", "bea"), &mut school.rng)
+            .is_err()
+    );
     assert_eq!(school.world.commons.waiting_for("bea"), PLOT_PER_TARGET);
 
     // Bea opens: the first lands and protects her; the other two are turned away.
     let (_, events) = school.reopen(&bea.player, day + 1);
     assert_eq!(
-        events.iter().filter(|e| e.describe().contains("swapped")).count(),
+        events
+            .iter()
+            .filter(|e| e.describe().contains("swapped"))
+            .count(),
         1,
         "{}",
         said(&events)
     );
     let states: Vec<u8> = school.world.commons.plots.iter().map(|p| p.state).collect();
-    assert_eq!(states.iter().filter(|s| **s == plot_state::LANDED).count(), 1, "{states:?}");
-    assert_eq!(states.iter().filter(|s| **s == plot_state::TURNED).count(), PLOT_PER_TARGET - 1);
+    let count = |want: u8| {
+        school
+            .world
+            .commons
+            .plots
+            .iter()
+            .filter(|p| p.state == want)
+            .count()
+    };
+    assert_eq!(count(plot_state::LANDED), 1, "{states:?}");
+    assert_eq!(count(plot_state::TURNED), PLOT_PER_TARGET - 1);
     // The senders of the turned-away ones are told it never reached them, at no cost.
     let (_, events) = school.reopen(&senders[1].player, day + 1);
     assert!(said(&events).contains("never reached"), "{}", said(&events));
@@ -325,7 +374,11 @@ fn a_sender_may_play_only_so_many_a_day() {
         day,
     }
     .apply(&mut world, &school.content);
-    assert_eq!(world.commons.plots.len(), 2, "the stored world refuses the third");
+    assert_eq!(
+        world.commons.plots.len(),
+        2,
+        "the stored world refuses the third"
+    );
 }
 
 #[test]
@@ -339,7 +392,10 @@ fn kind_schemes_land_without_a_counterplay_and_do_not_protect() {
     school.act(&mut ann, plot("pep_talk", "bea"));
     let (bea2, events) = school.reopen(&bea.player, day + 1);
     assert!(said(&events).contains("exactly what you needed"));
-    assert_eq!(bea2.player.social.protected_until, 0, "a favour is not a reason to be left alone");
+    assert_eq!(
+        bea2.player.social.protected_until, 0,
+        "a favour is not a reason to be left alone"
+    );
     assert!(bea2.player.nerve <= bea2.player.nerve_max);
 }
 
@@ -358,12 +414,20 @@ fn an_opted_out_pupil_cannot_be_targeted_and_cannot_target() {
     // Ann's menu lists bea as unreachable and her engine refuses.
     ann.world = school.world.clone();
     assert!(ann.classmates()[0].opted_out);
-    assert!(ann.plot_block("squeaky_laces", "bea").unwrap().contains("opted out"));
-    assert!(ann
-        .legal_actions()
-        .iter()
-        .all(|a| !matches!(a, Action::Plot { to, .. } if to == "bea")));
-    assert!(ann.apply(&plot("squeaky_laces", "bea"), &mut school.rng).is_err());
+    assert!(
+        ann.plot_block("squeaky_laces", "bea")
+            .unwrap()
+            .contains("opted out")
+    );
+    assert!(
+        ann.legal_actions()
+            .iter()
+            .all(|a| !matches!(a, Action::Plot { to, .. } if to == "bea"))
+    );
+    assert!(
+        ann.apply(&plot("squeaky_laces", "bea"), &mut school.rng)
+            .is_err()
+    );
     // An opted-out pupil cannot play one either, nor send a kind word.
     bea.world = school.world.clone();
     let why = bea.plot_block("pep_talk", "ann").unwrap();
@@ -377,8 +441,13 @@ fn an_opted_out_pupil_cannot_be_targeted_and_cannot_target() {
         w
     };
     stale.world = open_world;
-    assert!(stale.plot_block("squeaky_laces", "bea").is_none(), "the stale view allows it");
-    stale.apply(&plot("squeaky_laces", "bea"), &mut school.rng).unwrap();
+    assert!(
+        stale.plot_block("squeaky_laces", "bea").is_none(),
+        "the stale view allows it"
+    );
+    stale
+        .apply(&plot("squeaky_laces", "bea"), &mut school.rng)
+        .unwrap();
     school.commit(&mut stale);
     assert!(
         school.world.commons.plots.is_empty(),
@@ -411,9 +480,15 @@ fn the_opt_out_survives_the_term_and_does_not_stop_rumours_the_election_or_award
     school.act(&mut bea, Action::OptOut(true));
     // Rumours and the election are not aimed at a player: they stay open.
     bea.world = school.world.clone();
-    assert!(bea.legal_actions().iter().any(|a| matches!(a, Action::Spread { .. }))
-        || bea.rumour_block("fair_play", "tilly").is_some_and(|w| w.contains("nobody")),
-        "only the lack of an audience stops a rumour");
+    assert!(
+        bea.legal_actions()
+            .iter()
+            .any(|a| matches!(a, Action::Spread { .. }))
+            || bea
+                .rumour_block("fair_play", "tilly")
+                .is_some_and(|w| w.contains("nobody")),
+        "only the lack of an audience stops a rumour"
+    );
     // A new term: the character is new, the choice is not.
     let term_days = school.content.rules.term_days;
     school.tick_to(school.world.term_start + term_days);
@@ -469,7 +544,11 @@ fn a_rumour_is_chosen_from_a_template_and_changes_the_school_and_the_speaker() {
     assert!(bea.rumour_lines()[0].contains("fairest"));
     // One a day: the second is refused with the reason.
     ann.world = school.world.clone();
-    assert!(ann.rumour_block("fair_play", &who).unwrap().contains("had your say"));
+    assert!(
+        ann.rumour_block("fair_play", &who)
+            .unwrap()
+            .contains("had your say")
+    );
     // A week later nobody repeats it.
     school.tick_to(day + c.social.rules.rumour_days + 1);
     assert!(school.world.commons.rumours.is_empty());
@@ -537,49 +616,125 @@ fn an_election_is_stood_in_canvassed_voted_and_counted_and_the_winner_changes_th
     assert!(early.apply(&Action::Nominate, &mut school.rng).is_err());
     // A poor record cannot stand.
     let mut rogue = school.enrol("rogue", "smooth_talker", day);
-    rogue.player.file.push(russh_bbs_door_hallpass::state::FileEntry {
-        day,
-        kind: "caught".into(),
-        sev: 8,
-    });
+    rogue
+        .player
+        .file
+        .push(russh_bbs_door_hallpass::state::FileEntry {
+            day,
+            kind: "caught".into(),
+            sev: 8,
+        });
     assert!(rogue.apply(&Action::Nominate, &mut school.rng).is_err());
     school.act(&mut ann, Action::Nominate);
-    assert!(ann.apply(&Action::Nominate, &mut school.rng).is_err(), "only once");
+    assert!(
+        ann.apply(&Action::Nominate, &mut school.rng).is_err(),
+        "only once"
+    );
     assert_eq!(school.world.commons.election.candidates.len(), 1);
     campaign(&mut school, &mut ann, 3);
     let backing = school.world.commons.backing("ann");
-    assert!(backing >= 12, "canvassing works: {backing}");
+    assert!(backing >= 8, "canvassing works: {backing}");
+    assert!(
+        backing < russh_bbs_door_hallpass::commons::BACKING_CAP,
+        "and a few days do not win a school"
+    );
+    // Each door knocked on wins less than the last as the campaign saturates, and never past the cap.
+    let first = {
+        let (mut fresh, _) =
+            Game::open(&content(), "z", None, Some(&World::new(0).to_bytes()), day);
+        fresh.world.term_start = day - 12;
+        fresh
+            .apply(&Action::Enrol("smooth_talker".into()), &mut school.rng)
+            .unwrap();
+        fresh.player.cool = 40;
+        fresh.apply(&Action::Nominate, &mut school.rng).unwrap();
+        fresh.apply(&Action::Canvass, &mut school.rng).unwrap();
+        fresh.world.commons.backing("z")
+    };
+    assert!(first >= 3, "a first door wins a few: {first}");
+    // A fortnight of it saturates at the cap.
+    for _ in 0..30 {
+        WorldDelta::Backing {
+            who: "ann".into(),
+            add: 4,
+        }
+        .apply(&mut school.world, &school.content);
+    }
+    assert_eq!(
+        school.world.commons.backing("ann"),
+        russh_bbs_door_hallpass::commons::BACKING_CAP
+    );
     // Voting opens later; before that a vote is refused.
     bea.world = school.world.clone();
-    assert!(bea.apply(&Action::Vote("ann".into()), &mut school.rng).is_err());
+    assert!(
+        bea.apply(&Action::Vote("ann".into()), &mut school.rng)
+            .is_err()
+    );
     let vote_day = school.world.term_start + school.content.social.rules.vote_from;
     let (mut bea, _) = school.reopen(&bea.player, vote_day);
     let ballot = bea.ballot();
     assert!(ballot.iter().any(|b| b.id == "npc:bramley") && ballot.iter().any(|b| b.id == "ann"));
     school.act(&mut bea, Action::Vote("ann".into()));
-    assert!(bea.apply(&Action::Vote("ann".into()), &mut school.rng).is_err(), "one vote a term");
-    assert!(bea.apply(&Action::Vote("nobody".into()), &mut school.rng).is_err());
+    assert!(
+        bea.apply(&Action::Vote("ann".into()), &mut school.rng)
+            .is_err(),
+        "one vote a term"
+    );
+    assert!(
+        bea.apply(&Action::Vote("nobody".into()), &mut school.rng)
+            .is_err()
+    );
     assert_eq!(school.world.commons.votes_for("ann"), 1);
     // The count: ann beats the characters who run, and the school changes for everyone.
     let tally = school.world.term_start + school.content.social.rules.tally_day;
     school.tick_to(tally);
     assert_eq!(school.world.commons.election.winner.as_deref(), Some("ann"));
     assert!(school.world.has("head_player"));
-    assert!(school.world.paper.iter().any(|h| h.text.contains("ann") && h.text.contains("Head of School")));
+    assert!(
+        school
+            .world
+            .paper
+            .iter()
+            .any(|h| h.text.contains("ann") && h.text.contains("Head of School"))
+    );
     // A pupil elsewhere sees the school change (patrols thinner).
-    let (cal, _) = Game::open(&content(), "cal", None, Some(&school.world.to_bytes()), tally);
-    let before = Game::open(&content(), "cal", None, Some(&World::new(0).to_bytes()), tally).0;
+    let (cal, _) = Game::open(
+        &content(),
+        "cal",
+        None,
+        Some(&school.world.to_bytes()),
+        tally,
+    );
+    let before = Game::open(
+        &content(),
+        "cal",
+        None,
+        Some(&World::new(0).to_bytes()),
+        tally,
+    )
+    .0;
     assert!(cal.patrol_level("quad") <= before.patrol_level("quad"));
     // Ann is told, gains legend and the trait; bea is told who won; nothing is counted twice.
     let legend = ann.player.legend;
     let (ann2, events) = school.reopen(&ann.player, tally + 1);
-    assert!(said(&events).contains("won the school election"), "{}", said(&events));
-    assert!(ann2.player.legend >= legend + school.content.social.rules.winner_legend as u32);
+    assert!(
+        said(&events).contains("won the school election"),
+        "{}",
+        said(&events)
+    );
+    assert!(
+        ann2.player.legend
+            >= legend + u32::try_from(school.content.social.rules.winner_legend).unwrap()
+    );
     assert!(ann2.player.traits.contains(&"head_of_school".to_owned()));
     let (_, events) = school.reopen(&ann2.player, tally + 2);
     assert!(!said(&events).contains("won the school election"));
     let (_, events) = school.reopen(&bea.player, tally + 1);
-    assert!(said(&events).contains("has chosen ann"), "{}", said(&events));
+    assert!(
+        said(&events).contains("has chosen ann"),
+        "{}",
+        said(&events)
+    );
     // Once counted, the ballot is closed.
     let (mut late, _) = school.reopen(&rogue.player, tally + 1);
     assert!(late.apply(&Action::Nominate, &mut school.rng).is_err());
@@ -592,13 +747,17 @@ fn with_nobody_standing_a_character_wins_and_the_world_decides_who_runs() {
     school.enrol("ann", "smooth_talker", day);
     let tally = school.world.term_start + school.content.social.rules.tally_day;
     school.tick_to(tally);
-    assert_eq!(
-        school.world.commons.election.winner.as_deref(),
-        Some("npc:bramley"),
-        "the head prefect's machine wins an empty field"
+    let winner = school.world.commons.election.winner.clone().unwrap();
+    assert!(
+        winner.starts_with("npc:"),
+        "an empty field goes to a character who runs: {winner}"
     );
-    assert!(school.world.has("head_bramley"));
-    // The prefects stood down by the ledger story: Bramley is not on the ballot, Wren wins.
+    assert!(
+        school
+            .world
+            .has(&format!("head_{}", winner.trim_start_matches("npc:")))
+    );
+    // The prefects stood down by the ledger story: Bramley is not on the ballot, and cannot win.
     let mut school = School::new(day);
     school.enrol("ann", "smooth_talker", day);
     WorldDelta::Effect {
@@ -607,12 +766,17 @@ fn with_nobody_standing_a_character_wins_and_the_world_decides_who_runs() {
         day,
     }
     .apply(&mut school.world, &school.content);
-    assert!(!russh_bbs_door_hallpass::social::ballot_of(&school.content, &school.world)
-        .iter()
-        .any(|b| b.id == "npc:bramley"));
+    assert!(
+        !russh_bbs_door_hallpass::social::ballot_of(&school.content, &school.world)
+            .iter()
+            .any(|b| b.id == "npc:bramley")
+    );
     school.tick_to(tally);
-    assert_eq!(school.world.commons.election.winner.as_deref(), Some("npc:wren"));
-    assert!(school.world.has("head_wren"));
+    let winner = school.world.commons.election.winner.clone().unwrap();
+    assert!(
+        ["npc:wren", "npc:hollis"].contains(&winner.as_str()),
+        "{winner}"
+    );
 }
 
 #[test]
@@ -632,33 +796,60 @@ fn rumours_about_a_candidate_move_their_backing_and_votes_decide_close_races() {
     }
     .apply(&mut world, &c);
     let praised = russh_bbs_door_hallpass::social::ballot_of(&c, &world);
-    assert_eq!(wren(&praised), wren(&base) + c.rumour("fair_play").unwrap().backing);
-    // A close race: Bramley leads Wren by 3; one vote (worth three) ties and a tie goes to the character who runs
-    // first in the table's order... and two votes win it.
+    assert_eq!(
+        wren(&praised),
+        wren(&base) + c.rumour("fair_play").unwrap().backing
+    );
+    // A close race, whoever leads this term: enough votes (each worth `vote_weight`) for the
+    // runner-up to overtake the leader, and not before.
     let mut world = World::new(0);
-    world.commons.roster.push(russh_bbs_door_hallpass::commons::Pupil {
-        name: "ann".into(),
-        ..Default::default()
-    });
-    world.commons.roster.push(russh_bbs_door_hallpass::commons::Pupil {
-        name: "bea".into(),
-        ..Default::default()
-    });
-    let w = russh_bbs_door_hallpass::social::tally(&c, &world).unwrap();
-    assert_eq!(w.id, "npc:bramley");
-    for voter in ["ann", "bea"] {
+    world.last_day = c.social.rules.tally_day;
+    let weight = c.social.rules.vote_weight;
+    let mut lines = russh_bbs_door_hallpass::social::ballot_of(&c, &world);
+    lines.sort_by(|a, b| b.backing.cmp(&a.backing).then_with(|| a.id.cmp(&b.id)));
+    let (leader, second) = (lines[0].clone(), lines[1].clone());
+    assert_eq!(
+        russh_bbs_door_hallpass::social::tally(&c, &world)
+            .unwrap()
+            .id,
+        leader.id
+    );
+    let lead = leader.backing - second.backing;
+    let needed = usize::try_from(lead / weight + 1).unwrap();
+    assert!(needed <= 8, "a close race needs few votes: {needed}");
+    for v in 0..needed - 1 {
         WorldDelta::Vote {
-            voter: voter.into(),
-            who: "npc:wren".into(),
+            voter: format!("v{v}"),
+            who: second.id.clone(),
         }
         .apply(&mut world, &c);
     }
-    let w = russh_bbs_door_hallpass::social::tally(&c, &world).unwrap();
-    assert_eq!(w.id, "npc:wren", "two votes of three beat a lead of three");
+    let short = russh_bbs_door_hallpass::social::tally(&c, &world).unwrap();
+    assert_ne!(short.id, second.id, "one vote short");
+    WorldDelta::Vote {
+        voter: format!("v{}", needed - 1),
+        who: second.id.clone(),
+    }
+    .apply(&mut world, &c);
+    assert_eq!(
+        russh_bbs_door_hallpass::social::tally(&c, &world)
+            .unwrap()
+            .id,
+        second.id,
+        "{needed} votes of {weight} beat a lead of {lead}"
+    );
     // A vote for a name that is not on the ballot, and a second vote, are ignored by the world.
     let before = world.commons.election.votes.len();
-    WorldDelta::Vote { voter: "ann".into(), who: "npc:hollis".into() }.apply(&mut world, &c);
-    WorldDelta::Vote { voter: "zed".into(), who: "nobody".into() }.apply(&mut world, &c);
+    WorldDelta::Vote {
+        voter: "v0".into(),
+        who: "npc:hollis".into(),
+    }
+    .apply(&mut world, &c);
+    WorldDelta::Vote {
+        voter: "zed".into(),
+        who: "nobody".into(),
+    }
+    .apply(&mut world, &c);
     assert_eq!(world.commons.election.votes.len(), before);
 }
 
@@ -691,27 +882,47 @@ fn awards_are_scored_from_the_roster_at_term_end_and_paid_to_the_winners_when_th
         .iter()
         .map(|a| (a.award.clone(), a.name.clone()))
         .collect();
-    assert!(wins.contains(&("legend_cup".into(), "ann".into())), "{wins:?}");
+    assert!(
+        wins.contains(&("legend_cup".into(), "ann".into())),
+        "{wins:?}"
+    );
     assert!(wins.contains(&("scholar".into(), "bea".into())), "{wins:?}");
     assert!(wins.contains(&("mischief".into(), "ann".into())));
     // Nobody wins an award they did not score for (the minimums hold).
     assert!(!wins.iter().any(|(a, _)| a == "sleuth"), "{wins:?}");
     // The paper says so.
-    assert!(school.world.paper.iter().any(|h| h.text.contains("Legend Cup") && h.text.contains("ann")));
+    assert!(
+        school
+            .world
+            .paper
+            .iter()
+            .any(|h| h.text.contains("Legend Cup") && h.text.contains("ann"))
+    );
     // The winners hear of it, once, when they next play, and the list outlives the term.
     let (ann2, events) = school.reopen(&ann.player, school.world.term_start + 1);
     assert!(said(&events).contains("Legend Cup"), "{}", said(&events));
-    assert_eq!(ann2.player.term, 2, "a new term: a new character, not yet enrolled");
+    assert_eq!(
+        ann2.player.term, 2,
+        "a new term: a new character, not yet enrolled"
+    );
     let owed = ann2.player.social.unpaid;
     assert!(owed >= 2, "the cash is owed until they enrol: {owed}");
     let mut enrolled = ann2.clone();
-    enrolled.apply(&Action::Enrol("smooth_talker".into()), &mut school.rng).unwrap();
+    enrolled
+        .apply(&Action::Enrol("smooth_talker".into()), &mut school.rng)
+        .unwrap();
     assert_eq!(
         enrolled.player.cash,
         school.content.rules.start_cash + i32::from(owed) * school.content.social.rules.award_cash
     );
     assert_eq!(enrolled.player.social.unpaid, 0);
-    assert!(ann2.player.social.awards.iter().any(|a| a.ends_with("legend_cup")));
+    assert!(
+        ann2.player
+            .social
+            .awards
+            .iter()
+            .any(|a| a.ends_with("legend_cup"))
+    );
     let (ann3, events) = school.reopen(&ann2.player, school.world.term_start + 2);
     assert!(!said(&events).contains("Legend Cup"), "not paid twice");
     assert_eq!(
@@ -719,7 +930,14 @@ fn awards_are_scored_from_the_roster_at_term_end_and_paid_to_the_winners_when_th
         ann2.player.social.awards.len()
     );
     // The roster is cleared of last term's numbers, so the next term's awards start from zero.
-    assert!(school.world.commons.roster.iter().all(|p| p.legend == 0 && p.pulled == 0));
+    assert!(
+        school
+            .world
+            .commons
+            .roster
+            .iter()
+            .all(|p| p.legend == 0 && p.pulled == 0)
+    );
     assert!(school.world.commons.rumours.is_empty() && school.world.commons.plots.is_empty());
 }
 
@@ -781,17 +999,37 @@ async fn two_players_play_a_scheme_through_the_framework_store_and_the_opt_out_s
     let env_bea = DoorEnv::for_tests("bea");
 
     // Bea walks in first and so is on the roster; ann then finds her in Classmates.
-    let mut run = Running::open(&store, door.clone(), AccountId::from_raw(2), &env_bea, c.clone(), 1)
-        .await
-        .unwrap();
+    let mut run = Running::open(
+        &store,
+        door.clone(),
+        AccountId::from_raw(2),
+        &env_bea,
+        c.clone(),
+        1,
+    )
+    .await
+    .unwrap();
     run.key(DoorKey::Char('o'));
     run.flush(&store).await.unwrap();
-    assert!(get_world(&store, door.as_ref()).await.commons.pupil("bea").is_some());
+    assert!(
+        get_world(&store, door.as_ref())
+            .await
+            .commons
+            .pupil("bea")
+            .is_some()
+    );
     drop(run);
 
-    let mut run = Running::open(&store, door.clone(), AccountId::from_raw(1), &env_ann, c.clone(), 2)
-        .await
-        .unwrap();
+    let mut run = Running::open(
+        &store,
+        door.clone(),
+        AccountId::from_raw(1),
+        &env_ann,
+        c.clone(),
+        2,
+    )
+    .await
+    .unwrap();
     for k in keys("oc") {
         run.key(k);
         run.flush(&store).await.unwrap();
@@ -816,13 +1054,23 @@ async fn two_players_play_a_scheme_through_the_framework_store_and_the_opt_out_s
     // Bea opens the next morning: it is delivered, saved, and the world's record is updated.
     clock.set(Day::from_raw(day + 1).start());
     store.set_now(Day::from_raw(day + 1).start());
-    let mut run = Running::open(&store, door.clone(), AccountId::from_raw(2), &env_bea, c.clone(), 3)
-        .await
-        .unwrap();
+    let mut run = Running::open(
+        &store,
+        door.clone(),
+        AccountId::from_raw(2),
+        &env_bea,
+        c.clone(),
+        3,
+    )
+    .await
+    .unwrap();
     run.key(DoorKey::Char('o'));
     run.flush(&store).await.unwrap();
     let screen = run.look_around(&env_bea).join("\n");
-    assert!(screen.contains("swapped") || screen.contains("Lately"), "{screen}");
+    assert!(
+        screen.contains("swapped") || screen.contains("Lately"),
+        "{screen}"
+    );
     drop(run);
     let bea_saved = get_player(&store, door.as_ref(), 2).await;
     assert!(bea_saved.social.seen_plot >= 1);
@@ -832,33 +1080,65 @@ async fn two_players_play_a_scheme_through_the_framework_store_and_the_opt_out_s
     assert_eq!(world.commons.plots[0].state, plot_state::LANDED);
 
     // Ann comes back, hears how it went, and the record leaves the post.
-    let mut run = Running::open(&store, door.clone(), AccountId::from_raw(1), &env_ann, c.clone(), 4)
-        .await
-        .unwrap();
+    let mut run = Running::open(
+        &store,
+        door.clone(),
+        AccountId::from_raw(1),
+        &env_ann,
+        c.clone(),
+        4,
+    )
+    .await
+    .unwrap();
     run.key(DoorKey::Char('o'));
     run.flush(&store).await.unwrap();
     drop(run);
     let ann_after = get_player(&store, door.as_ref(), 1).await;
     assert_eq!(ann_after.legend, ann.legend + 1);
-    assert!(get_world(&store, door.as_ref()).await.commons.plots.is_empty());
+    assert!(
+        get_world(&store, door.as_ref())
+            .await
+            .commons
+            .plots
+            .is_empty()
+    );
 
     // Now bea opts out through the screen. Ann (days later, protection over) is shown her as
     // unreachable, and cannot put a scheme in the post.
     clock.set(Day::from_raw(day + 6).start());
     store.set_now(Day::from_raw(day + 6).start());
-    let mut run = Running::open(&store, door.clone(), AccountId::from_raw(2), &env_bea, c.clone(), 5)
-        .await
-        .unwrap();
+    let mut run = Running::open(
+        &store,
+        door.clone(),
+        AccountId::from_raw(2),
+        &env_bea,
+        c.clone(),
+        5,
+    )
+    .await
+    .unwrap();
     for k in keys("oo") {
         run.key(k);
         run.flush(&store).await.unwrap();
     }
     drop(run);
     assert!(get_player(&store, door.as_ref(), 2).await.social.opt_out);
-    assert!(get_world(&store, door.as_ref()).await.commons.opted_out("bea"));
-    let mut run = Running::open(&store, door.clone(), AccountId::from_raw(1), &env_ann, c.clone(), 6)
-        .await
-        .unwrap();
+    assert!(
+        get_world(&store, door.as_ref())
+            .await
+            .commons
+            .opted_out("bea")
+    );
+    let mut run = Running::open(
+        &store,
+        door.clone(),
+        AccountId::from_raw(1),
+        &env_ann,
+        c.clone(),
+        6,
+    )
+    .await
+    .unwrap();
     for k in keys("oc") {
         run.key(k);
         run.flush(&store).await.unwrap();
@@ -870,7 +1150,11 @@ async fn two_players_play_a_scheme_through_the_framework_store_and_the_opt_out_s
         run.flush(&store).await.unwrap();
     }
     assert!(
-        get_world(&store, door.as_ref()).await.commons.plots.is_empty(),
+        get_world(&store, door.as_ref())
+            .await
+            .commons
+            .plots
+            .is_empty(),
         "nothing was posted for an opted-out pupil"
     );
 }

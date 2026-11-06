@@ -225,7 +225,10 @@ fn detail_lines(ui: &Ui<'_>, width: u16) -> Vec<Line<'static>> {
                 ));
                 text(&mut out, &spec.blurb, pal.chalk_soft());
                 out.push(Line::styled(
-                    format!("costs {} nerve; they can see it coming if they are the sort who would", spec.nerve),
+                    format!(
+                        "costs {} nerve; they can see it coming if they are the sort who would",
+                        spec.nerve
+                    ),
                     pal.slate(),
                 ));
             }
@@ -235,7 +238,10 @@ fn detail_lines(ui: &Ui<'_>, width: u16) -> Vec<Line<'static>> {
                 out.push(Line::styled(spec.name.clone(), pal.chalk()));
                 text(
                     &mut out,
-                    &format!("\"{}\"", spec.text.replace("{about}", &g.subject_name(about))),
+                    &format!(
+                        "\"{}\"",
+                        spec.text.replace("{about}", &g.subject_name(about))
+                    ),
                     pal.chalk_soft(),
                 );
                 out.push(Line::styled(

@@ -583,9 +583,17 @@ impl Session {
         add('f', "You: file, grades, standing", Cmd::To(Mode::Stats));
         add('j', "Journal: stories, friends", Cmd::To(Mode::Journal));
         add('n', "News and rumours", Cmd::To(Mode::News));
-        add('o', "Social: plots, rumours, election", Cmd::To(Mode::Social));
+        add(
+            'o',
+            "Social: plots, rumours, election",
+            Cmd::To(Mode::Social),
+        );
         if self.can(&Action::Search) {
-            add('e', "Search here for the wing's secret", Cmd::Do(Action::Search));
+            add(
+                'e',
+                "Search here for the wing's secret",
+                Cmd::Do(Action::Search),
+            );
         }
         if self.can(&Action::Sleep) {
             add('z', "Lights out", Cmd::Do(Action::Sleep));

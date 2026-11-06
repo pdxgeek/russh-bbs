@@ -61,7 +61,7 @@ blurb = "A note in a teacher's hand tells someone to report to the library at on
 kind = "mischief"
 nerve = 2
 needs = ["skill:bluff>=1"]
-counter = ["skill:bluff>=2", "tag:charm"]
+counter = ["skill:bluff>=3", "tag:charm"]
 countered = "{from} sent you a note signed by a teacher. You smelled it at once."
 seen = "A note in a teacher's hand sent you to the library for nothing. It had {from}'s fingerprints all over it, in spirit."
 hit = ["stat:cool:-2"]
@@ -75,7 +75,7 @@ blurb = "A pair of laces that sing at every step, swapped in overnight."
 kind = "mischief"
 nerve = 1
 cash = 2
-counter = ["tag:fast_exit", "skill:sneak>=2"]
+counter = ["tag:fast_exit", "skill:sneak>=3"]
 countered = "{from} swapped your laces for squeaky ones. You walk too carefully to be caught by that."
 seen = "Your laces squeaked at every step all morning. It was {from}, probably."
 hit = ["stat:cool:-1", "stat:nerve:-1"]
@@ -205,7 +205,8 @@ cool = 2
 [[runner]]
 npc = "bramley"
 platform = "More patrols and tidier corridors."
-base = 14
+base = 10
+grow = 2
 withdrawn_by = ["prefects_stood_down"]
 swing = [["paper_hijack", -3]]
 win = "head_bramley"
@@ -213,7 +214,8 @@ win = "head_bramley"
 [[runner]]
 npc = "wren"
 platform = "An open paper and a longer lights-out."
-base = 11
+base = 9
+grow = 2
 swing = [["paper_hijack", 4], ["prefects_stood_down", 3]]
 win = "head_wren"
 
@@ -221,6 +223,7 @@ win = "head_wren"
 npc = "hollis"
 platform = "Boats for everyone and fewer lessons on Fridays."
 base = 9
+grow = 2
 swing = [["tuck_shop_closed", -2]]
 win = "head_hollis"
 

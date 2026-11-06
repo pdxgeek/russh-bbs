@@ -6,11 +6,11 @@
 
 use russh_bbs_door::DoorRng;
 
-use crate::content::Content;
 use crate::commons::{
     BACKING_CAP, CANDIDATE_CAP, Candidate, PLOT_CAP, PLOT_PER_TARGET, Plot, Pupil, ROSTER_CAP,
     RUMOUR_CAP, VERDICT_CAP, VOTE_CAP, Verdict, plot_state,
 };
+use crate::content::Content;
 use crate::state::{Active, World, YEAR_CAP, YearEntry, map_get, map_set, to_u8};
 
 /// One edit of the shared world.
@@ -237,21 +237,20 @@ impl WorldDelta {
 /// not played for longest makes room.
 fn roster_upsert(world: &mut World, pupil: &Pupil) {
     let r = &mut world.commons.roster;
-    match r.iter_mut().find(|p| p.name == pupil.name) {
-        Some(slot) => *slot = pupil.clone(),
-        None => {
-            if r.len() >= ROSTER_CAP
-                && let Some(oldest) = r
-                    .iter()
-                    .enumerate()
-                    .min_by_key(|(_, p)| p.last_day)
-                    .map(|(i, _)| i)
-            {
-                r.remove(oldest);
-            }
-            r.push(pupil.clone());
-        }
+    if let Some(slot) = r.iter_mut().find(|p| p.name == pupil.name) {
+        *slot = pupil.clone();
+        return;
     }
+    if r.len() >= ROSTER_CAP
+        && let Some(oldest) = r
+            .iter()
+            .enumerate()
+            .min_by_key(|(_, p)| p.last_day)
+            .map(|(i, _)| i)
+    {
+        r.remove(oldest);
+    }
+    r.push(pupil.clone());
 }
 
 /// Accept a plot into the post, or quietly drop it. The checks are against the *stored* world, so
@@ -268,7 +267,12 @@ fn post_plot(world: &mut World, content: &Content, from: &str, to: &str, kind: &
     if c.plots.len() >= PLOT_CAP || c.waiting_for(to) >= PLOT_PER_TARGET {
         return;
     }
-    if c.plots.iter().filter(|p| p.from == from && p.day == day).count() >= rules.plots_per_day {
+    if c.plots
+        .iter()
+        .filter(|p| p.from == from && p.day == day)
+        .count()
+        >= rules.plots_per_day
+    {
         return;
     }
     if c.plots
@@ -296,7 +300,10 @@ fn cast(world: &mut World, content: &Content, voter: &str, who: &str) {
     {
         return;
     }
-    if crate::social::ballot_of(content, world).iter().any(|b| b.id == who) {
+    if crate::social::ballot_of(content, world)
+        .iter()
+        .any(|b| b.id == who)
+    {
         world
             .commons
             .election
@@ -318,8 +325,14 @@ pub fn tick_day(world: &mut World, content: &Content, day: i64, _rng: &mut DoorR
     }
     world.patrol.retain(|(_, heat)| *heat > 0);
     let rules = &content.social.rules;
-    world.commons.plots.retain(|p| day - p.day <= rules.plot_days);
-    world.commons.rumours.retain(|r| day - r.day <= rules.rumour_days);
+    world
+        .commons
+        .plots
+        .retain(|p| day - p.day <= rules.plot_days);
+    world
+        .commons
+        .rumours
+        .retain(|r| day - r.day <= rules.rumour_days);
     if world.term_day(day) >= rules.tally_day {
         crate::social::count_election(world, content, day);
     }

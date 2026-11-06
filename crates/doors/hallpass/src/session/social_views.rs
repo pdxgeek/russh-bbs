@@ -30,12 +30,7 @@ impl Session {
             body.push(format!("Lately: {line}"));
         }
         if !p.social.awards.is_empty() {
-            let titles: Vec<String> = p
-                .social
-                .awards
-                .iter()
-                .map(|a| g.award_title(a))
-                .collect();
+            let titles: Vec<String> = p.social.awards.iter().map(|a| g.award_title(a)).collect();
             body.push(format!("Your awards: {}.", titles.join("; ")));
         }
         let mut items = vec![
@@ -93,11 +88,14 @@ impl Session {
         }
         (
             Self::wrapped(&body),
-            self.paged(items, Item {
-                key: 'b',
-                label: "Back".into(),
-                cmd: Cmd::To(Mode::Social),
-            }),
+            self.paged(
+                items,
+                Item {
+                    key: 'b',
+                    label: "Back".into(),
+                    cmd: Cmd::To(Mode::Social),
+                },
+            ),
         )
     }
 
@@ -120,11 +118,14 @@ impl Session {
         }
         (
             Self::wrapped(&body),
-            self.paged(items, Item {
-                key: 'b',
-                label: "Back".into(),
-                cmd: Cmd::To(Mode::Classmates),
-            }),
+            self.paged(
+                items,
+                Item {
+                    key: 'b',
+                    label: "Back".into(),
+                    cmd: Cmd::To(Mode::Classmates),
+                },
+            ),
         )
     }
 
@@ -156,11 +157,14 @@ impl Session {
         }
         (
             Self::wrapped(&body),
-            self.paged(items, Item {
-                key: 'b',
-                label: "Back".into(),
-                cmd: Cmd::To(Mode::Social),
-            }),
+            self.paged(
+                items,
+                Item {
+                    key: 'b',
+                    label: "Back".into(),
+                    cmd: Cmd::To(Mode::Social),
+                },
+            ),
         )
     }
 
@@ -186,11 +190,14 @@ impl Session {
             .collect();
         (
             Self::wrapped(&body),
-            self.paged(items, Item {
-                key: 'b',
-                label: "Back".into(),
-                cmd: Cmd::To(Mode::Rumours),
-            }),
+            self.paged(
+                items,
+                Item {
+                    key: 'b',
+                    label: "Back".into(),
+                    cmd: Cmd::To(Mode::Rumours),
+                },
+            ),
         )
     }
 
@@ -234,11 +241,14 @@ impl Session {
         }
         (
             Self::wrapped(&body),
-            self.paged(items, Item {
-                key: 'b',
-                label: "Back".into(),
-                cmd: Cmd::To(Mode::Social),
-            }),
+            self.paged(
+                items,
+                Item {
+                    key: 'b',
+                    label: "Back".into(),
+                    cmd: Cmd::To(Mode::Social),
+                },
+            ),
         )
     }
 }

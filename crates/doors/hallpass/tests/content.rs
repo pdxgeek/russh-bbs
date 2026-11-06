@@ -555,7 +555,14 @@ fn the_tone_check_refuses_a_script_that_costs_the_strays() {
 fn the_social_and_mystery_tables_meet_the_content_the_slice_promises() {
     let c = Content::embedded().unwrap();
     assert!(c.social.plots.len() >= 7, "{}", c.social.plots.len());
-    assert!(c.social.plots.iter().filter(|p| p.kind == "mischief").count() >= 4);
+    assert!(
+        c.social
+            .plots
+            .iter()
+            .filter(|p| p.kind == "mischief")
+            .count()
+            >= 4
+    );
     assert!(c.social.plots.iter().filter(|p| p.kind == "kind").count() >= 3);
     assert!(c.social.rumours.len() >= 8);
     assert!(c.social.runners.len() >= 3);
@@ -620,55 +627,183 @@ fn breaking_the_social_tables_is_caught_with_the_named_problem() {
     );
     assert!(got.contains("needs a counterplay"), "{got}");
     // The wrong sign: mischief that helps, a favour that harms.
-    assert!(edited("social", "hit = [\"stat:cash:-3\"]", "hit = [\"stat:cash:3\"]").contains("wrong sign"));
-    assert!(edited("social", "hit = [\"stat:cool:+2\"]", "hit = [\"stat:cool:-2\"]").contains("wrong sign"));
+    assert!(
+        edited(
+            "social",
+            "hit = [\"stat:cash:-3\"]",
+            "hit = [\"stat:cash:3\"]"
+        )
+        .contains("wrong sign")
+    );
+    assert!(
+        edited(
+            "social",
+            "hit = [\"stat:cool:+2\"]",
+            "hit = [\"stat:cool:-2\"]"
+        )
+        .contains("wrong sign")
+    );
     // A sender who pays nothing.
-    assert!(edited("social", "nerve = 2\nneeds = [\"skill:tinker>=1\"]", "nerve = 0\nneeds = [\"skill:tinker>=1\"]").contains("costs out of range"));
+    assert!(
+        edited(
+            "social",
+            "nerve = 2\nneeds = [\"skill:tinker>=1\"]",
+            "nerve = 0\nneeds = [\"skill:tinker>=1\"]"
+        )
+        .contains("costs out of range")
+    );
     // Text that does not name the sender, or is not plain.
-    assert!(edited("social", "A glued locker\"\nblurb", "A glued locker\u{202e}\"\nblurb").contains("unplain"));
-    assert!(edited("social", "Your locker was glued shut and it cost you a new latch. The whisper says {from}.", "Your locker was glued shut.").contains("{from}"));
+    assert!(
+        edited(
+            "social",
+            "A glued locker\"\nblurb",
+            "A glued locker\u{202e}\"\nblurb"
+        )
+        .contains("unplain")
+    );
+    assert!(
+        edited(
+            "social",
+            "Your locker was glued shut and it cost you a new latch. The whisper says {from}.",
+            "Your locker was glued shut."
+        )
+        .contains("{from}")
+    );
     // A rumour that is about no one, about a player, or a tall tale about someone else.
-    assert!(edited("social", "about = \"clique\"\nkind = \"praise\"", "about = \"player\"\nkind = \"praise\"").contains("about must be"));
+    assert!(
+        edited(
+            "social",
+            "about = \"clique\"\nkind = \"praise\"",
+            "about = \"player\"\nkind = \"praise\""
+        )
+        .contains("about must be")
+    );
     assert!(edited("social", "text = \"They say you once swung from the chapel bell rope to get out of detention.\"\nabout = \"self\"", "text = \"They say {about} once swung from the chapel bell rope to get out of detention.\"\nabout = \"npc\"").contains("tall tale is told about yourself"));
-    assert!(edited("social", "text = \"People are saying {about} is the fairest person at Greywater.\"", "text = \"People are saying nice things.\"").contains("{about}"));
+    assert!(
+        edited(
+            "social",
+            "text = \"People are saying {about} is the fairest person at Greywater.\"",
+            "text = \"People are saying nice things.\""
+        )
+        .contains("{about}")
+    );
     // Gossip that costs the Strays: a rumour template cannot name them unless it is praise.
-    let got = edited("social", "id = \"biscuits\"\nname = \"Seen raiding the biscuit tin\"", "id = \"fair_play\"\nname = \"Seen raiding the biscuit tin\"");
+    let got = edited(
+        "social",
+        "id = \"biscuits\"\nname = \"Seen raiding the biscuit tin\"",
+        "id = \"fair_play\"\nname = \"Seen raiding the biscuit tin\"",
+    );
     assert!(got.contains("used twice"), "{got}");
     // An election whose days run backwards, a runner who is a Stray, a runner with no win.
-    assert!(edited("social", "nominate_from = 11\nvote_from = 20", "nominate_from = 25\nvote_from = 20").contains("election days must rise"));
-    assert!(edited("social", "npc = \"wren\"", "npc = \"tilly\"").contains("the Strays do not run"));
-    assert!(edited("social", "win = \"head_wren\"", "win = \"head_nobody\"").contains("unknown world effect"));
-    assert!(edited("social", "player_win_effect = \"head_player\"", "player_win_effect = \"nope\"").contains("player_win_effect"));
-    assert!(edited("social", "winner_trait = \"head_of_school\"", "winner_trait = \"fast_runner\"").contains("earned trait"));
+    assert!(
+        edited(
+            "social",
+            "nominate_from = 11\nvote_from = 20",
+            "nominate_from = 25\nvote_from = 20"
+        )
+        .contains("election days must rise")
+    );
+    assert!(
+        edited("social", "npc = \"wren\"", "npc = \"tilly\"").contains("the Strays do not run")
+    );
+    assert!(
+        edited("social", "win = \"head_wren\"", "win = \"head_nobody\"")
+            .contains("unknown world effect")
+    );
+    assert!(
+        edited(
+            "social",
+            "player_win_effect = \"head_player\"",
+            "player_win_effect = \"nope\""
+        )
+        .contains("player_win_effect")
+    );
+    assert!(
+        edited(
+            "social",
+            "winner_trait = \"head_of_school\"",
+            "winner_trait = \"fast_runner\""
+        )
+        .contains("earned trait")
+    );
     // An award that scores nothing.
-    assert!(edited("social", "stat = \"legend\"\nmin = 10", "stat = \"luck\"\nmin = 10").contains("unknown stat"));
+    assert!(
+        edited(
+            "social",
+            "stat = \"legend\"\nmin = 10",
+            "stat = \"luck\"\nmin = 10"
+        )
+        .contains("unknown stat")
+    );
 }
 
 #[test]
 fn breaking_the_mystery_is_caught_with_the_named_problem() {
     // A clue at a place that does not exist, or that is shut when it can be found.
     assert!(edited("mystery", "place = \"library\"", "place = \"moon\"").contains("unknown place"));
-    assert!(edited("mystery", "place = \"east_wing\"\nkinds = [\"night\"]\nneeds = [\"item:east_wing_key\"", "place = \"east_wing\"\nkinds = [\"lunch\"]\nneeds = [\"item:east_wing_key\"").contains("can only be found when its place is shut"));
+    assert!(
+        edited(
+            "mystery",
+            "place = \"east_wing\"\nkinds = [\"night\"]\nneeds = [\"item:east_wing_key\"",
+            "place = \"east_wing\"\nkinds = [\"lunch\"]\nneeds = [\"item:east_wing_key\""
+        )
+        .contains("can only be found when its place is shut")
+    );
     // A clue that comes after a clue that does not come first.
-    assert!(edited("mystery", "after = [\"c1_register\"]\ntext = \"A hymn slip", "after = [\"c9_hall\"]\ntext = \"A hymn slip").contains("not an earlier clue"));
+    assert!(
+        edited(
+            "mystery",
+            "after = [\"c1_register\"]\ntext = \"A hymn slip",
+            "after = [\"c9_hall\"]\ntext = \"A hymn slip"
+        )
+        .contains("not an earlier clue")
+    );
     // A bad act, a bad risk, a clue with no words.
-    assert!(edited("mystery", "act = 2\nplace = \"chapel\"", "act = 7\nplace = \"chapel\"").contains("not 1 to 4"));
+    assert!(
+        edited(
+            "mystery",
+            "act = 2\nplace = \"chapel\"",
+            "act = 7\nplace = \"chapel\""
+        )
+        .contains("not 1 to 4")
+    );
     assert!(edited("mystery", "risk = 3", "risk = 9").contains("risk is over 3"));
     // An act with no clue.
     let no_four = problems(broken(|s, _| {
-        let once = replace(EMBEDDED.mystery, "act = 4\nplace = \"east_wing\"", "act = 3\nplace = \"east_wing\"");
-        s.mystery = replace(once, "act = 4\nplace = \"admin_corridor\"", "act = 3\nplace = \"admin_corridor\"");
+        let once = replace(
+            EMBEDDED.mystery,
+            "act = 4\nplace = \"east_wing\"",
+            "act = 3\nplace = \"east_wing\"",
+        );
+        s.mystery = replace(
+            once,
+            "act = 4\nplace = \"admin_corridor\"",
+            "act = 3\nplace = \"admin_corridor\"",
+        );
     }));
-    assert!(no_four.contains("act 4 of the mystery has no clue"), "{no_four}");
+    assert!(
+        no_four.contains("act 4 of the mystery has no clue"),
+        "{no_four}"
+    );
     // A verdict no ending casts is dead content; an ending that casts an unknown verdict is refused.
     let dead = edited("arcs", "\"verdict:bonfire\", ", "");
     assert!(dead.contains("is cast by no ending"), "{dead}");
     let unknown = edited("arcs", "\"verdict:bonfire\"", "\"verdict:the_moon\"");
     assert!(unknown.contains("unknown verdict"), "{unknown}");
     // A verdict that brings about nothing.
-    assert!(edited("mystery", "effect = \"bonfire\"", "effect = \"nothing\"").contains("unknown world effect"));
+    assert!(
+        edited("mystery", "effect = \"bonfire\"", "effect = \"nothing\"")
+            .contains("unknown world effect")
+    );
     // A flag a condition tests that nothing grants.
-    assert!(edited("mystery", "needs = [\"item:east_wing_key\", \"arc:the_wing@wing\"", "needs = [\"know:never_given\", \"arc:the_wing@wing\"").contains("nothing grants"));
+    assert!(
+        edited(
+            "mystery",
+            "needs = [\"item:east_wing_key\", \"arc:the_wing@wing\"",
+            "needs = [\"know:never_given\", \"arc:the_wing@wing\""
+        )
+        .contains("nothing grants")
+    );
     // The finale must fall inside the term.
     assert!(edited("mystery", "finale_day = 38", "finale_day = 90").contains("inside the term"));
 }

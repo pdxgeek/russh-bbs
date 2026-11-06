@@ -122,10 +122,16 @@ impl Content {
         let mut out: HashSet<String> = self.grants.iter().map(|g| g.know.clone()).collect();
         out.insert("won_election".to_owned());
         out.extend(self.mystery.clues.iter().map(|c| format!("clue_{}", c.id)));
-        out.extend(self.mystery.clues.iter().flat_map(|c| c.effects.iter()).filter_map(|e| match e {
-            Eff::Know(k) => Some(k.clone()),
-            _ => None,
-        }));
+        out.extend(
+            self.mystery
+                .clues
+                .iter()
+                .flat_map(|c| c.effects.iter())
+                .filter_map(|e| match e {
+                    Eff::Know(k) => Some(k.clone()),
+                    _ => None,
+                }),
+        );
         for n in &self.npcs {
             out.extend(n.ally.iter().flat_map(|a| a.grants.iter().cloned()));
         }
@@ -363,9 +369,9 @@ impl Content {
                     out.push(format!("{what}: step `{}` can never be entered", s.id));
                 }
                 let a_clue_waits_here = self.mystery.clues.iter().any(|c| {
-                    c.needs.iter().any(|n| {
-                        matches!(n, Cond::Arc { arc, step } if *arc == a.id && *step == s.id)
-                    })
+                    c.needs.iter().any(
+                        |n| matches!(n, Cond::Arc { arc, step } if *arc == a.id && *step == s.id),
+                    )
                 });
                 if !a_clue_waits_here
                     && !self.talks.iter().any(|t| {

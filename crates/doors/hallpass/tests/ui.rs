@@ -34,10 +34,10 @@ use russh_bbs_door::{
     ColorDepth, Composite, DoorEnv, DoorKey, DoorPalette, DoorSurface, Save, Start, Tier,
 };
 use russh_bbs_door_hallpass::Hallpass;
+use russh_bbs_door_hallpass::commons::{Candidate, Pupil, Rumour};
 use russh_bbs_door_hallpass::cond::Cond;
 use russh_bbs_door_hallpass::game::Action;
 use russh_bbs_door_hallpass::save::encode_player;
-use russh_bbs_door_hallpass::commons::{Candidate, Pupil, Rumour};
 use russh_bbs_door_hallpass::state::{
     Active, FileEntry, HallEntry, Headline, Membership, Status, World, YearEntry,
 };

@@ -27,8 +27,8 @@ use russh_bbs_core::store::AccountId;
 use russh_bbs_door::host::Running;
 use russh_bbs_door::sim::MemoryDoorStore;
 use russh_bbs_door::{BlobKind, Door, DoorEnv, DoorKey, MigrateError};
-use russh_bbs_door_hallpass::save::{decode_player, decode_world, encode_player};
 use russh_bbs_door_hallpass::commons::{Commons, Social};
+use russh_bbs_door_hallpass::save::{decode_player, decode_world, encode_player};
 use russh_bbs_door_hallpass::state::{Player, SchoolLife, World};
 use russh_bbs_door_hallpass::wire::encode;
 use russh_bbs_door_hallpass::{Hallpass, SAVE_VERSION, WORLD_VERSION};
@@ -139,7 +139,10 @@ fn a_version_2_character_from_h2_migrates_to_the_same_character_with_an_empty_so
     assert_eq!(player.cool, 9);
     assert_eq!(player.life.bond_with("sol"), 7);
     assert_eq!(player.social, Social::default());
-    assert!(!player.social.opt_out, "a migrated character is open, not opted out");
+    assert!(
+        !player.social.opt_out,
+        "a migrated character is open, not opted out"
+    );
     // The migrated bytes are the pinned bytes with exactly the empty social state appended.
     let mut expected = pinned.clone();
     expected.extend(encode(&Social::default()));
@@ -238,6 +241,13 @@ async fn an_old_save_and_an_old_world_in_the_store_are_migrated_when_the_door_op
     assert_eq!(world.version, 2);
     let w = decode_world(&world.bytes).unwrap();
     assert!(w.has("tuck_shop_closed"));
-    assert_eq!(w.commons.roster.iter().map(|p| p.name.as_str()).collect::<Vec<_>>(), ["ann"]);
+    assert_eq!(
+        w.commons
+            .roster
+            .iter()
+            .map(|p| p.name.as_str())
+            .collect::<Vec<_>>(),
+        ["ann"]
+    );
     let _ = monday();
 }

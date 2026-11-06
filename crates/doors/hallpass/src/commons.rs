@@ -27,7 +27,7 @@ pub const CANDIDATE_CAP: usize = 8;
 /// The most lines about what was done to a character that they keep.
 pub const INBOX_CAP: usize = 6;
 /// The most backing one candidate can hold.
-pub const BACKING_CAP: u16 = 60;
+pub const BACKING_CAP: u16 = 44;
 
 /// A character's own social state.
 #[derive(Debug, Clone, PartialEq, Eq, Default)]

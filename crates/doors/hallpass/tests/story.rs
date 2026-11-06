@@ -195,7 +195,12 @@ fn every_branch_of_the_ledger_ends_its_own_way_and_is_replayable() {
         let changes_world = matches!(*ending, "purged" | "headline");
         // (Every key also sends the pupil's roster entry, so the count of world edits is not the
         // measure; the engine counts the big changes it asked for.)
-        assert_eq!(end.big > 0, changes_world, "{name}: {} big changes", end.big);
+        assert_eq!(
+            end.big > 0,
+            changes_world,
+            "{name}: {} big changes",
+            end.big
+        );
         // A betrayed prefect stays betrayed.
         if *name == "took the money and told the head prefect" {
             assert!(end.knows("betrayed_bramley"));

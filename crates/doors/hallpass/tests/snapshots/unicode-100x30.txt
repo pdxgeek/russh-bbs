@@ -754,13 +754,13 @@
 │                                              ││21, counted on day 28.                            │
 │                                              ││Tobias Bramley: More patrols and                  │
 │                                              ││tidier corridors.                                 │
-│                                              ││   backing 14, votes 0                            │
+│                                              ││   backing 10, votes 0                            │
 │                                              ││Wren Okonjo: An open paper and a                  │
 │                                              ││longer lights-out.                                │
-│                                              ││   backing 11, votes 0                            │
+│                                              ││   backing 7, votes 0                             │
 │                                              ││Rafe Hollis: Boats for everyone                   │
 │                                              ││and fewer lessons on Fridays.                     │
-│                                              ││   backing 9, votes 0                             │
+│                                              ││   backing 11, votes 0                            │
 │                                              ││Wick: A pupil who thinks they                     │
 │                                              ││could do better.                                  │
 │                                              ││   backing 7, votes 0                             │

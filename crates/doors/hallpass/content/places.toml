@@ -268,7 +268,7 @@ look = "Barrels, pipes and a passage that smells of lake water."
 exits = ["old_wing", "staffroom", "tunnels", "candle_den"]
 hours = ["free", "after", "evening", "night"]
 lock = "cellar"
-unlock = ["know:caretaker_rounds", "rank:candle>=1", "item:tunnel_map", "item:master_key"]
+unlock = ["know:caretaker_rounds", "know:candle_sign", "rank:candle>=1", "item:tunnel_map", "item:master_key"]
 
 [[place]]
 id = "tunnels"
