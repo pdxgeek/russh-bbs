@@ -775,6 +775,9 @@ impl Screen {
     /// submits a token; keys after it are ignored. Nothing is drawn: call [`Screen::render`]
     /// once for the whole batch, so a flood of keys costs one redraw, not one per key.
     pub(crate) fn apply_keys(&mut self, keys: &[Key]) -> KeyEffects {
+        if let Some(spaced) = self.paste_breaks_to_spaces(keys) {
+            return self.apply_keys(&spaced);
+        }
         if self.interact.palette_open() || keys.contains(&Key::Ctrl('k')) {
             return self.apply_keys_with_palette(keys);
         }
@@ -1869,6 +1872,58 @@ impl Screen {
     pub(crate) fn limit_reached(&mut self, lines: Vec<String>) {
         self.content = Content::Limited(lines);
         self.rebuild = true;
+    }
+
+    /// The open message editor's unsaved draft, if there is one to keep (FIX-M3-7, D133): what
+    /// a lost connection and the periodic autosave store. Only the forum editor has a draft
+    /// context. The mail editor has none on purpose (D78 (5), D90: a stored draft would be
+    /// readable beside mail kept sealed), and neither has the poll description editor, so
+    /// their text is not stored.
+    pub(crate) fn unsaved_draft(&self) -> Option<crate::ui::editor::DraftSave> {
+        match &self.content {
+            Content::Forums(session) => session.screen.pending_draft(),
+            _ => None,
+        }
+    }
+
+    /// Whether a message editor is open (the poll description editor, or one in forums or
+    /// mail). Only the editor turns a pasted line break into a new line.
+    fn editor_open(&self) -> bool {
+        self.editor.is_some()
+            || match &self.content {
+                Content::Forums(session) => session.screen.editor_open(),
+                Content::Mail(session) => session.screen.editor_open(),
+                _ => false,
+            }
+    }
+
+    /// Characters the key parser dropped because they are not ASCII (FIX-M3-7, D133): say so
+    /// once, in a toast, so a name like `café` that arrives as `caf` is not a silent surprise.
+    pub(crate) fn note_dropped_text(&mut self) {
+        self.toast(ToastKind::Notice, ToastText::Key("toast.ascii_only"));
+    }
+
+    /// In a single-line input a pasted line break is one space (FIX-M3-7, D133): a run of
+    /// breaks is one space, and the break never presses Enter. Everywhere else, and in the
+    /// message editor (which keeps lines), the keys are unchanged.
+    fn paste_breaks_to_spaces(&self, keys: &[Key]) -> Option<Vec<Key>> {
+        if !keys.contains(&Key::PasteBreak) || self.editor_open() || !self.has_input() {
+            return None;
+        }
+        let mut out = Vec::with_capacity(keys.len());
+        let mut after_break = false;
+        for key in keys.iter().copied() {
+            if key == Key::PasteBreak {
+                if !after_break {
+                    out.push(Key::Char(' '));
+                }
+                after_break = true;
+            } else {
+                after_break = false;
+                out.push(key);
+            }
+        }
+        Some(out)
     }
 
     /// Whether the content has nothing more to offer, so the session should end after the

@@ -433,3 +433,69 @@ async fn line_after(channel: &mut Channel<Msg>, key: &str, text: &str) -> String
     press(channel, key).await;
     line(channel, text).await
 }
+
+/// Wait until `sql` returns exactly `want`, or fail with what it last returned.
+async fn until_texts(rig: &Rig, sql: &str, want: &[String]) {
+    let mut last = Vec::new();
+    for _ in 0..200 {
+        last = texts(rig, sql).await;
+        if last == want {
+            return;
+        }
+        tokio::time::sleep(Duration::from_millis(25)).await;
+    }
+    panic!("{sql}: wanted {want:?}, last saw {last:?}");
+}
+
+/// FIX-M3-7 (D133): the text in an open forum editor survives a lost connection. The first
+/// change is autosaved while the member is still typing; more typing after that is stored when
+/// the connection drops (no Ctrl-C, no Esc, no save key), and the next session resumes it.
+#[tokio::test]
+async fn a_forum_draft_survives_a_dropped_ssh_connection() {
+    let rig = Rig::start().await;
+    let (_sysop_session, mut sysop, _) = founder_at_menu(&rig).await;
+    press(&mut sysop, "f").await;
+    press(&mut sysop, "n").await;
+    line(&mut sysop, "General").await;
+    line(&mut sysop, "Talk about anything").await;
+    press(&mut sysop, "n").await;
+    let ann_key = member(&rig, "ann").await;
+
+    let (session, mut ann) = member_at_menu(&rig, &ann_key).await;
+    press(&mut ann, "f").await;
+    press(&mut ann, "1").await;
+    press(&mut ann, "w").await;
+    let editor = line(&mut ann, "Tomatoes").await;
+    assert!(flat(&editor).contains("General: Tomatoes"), "{editor}");
+
+    // While typing: the draft is stored without any save key.
+    press(&mut ann, "first part").await;
+    until_texts(&rig, "SELECT body FROM draft", &["first part".to_owned()]).await;
+
+    // More typing, then the connection is lost: no Ctrl-C, no Esc, nothing said.
+    press(&mut ann, " and the last words").await;
+    drop(ann);
+    drop(session);
+    until_texts(
+        &rig,
+        "SELECT body FROM draft",
+        &["first part and the last words".to_owned()],
+    )
+    .await;
+
+    // The next session opens the same compose and finds the text.
+    let session2 = login(rig.addr(), "anyone", &ann_key).await;
+    let mut ann = common::open_shell(&session2, 80, 24).await;
+    drain(&mut ann).await;
+    let menu = press(&mut ann, "x").await; // past the welcome; the icon questions are answered
+    assert!(flat(&menu).contains("Main menu"), "{menu}");
+    press(&mut ann, "f").await;
+    press(&mut ann, "1").await;
+    press(&mut ann, "w").await;
+    let editor = line(&mut ann, "Tomatoes").await;
+    assert!(
+        flat(&editor).contains("first part and the last words"),
+        "{editor}"
+    );
+    rig.stop().await;
+}

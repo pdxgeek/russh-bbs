@@ -471,8 +471,10 @@ impl Editor {
         })
     }
 
-    /// The draft to save on logoff: only if there is somewhere to keep it and something new.
-    fn pending_draft(&self) -> Option<DraftSave> {
+    /// The draft to save on logoff, on a lost connection and while editing (FIX-M3-7, D133):
+    /// only if there is somewhere to keep it and something new.
+    #[must_use]
+    pub fn pending_draft(&self) -> Option<DraftSave> {
         if self.is_changed() {
             self.draft()
         } else {

@@ -231,7 +231,18 @@ pub(crate) struct Shell<D> {
     /// When the permissions were last loaded, so a room's events can re-check them now and then
     /// without a key being pressed.
     loaded_access: Instant,
+    /// What the editor autosave last stored, so the same text is not stored again.
+    autosaved: Option<Autosaved>,
 }
+
+/// The last editor draft the autosave stored (FIX-M3-7).
+struct Autosaved {
+    key: (russh_bbs_core::drafts::ContextKey, String),
+    at: Instant,
+}
+
+/// The least time between two periodic editor autosaves (FIX-M3-7, D133).
+const AUTOSAVE_EVERY: Duration = Duration::from_secs(20);
 
 /// How long a member keeps receiving a room's events after losing `chat.join` on it when they
 /// press no key. A key re-checks at once; this bounds the silent case (D55 loads per action, and
@@ -249,6 +260,7 @@ impl<D: Backend> Shell<D> {
             pacer: Pacer::default(),
             chat: None,
             loaded_access: Instant::now(),
+            autosaved: None,
         }
     }
 
@@ -256,6 +268,9 @@ impl<D: Backend> Shell<D> {
     /// dropped.
     pub(crate) async fn run(mut self) {
         self.run_loop().await;
+        // However the loop ended (the client left, the connection dropped, a limit), the open
+        // editor's text is kept (FIX-M3-7, D133).
+        self.autosave_draft(true).await;
         self.settle_meter().await;
     }
 
@@ -298,7 +313,7 @@ impl<D: Backend> Shell<D> {
             };
             // The client's answers to the probes after effect frames say how much it has taken
             // (FIX-M35-3): a frame is drawn only if it is not too far behind.
-            self.pacer.acked(self.keys.take_acks());
+            self.take_parser_reports();
             self.pace_effects(now);
             if batch.input.is_empty() && self.keys.deadline().is_some_and(|d| d <= now) {
                 keys = self.keys.expire();
@@ -330,6 +345,7 @@ impl<D: Backend> Shell<D> {
             self.apply_chat_effects(&effects);
             self.answer_requests(&mut effects).await;
             self.run_member_requests(&mut effects).await;
+            self.autosave_draft(false).await;
             let mut leaving = effects.disconnect || batch.finish || out_of_time;
             if !leaving && let Some(request) = effects.redeem {
                 self.try_redeem(request).await;
@@ -454,6 +470,62 @@ impl<D: Backend> Shell<D> {
             self.refresh_access().await;
             let later = self.parts.screen.apply_keys(&rest);
             effects.absorb(later);
+        }
+    }
+
+    /// What the parser noticed in the input that just arrived: the client's answers to the
+    /// effect probes, and non-ASCII characters it had to drop, which are said once in a toast
+    /// so the loss is not silent (FIX-M3-7, D133 (1)).
+    fn take_parser_reports(&mut self) {
+        self.pacer.acked(self.keys.take_acks());
+        if self.keys.take_dropped() > 0 {
+            self.parts.screen.note_dropped_text();
+        }
+    }
+
+    /// Keep the open editor's text as a draft (FIX-M3-7, D133). `force` is the end of the
+    /// session; otherwise it is the periodic autosave, which runs each cycle before the frame (the
+    /// text only changes on keys, and unchanged text is skipped), at most every [`AUTOSAVE_EVERY`], and only when the text is not
+    /// what was last stored. Stored through the existing drafts store inside D80's caps; a
+    /// refusal (the cap, storage) is logged and the editor carries on, as the member's own
+    /// save would show it.
+    async fn autosave_draft(&mut self, force: bool) {
+        let Some(save) = self.parts.screen.unsaved_draft() else {
+            return;
+        };
+        let now = Instant::now();
+        if !force
+            && self
+                .autosaved
+                .as_ref()
+                .is_some_and(|last| last.at + AUTOSAVE_EVERY > now)
+        {
+            return;
+        }
+        let key = (save.context().clone(), save.text().to_owned());
+        if self.autosaved.as_ref().is_some_and(|last| last.key == key) {
+            return;
+        }
+        let Some(account) = self.parts.account else {
+            return;
+        };
+        let stored = timeout(
+            MEMBER_START_TIMEOUT,
+            save.persist(
+                &*self.parts.directory,
+                account,
+                russh_bbs_core::limits::Clock::now(&SystemClock),
+            ),
+        )
+        .await;
+        match stored {
+            Ok(Ok(_)) => self.autosaved = Some(Autosaved { key, at: now }),
+            Ok(Err(error)) => {
+                info!(session = ?self.parts.session.id(), %error, "editor draft was not autosaved");
+            }
+            Err(_) => {
+                warn!(session = ?self.parts.session.id(), "editor draft autosave timed out");
+            }
         }
     }
 
@@ -1492,6 +1564,8 @@ impl<D: Backend> Shell<D> {
     /// Before each frame (UI-9): load what the palette and the ticker asked for, and let time
     /// pass for toasts and the ticker.
     async fn interaction_upkeep(&mut self, palette: super::screen::PaletteAsk) {
+        // The editor's text only changes on keys, so this is where the keys' result is kept.
+        self.autosave_draft(false).await;
         if palette == super::screen::PaletteAsk::Boards {
             self.load_palette_boards().await;
         }

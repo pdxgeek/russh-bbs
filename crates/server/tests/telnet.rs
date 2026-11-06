@@ -1644,3 +1644,61 @@ async fn an_ssh_key_session_setting_the_password_ends_the_telnet_session_that_us
     // The ssh key session that made the change is still open.
     ssh_send(&mut channel, "b", "Password").await;
 }
+
+// ------------------------------------------------------- FIX-M3-7: a lost connection mid-edit
+
+/// FIX-M3-7 (D133): over telnet too, the text in an open forum editor is autosaved while the
+/// member types, and the rest is stored when the connection drops without a word.
+#[tokio::test]
+async fn a_forum_draft_survives_a_dropped_telnet_connection() {
+    use russh_bbs_core::forums::{ForumStore, NewBoard};
+
+    async fn until(bodies: &impl AsyncFn() -> Vec<String>, want: &str) {
+        for _ in 0..200 {
+            if bodies().await == [want.to_owned()] {
+                return;
+            }
+            tokio::time::sleep(Duration::from_millis(25)).await;
+        }
+        panic!("wanted the draft {want:?}, saw {:?}", bodies().await);
+    }
+    use russh_bbs_core::sanitize::SingleLine;
+    let rig = Rig::start(true).await;
+    let alice = rig.member("alice").await;
+    rig.store
+        .create_board(
+            &NewBoard {
+                name: SingleLine::new(40).sanitize("General"),
+                description: SingleLine::new(100).sanitize("Talk"),
+                restricted: false,
+            },
+            alice,
+            russh_bbs_core::store::UnixSeconds::from_raw(1_700_000_000),
+        )
+        .await
+        .unwrap()
+        .expect("the board is new");
+    let mut tn = at_menu(&rig, "alice").await;
+    tn.keys("f").await;
+    tn.keys("1").await;
+    tn.keys("w").await;
+    let editor = tn.keys("Tomatoes\r").await;
+    assert!(editor.contains("General: Tomatoes"), "{editor}");
+
+    let pool = sqlx::sqlite::SqlitePool::connect_with(
+        sqlx::sqlite::SqliteConnectOptions::new().filename(rig.dir.path().join("bbs.db")),
+    )
+    .await
+    .unwrap();
+    let bodies = || async {
+        sqlx::query_scalar::<_, String>("SELECT body FROM draft")
+            .fetch_all(&pool)
+            .await
+            .unwrap()
+    };
+    tn.keys("first part").await;
+    until(&bodies, "first part").await;
+    tn.keys(" and the last words").await;
+    drop(tn); // the connection is lost: no Ctrl-C, no Esc
+    until(&bodies, "first part and the last words").await;
+}
