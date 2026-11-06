@@ -71,3 +71,59 @@ name = "A tiny geared servo"
 price = 9
 shop = "workshop"
 needs = ["rank:robotics>=2"]
+
+# Kept in the open by anyone who finds the right place; never sold (an empty shop).
+[[item]]
+id = "east_wing_key"
+name = "The East Wing key"
+price = 0
+shop = ""
+
+[[item]]
+id = "padlock"
+name = "A combination padlock"
+price = 3
+shop = "tuck"
+
+[[item]]
+id = "spare_card"
+name = "A spare timetable card"
+price = 2
+shop = "tuck"
+
+# Small novelties (content pass): cheap, one use each.
+[[item]]
+id = "whoopee_cushion"
+name = "A rubber whoopee cushion"
+price = 3
+shop = "tuck"
+
+[[item]]
+id = "marbles"
+name = "A bag of glass marbles"
+price = 2
+shop = "tuck"
+
+[[item]]
+id = "glitter"
+name = "A tub of craft glitter"
+price = 3
+shop = "art"
+
+[[item]]
+id = "vanishing_ink"
+name = "A bottle of vanishing ink"
+price = 4
+shop = "art"
+
+[[item]]
+id = "fishing_line"
+name = "A reel of fishing line"
+price = 2
+shop = "boats"
+
+[[item]]
+id = "buzzer"
+name = "A pocket buzzer"
+price = 5
+shop = "workshop"

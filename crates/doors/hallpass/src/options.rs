@@ -49,6 +49,33 @@ impl Game {
                 proposals.push(Action::Quit(club.id.clone()));
             }
             proposals.push(Action::Meet);
+            proposals.push(Action::Search);
+            proposals.push(Action::Nominate);
+            proposals.push(Action::Canvass);
+            proposals.push(Action::OptOut(!self.player.social.opt_out));
+            for line in self.ballot() {
+                proposals.push(Action::Vote(line.id));
+            }
+            for spec in &self.content.social.plots {
+                for mate in self.classmates() {
+                    if self.plot_block(&spec.id, &mate.name).is_none() {
+                        proposals.push(Action::Plot {
+                            kind: spec.id.clone(),
+                            to: mate.name,
+                        });
+                    }
+                }
+            }
+            for spec in &self.content.social.rumours {
+                for about in self.content.rumour_subjects(spec) {
+                    if self.rumour_block(&spec.id, &about).is_none() {
+                        proposals.push(Action::Spread {
+                            rumour: spec.id.clone(),
+                            about,
+                        });
+                    }
+                }
+            }
             proposals.extend(self.reachable().into_iter().map(Action::Go));
             proposals.push(Action::Attend);
             proposals.extend(
