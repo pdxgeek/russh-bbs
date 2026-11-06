@@ -35,7 +35,7 @@ fn unhex(s: &str) -> Vec<u8> {
 fn an_l1_save_migrates_and_loads_with_everything_it_had() {
     let h = Harness::new(1, 1);
     let door = LongHaul::new().unwrap();
-    assert_eq!(SAVE_VERSION, 2);
+    assert_eq!(SAVE_VERSION, 3);
     assert_eq!(WORLD_VERSION, 2);
     let v1 = unhex(L1_SAVE);
     assert_eq!(v1[0], 1);
@@ -43,7 +43,7 @@ fn an_l1_save_migrates_and_loads_with_everything_it_had() {
     let direct = Player::decode(&v1, &h.content, &h.frontier).unwrap();
     // ... and through the framework's migration step, to the same captain.
     let v2 = door.migrate(BlobKind::Save, 1, &v1).unwrap();
-    assert_eq!(v2[0], SAVE_FORMAT);
+    assert_eq!(v2[0], 2, "version 1 migrates to version 2, then version 3");
     let migrated = Player::decode(&v2, &h.content, &h.frontier).unwrap();
     assert_eq!(migrated, direct);
     // What L1 knew survived.
@@ -72,10 +72,10 @@ fn an_l1_save_migrates_and_loads_with_everything_it_had() {
     assert_eq!(p.crew.len(), 1);
     let again = Player::decode(&p.encode(), &h.content, &h.frontier).unwrap();
     assert_eq!(again, p);
-    // Migrating twice is not a thing: only version 1 migrates.
+    // Only versions 1 and 2 migrate; there is no version 3 step yet.
     assert!(matches!(
-        door.migrate(BlobKind::Save, 2, &v2),
-        Err(MigrateError::Unsupported(2))
+        door.migrate(BlobKind::Save, 3, &v2),
+        Err(MigrateError::Unsupported(3))
     ));
     assert!(
         door.migrate(BlobKind::Save, 1, &v2).is_err(),
@@ -156,4 +156,51 @@ fn a_scene_open_in_a_save_comes_back_exactly() {
         q
     };
     assert_eq!(go(p), go(back));
+}
+
+/// A format-2 save written by the L3 build (`Player::encode_v2` at commit 02326bc), frozen.
+const L2_SAVE: &str = "02075465737465723001000000003c0000001400000000000000000000000f00000000000000f6ffffffe1100000000000005046000000000000274e000000000000204e000000000000000164007800030000000004000006000000000d00010a000a000000204e0000000000000000000000000000000000dc0500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000274e0000000000000000000000000000000000";
+
+#[test]
+fn an_l2_save_migrates_to_the_social_format_and_keeps_everything() {
+    let h = Harness::new(1, 1);
+    let door = LongHaul::new().unwrap();
+    let v2 = unhex(L2_SAVE);
+    assert_eq!(v2[0], 2);
+    let before = Player::decode(&v2, &h.content, &h.frontier).unwrap();
+    assert_eq!(before.cash, 4321);
+    let v3 = door.migrate(BlobKind::Save, 2, &v2).unwrap();
+    assert_eq!(v3[0], 3);
+    let after = Player::decode(&v3, &h.content, &h.frontier).unwrap();
+    assert_eq!(after, before, "nothing the captain had is lost, the social section is empty");
+    assert!(!after.social.flagged && after.social.convoy == 0);
+    // The whole chain from the oldest save works too.
+    let v1 = unhex(L1_SAVE);
+    let v2b = door.migrate(BlobKind::Save, 1, &v1).unwrap();
+    let v3b = door.migrate(BlobKind::Save, 2, &v2b).unwrap();
+    assert!(Player::decode(&v3b, &h.content, &h.frontier).is_some());
+    // A v3 blob is not a v2 blob.
+    assert!(door.migrate(BlobKind::Save, 2, &v3).is_err());
+    // And a truncated tail is refused, never trusted.
+    assert!(Player::decode(&v3[..v3.len() - 3], &h.content, &h.frontier).is_none());
+}
+
+#[test]
+fn an_l3_world_migrates_to_the_social_format() {
+    use russh_bbs_door_long_haul::social::Social;
+    use russh_bbs_door_long_haul::world::World;
+    let h = Harness::new(1, 1);
+    let door = LongHaul::new().unwrap();
+    // A format-1 world is today's bytes less the social section, with the old format byte.
+    let world = World::fresh(&h.content, &h.frontier, common::DAY0);
+    let v2 = world.encode();
+    let cut = 22 + Social::empty_bytes(common::DAY0).len();
+    let mut v1 = v2[..22].to_vec();
+    v1.extend_from_slice(&v2[cut..]);
+    v1[0] = 1;
+    let migrated = door.migrate(BlobKind::World, 1, &v1).unwrap();
+    assert_eq!(migrated, v2);
+    let back = World::decode(&migrated, &h.content, &h.frontier).unwrap();
+    assert_eq!(back, world);
+    assert!(door.migrate(BlobKind::World, 1, &v1[..10]).is_err());
 }

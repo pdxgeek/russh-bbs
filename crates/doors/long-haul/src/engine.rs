@@ -167,6 +167,27 @@ pub enum Action {
     Fight(Orders),
     /// Try to run from a fight.
     Run,
+    /// Raise the colours (`true`) or strike them (`false`): opt in to or out of piracy.
+    Flag(bool),
+    /// Start an intercept on the flagged captain with this handle.
+    Intercept(String),
+    /// Form a convoy.
+    ConvoyForm,
+    /// Join the convoy with this id.
+    ConvoyJoin(u32),
+    /// Leave the convoy.
+    ConvoyLeave,
+    /// Post quick note number `n` to the convoy.
+    ConvoyNote(u8),
+    /// Post a line the captain typed to the convoy.
+    ConvoySay(crate::socialplay::Say),
+    /// Pledge credits toward a station at a system.
+    Pledge {
+        /// The system.
+        system: u16,
+        /// Credits.
+        amount: i64,
+    },
     /// After a win: board the wreck (`true`) or leave it.
     Wreck {
         /// Whether to board.
@@ -188,6 +209,11 @@ impl Action {
 }
 
 /// Whether a pool of cash can cover `amount`.
+/// Whether a pool of cash can cover `amount` (for the social layer).
+pub(crate) fn can_pay_pub(cash: i64, amount: i64) -> Result<(), Refusal> {
+    can_pay(cash, amount)
+}
+
 pub(crate) fn can_pay(cash: i64, amount: i64) -> Result<(), Refusal> {
     if cash >= amount {
         Ok(())
@@ -290,6 +316,7 @@ impl Player {
             }
         }
         self.debt.interest_day = today;
+        self.touch_social(env);
         self.crew_upkeep(today, elapsed, &mut events);
         self.contract_upkeep(today, elapsed, &mut events);
         let mut periods = 0;
@@ -367,6 +394,7 @@ impl Player {
         }
         let mut events = self.apply_action(env, action)?;
         self.check_goals(&mut events);
+        self.convoy_dividend(env, &mut events);
         Ok(events)
     }
 
@@ -401,6 +429,14 @@ impl Player {
             Action::Run => self.run_away(env),
             Action::Wreck { board } => self.wreck_choice(env, *board),
             Action::Skirmish(drill) => self.skirmish(env, *drill),
+            Action::Flag(on) => self.set_flag(env, *on),
+            Action::Intercept(target) => self.intercept(env, target),
+            Action::ConvoyForm => self.form_convoy(env),
+            Action::ConvoyJoin(id) => self.join_convoy(env, *id),
+            Action::ConvoyLeave => self.leave_convoy(env),
+            Action::ConvoyNote(n) => self.post_template(env, usize::from(*n)),
+            Action::ConvoySay(text) => self.post_say(env, text),
+            Action::Pledge { system, amount } => self.pledge(env, *system, *amount),
         }
     }
 

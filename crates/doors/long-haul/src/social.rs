@@ -839,11 +839,11 @@ impl Social {
 
     /// Settle the night. Called by the world's tick with the day's RNG; the result depends on
     /// the world, the day and the RNG only.
-    pub fn tick(&mut self, today: i64, convoy_kinds: usize, rng: &mut DoorRng) {
+    pub fn tick(&mut self, today: i64, convoy_pools: &[i64], rng: &mut DoorRng) {
         self.roster.retain(|p| today - p.seen <= ROSTER_DAYS);
         self.resolve_intents(today);
         self.raids.retain(|r| today - r.day <= RAID_KEEP_DAYS);
-        self.convoy_night(today, convoy_kinds, rng);
+        self.convoy_night(today, convoy_pools, rng);
     }
 
     fn resolve_intents(&mut self, today: i64) {
@@ -916,7 +916,8 @@ impl Social {
         }
     }
 
-    fn convoy_night(&mut self, today: i64, kinds: usize, rng: &mut DoorRng) {
+    fn convoy_night(&mut self, today: i64, pools: &[i64], rng: &mut DoorRng) {
+        let kinds = pools.len();
         for convoy in &mut self.convoys {
             convoy.members.retain(|m| today - m.seen <= MEMBER_IDLE_DAYS);
         }
@@ -948,6 +949,7 @@ impl Social {
                     .filter(|m| today - m.seen <= ACTIVE_DAYS)
                     .map(|m| u32::from(m.power))
                     .sum::<u32>();
+                convoy.pool = (convoy.pool + pools.get(usize::from(kind)).copied().unwrap_or(0)).max(0);
                 let id = convoy.events.last().map_or(1, |e| e.id + 1);
                 convoy.events.push(ConvoyEvent {
                     id,

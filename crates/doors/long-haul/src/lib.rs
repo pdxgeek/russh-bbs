@@ -14,6 +14,7 @@
 
 #![forbid(unsafe_code)]
 
+pub mod arcs;
 pub mod boarding;
 pub mod codec;
 pub mod combat;
@@ -31,6 +32,7 @@ mod session;
 pub mod ship;
 pub mod skills;
 pub mod social;
+pub mod socialplay;
 pub mod trade;
 pub mod transit;
 pub mod world;
@@ -51,7 +53,7 @@ use crate::world::World;
 /// The door's id. It never changes: saves and the world are filed under it.
 pub const DOOR_ID: &str = "long-haul";
 /// The player save's version (see [`player::SAVE_FORMAT`] for the format byte inside it).
-pub const SAVE_VERSION: u32 = 2;
+pub const SAVE_VERSION: u32 = 3;
 /// The shared world's version.
 pub const WORLD_VERSION: u32 = 2;
 
@@ -175,6 +177,7 @@ impl Door for LongHaul {
         // and scene sections (D98 (3): saves are forward-only, and these steps stay for good).
         match (kind, from) {
             (BlobKind::Save, 1) => Player::migrate_v1(bytes).ok_or(MigrateError::Unsupported(from)),
+            (BlobKind::Save, 2) => Player::migrate_v2(bytes).ok_or(MigrateError::Corrupt(from)),
             (BlobKind::World, 1) => World::migrate_v1(bytes).ok_or(MigrateError::Corrupt(from)),
             _ => Err(MigrateError::Unsupported(from)),
         }

@@ -6,6 +6,7 @@
 //! the UI slice (L3); the screen reads the same lines for the look-around view.
 
 mod screens;
+mod society;
 mod ui;
 
 use std::sync::Arc;
@@ -54,6 +55,7 @@ enum Mode {
     News,
     Crew(usize),
     Jobs(usize),
+    Society(society::Tab, usize, Option<String>),
 }
 
 pub(crate) struct Session {
@@ -72,6 +74,11 @@ pub(crate) struct Session {
     chart: ui::chart::ChartState,
     plan: Option<ui::route::Plan>,
     reactor: ui::combat::Reactor,
+    /// World changes made while the door was opening, sent with the first key.
+    pending: Vec<crate::world::Delta>,
+    /// Opening the door changed the captain (a new day, collected raids and dividends); the
+    /// first key writes it, even if that key leaves.
+    opened_dirty: bool,
 }
 
 fn cr(n: i64) -> String {
@@ -154,9 +161,20 @@ impl Session {
         };
         let mut world = world;
         let mut player = player;
+        let mut pending = Vec::new();
+        if let Some(p) = player.as_mut()
+            && p.social.handle != handle
+        {
+            // Bookkeeping, not a change worth a save of its own.
+            p.social.handle = handle.to_owned();
+        }
+        let loaded = player.clone();
         let events = player.as_mut().map_or_else(Vec::new, |p| {
             let mut env = Env::new(&content, &frontier, &mut world, rng, today);
-            p.settle(&mut env)
+            let mut events = p.settle(&mut env);
+            events.extend(p.claim_social(&mut env));
+            pending = std::mem::take(&mut env.deltas);
+            events
         });
         let mut session = Self {
             content,
@@ -172,7 +190,10 @@ impl Session {
             chart: ui::chart::ChartState::new(0),
             plan: None,
             reactor: ui::combat::Reactor::new(),
+            pending,
+            opened_dirty: false,
         };
+        session.opened_dirty = session.player != loaded || !session.pending.is_empty();
         if let Some(p) = &session.player {
             session.chart = ui::chart::ChartState::new(p.at);
         }
@@ -180,6 +201,25 @@ impl Session {
         // if the captain leaves without another key; the first key saves it.
         session.note_events(&events);
         session
+    }
+
+    /// Write what opening the door changed, once, with the first key.
+    fn flush_open(&mut self, ctx: &mut Ctx<'_>) {
+        if !self.opened_dirty {
+            return;
+        }
+        self.opened_dirty = false;
+        if let Some(p) = &self.player {
+            ctx.request_save(p.encode());
+        }
+        let deltas = std::mem::take(&mut self.pending);
+        if !deltas.is_empty() {
+            let (content, base) = (Arc::clone(&self.content), Arc::clone(&self.base));
+            let today = ctx.today().as_raw();
+            ctx.edit_world(move |old| {
+                Some(World::apply_stored(old, &content, &base, today, &deltas))
+            });
+        }
     }
 
     fn push(&mut self, text: String, style: DoorStyle) {
@@ -248,7 +288,8 @@ impl Session {
         }
         let today = ctx.today().as_raw();
         let before = player.clone();
-        let (settled, result, deltas) = {
+        let carried = std::mem::take(&mut self.pending);
+        let (settled, result, mut deltas) = {
             let mut env = Env::new(
                 &self.content,
                 &self.frontier,
@@ -260,6 +301,7 @@ impl Session {
             let result = player.apply(&mut env, action);
             (settled, result, env.deltas)
         };
+        deltas.splice(0..0, carried);
         self.note_events(&settled);
         let ok = match result {
             Ok(events) => {
@@ -305,8 +347,9 @@ impl Session {
                 let captain = ctx
                     .player_name(&self.handle)
                     .map_or_else(|_| self.handle.clone(), |n| n.as_str().to_owned());
-                let player =
+                let mut player =
                     Player::new(&self.content, &self.frontier, &captain, background, today);
+                player.social.handle.clone_from(&self.handle);
                 ctx.request_save(player.encode());
                 self.push(
                     "You sign the loan. The ship is yours, and so is the debt.".to_owned(),
@@ -360,6 +403,7 @@ impl Session {
                 };
             }
             'a' => self.mode = Mode::Standing,
+            'o' => self.mode = Mode::Society(society::Tab::Convoy, 0, None),
             'y' if player.docked.is_some() => self.mode = Mode::Yard(0),
             'l' if player.docked.is_some() => self.mode = Mode::Loan,
             'n' => self.mode = Mode::News,
@@ -998,6 +1042,9 @@ impl Session {
             Mode::News => out.extend(self.news_lines(player)),
             Mode::Crew(cursor) => out.extend(self.crew_lines(player, *cursor)),
             Mode::Jobs(cursor) => out.extend(self.jobs_lines(player, *cursor)),
+            Mode::Society(tab, cursor, input) => {
+                out.extend(self.society_lines(*tab, *cursor, input.as_deref()));
+            }
         }
         out.push((String::new(), DoorStyle::Plain));
         for (text, style) in self
@@ -1030,6 +1077,7 @@ fn fit_width(lines: Vec<(String, DoorStyle)>) -> Vec<(String, DoorStyle)> {
 
 impl DoorSession for Session {
     fn key(&mut self, key: DoorKey, ctx: &mut Ctx<'_>) -> Flow {
+        self.flush_open(ctx);
         if self.player.as_ref().is_some_and(|p| p.scene.is_some()) {
             return self.scene_key(key, ctx);
         }
@@ -1079,6 +1127,10 @@ impl DoorSession for Session {
             }
             Mode::Jobs(_) => {
                 self.jobs_key(key, ctx);
+                Flow::Stay
+            }
+            Mode::Society(..) => {
+                self.society_key(key, ctx);
                 Flow::Stay
             }
         }

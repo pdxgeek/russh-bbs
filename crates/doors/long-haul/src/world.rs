@@ -425,8 +425,8 @@ impl World {
 
     /// The part of the night that belongs to players: raids, convoys, outposts.
     fn social_night(&mut self, content: &Content, base: &Frontier, day: i64, rng: &mut DoorRng) {
-        self.social
-            .tick(day, content.social.convoy_event.len(), rng);
+        let pools: Vec<i64> = content.social.convoy_event.iter().map(|e| e.pool).collect();
+        self.social.tick(day, &pools, rng);
         if self.social.season_day(day) >= crate::social::OUTPOST_MIN_DAY {
             let suffixes = content.social.outpost_suffix.clone();
             let before = self.social.outposts.len();
