@@ -1,0 +1,24 @@
+ russh-bbs │ File areas                                               UTC 03:56
+┌ File areas ──────────────────────────────────────────────────────────────────┐
+│[1] Manuals  (0 files)                                                        │
+│                                                                              │
+│Number: open                                                                  │
+│/: search                                                                     │
+│l: download list                                                              │
+│q: files waiting for approval (staff)                                         │
+│n: new area (staff)                                                           │
+│                                                                              │
+│Uploads and downloads use an sftp client over ssh, with the key you signed in │
+│with.                                                                         │
+│The board can read every file here. Encrypt a file yourself before you upload │
+│it if it must stay secret.                                                    │
+│Notice: Area made.                                                            │
+│                                                                              │
+│Number: open   /: search   l: list   Esc: back                                │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+ ? help  Esc back  Ctrl-C log off

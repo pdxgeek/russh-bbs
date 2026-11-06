@@ -1,0 +1,43 @@
+ russh-bbs │ Files                                                                                                        UTC 03:57
+                ┌ Files ───────────────────────────────────────────────────────────────────────────────────────────┐
+                │Manuals                                                                                           │
+                │[1] router-guide.txt  1000 B  ann                                                                 │
+                │Number: open                                                                                      │
+                │                                                                                                  │
+                │Upload with sftp to /1-manuals/  (new files wait for staff approval)                              │
+                │                                                                                                  │
+                │Uploads and downloads use an sftp client over ssh, with the key you signed in with.               │
+                │                                                                                                  │
+                │Number: open   n/p: pages   /: search   Esc: back                                                 │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                └──────────────────────────────────────────────────────────────────────────────────────────────────┘
+ ? help  Esc back  Ctrl-C log off

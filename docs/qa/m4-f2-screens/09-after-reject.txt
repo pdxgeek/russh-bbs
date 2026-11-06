@@ -1,0 +1,24 @@
+ russh-bbs │ Waiting for approval                                     UTC 03:57
+┌ Waiting for approval ────────────────────────────────────────────────────────┐
+│Nothing is waiting.                                                           │
+│Notice: Rejected. The bytes are deleted.                                      │
+│                                                                              │
+│Number: open   n/p: pages   /: search   Esc: back                             │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+ ? help  Esc back  Ctrl-C log off

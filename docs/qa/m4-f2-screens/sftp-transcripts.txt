@@ -1,0 +1,44 @@
+=== ann: sftp upload (exit 0)
+sftp> ls -1 /
+/1-manuals
+/downloads
+sftp> put router-guide.txt /1-manuals/router-guide.txt
+sftp> put network-diagram.bin /1-manuals/network-diagram.bin
+sftp> ls -l /1-manuals/pending
+-r--r--r-- 0 ann 0 1000 Nov 06 2026 03:56 1-router-guide.txt
+-r--r--r-- 0 ann 0 700000 Nov 06 2026 03:56 2-network-diagram.bin
+
+=== bob before approval (the get must fail) (exit 1)
+sftp> ls -l /1-manuals
+dr-xr-xr-x 0 0 0 0 Jan 01 1970 00:00 pending
+sftp> ls -l /1-manuals/pending
+sftp> get /1-manuals/pending/1-router-guide.txt stolen.txt
+File "/1-manuals/pending/1-router-guide.txt" not found.
+
+=== bob after approval (exit 0)
+sftp> ls -l /1-manuals
+-r--r--r-- 0 ann 0 1000 Nov 06 2026 03:56 1-router-guide.txt
+dr-xr-xr-x 0 0 0 0 Jan 01 1970 00:00 pending
+sftp> get /1-manuals/1-router-guide.txt got.txt
+
+=== bob's download equals the upload (sha256) (exit 0)
+True
+=== bob: the download list, then things that must be refused (exit 0)
+sftp> ls -l /downloads
+-r--r--r-- 0 ann 0 1000 Nov 06 2026 03:56 1-router-guide.txt
+sftp> get /downloads/1-router-guide.txt listed.txt
+sftp> -mkdir /1-manuals/x
+sftp> -rm /1-manuals/1-router-guide.txt
+sftp> -rename /1-manuals/1-router-guide.txt /1-manuals/x
+sftp> -ln -s /etc/passwd /1-manuals/l
+sftp> -get /../../etc/passwd pw.txt
+sftp> -get //etc/passwd pw.txt
+sftp> -ls /9-nothing
+remote mkdir "/1-manuals/x": Permission denied
+remote delete /1-manuals/1-router-guide.txt: Permission denied
+remote rename "/1-manuals/1-router-guide.txt" to "/1-manuals/x": Permission denied
+remote symlink file "/etc/passwd" to "/1-manuals/l": Permission denied
+File "/../../etc/passwd" not found.
+File "//etc/passwd" not found.
+Can't ls: "/9-nothing" not found
+

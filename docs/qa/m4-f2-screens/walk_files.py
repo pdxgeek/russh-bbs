@@ -215,7 +215,9 @@ def main():
             term.close()
 
         code, text = sftp(work, keys, "bob", "ls -l /downloads", "get /downloads/1-router-guide.txt listed.txt",
-                          "mkdir /1-manuals/x", "rm /1-manuals/1-router-guide.txt", "get /../../etc/passwd pw.txt")
+                          "-mkdir /1-manuals/x", "-rm /1-manuals/1-router-guide.txt",
+                          "-rename /1-manuals/1-router-guide.txt /1-manuals/x", "-ln -s /etc/passwd /1-manuals/l",
+                          "-get /../../etc/passwd pw.txt", "-get //etc/passwd pw.txt", "-ls /9-nothing")
         report.append(("bob: the download list, then things that must be refused", code, text))
     finally:
         proc.terminate()

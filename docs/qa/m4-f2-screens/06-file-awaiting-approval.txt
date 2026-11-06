@@ -1,0 +1,24 @@
+ russh-bbs │ File                                                     UTC 03:56
+┌ File ────────────────────────────────────────────────────────────────────────┐
+│router-guide.txt                                                              │
+│Area: Manuals                                                                 │
+│Size: 1000 B (1000 bytes)                                                     │
+│Uploaded by ann on 2026-11-06 03:56 UTC                                       │
+│SHA-256: e27993e1348a6439d02ffd38b71054c37f5f4e8a6d0bfbcf0c6c4476b1fe5817     │
+│Not scanned: this board has no virus scanner turned on.                       │
+│No tags.                                                                      │
+│Waiting for staff approval. Only you and staff can see it.                    │
+│                                                                              │
+│The board can read every file here. Encrypt a file yourself before you upload │
+│it if it must stay secret.                                                    │
+│                                                                              │
+│d: change the description                                                     │
+│a: approve   r: reject                                                        │
+│x: remove this file                                                           │
+│                                                                              │
+│t/u: tags   d: about   b: list   Esc: back                                    │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+ ? help  Esc back  Ctrl-C log off
