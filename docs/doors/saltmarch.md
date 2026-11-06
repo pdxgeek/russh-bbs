@@ -288,7 +288,7 @@ Same crate, **save version 3, world version 3** (version 2 saves and worlds migr
 
 ## Implementation notes (M4-S5)
 
-Same crate, **save version 4, world version 4** (version 3 saves and worlds migrate; a test builds the old bytes by hand for each, and for the whole chain 1 to 4). Decision: D-TBD. New modules: `story.rs` (factions, quests, contracts, heirlooms, the clan's outbox), `board.rs` (the contract engine), `social/legacy.rs` (endings and what the next season inherits); the content is `content/*.toml` (events are split by area into `events-*.toml` and joined at load). Nothing changed in the framework or outside the crate and the docs.
+Same crate, **save version 4, world version 4** (version 3 saves and worlds migrate; a test builds the old bytes by hand for each, and for the whole chain 1 to 4). Decision: D136. New modules: `story.rs` (factions, quests, contracts, heirlooms, the clan's outbox), `board.rs` (the contract engine), `social/legacy.rs` (endings and what the next season inherits); the content is `content/*.toml` (events are split by area into `events-*.toml` and joined at load). Nothing changed in the framework or outside the crate and the docs.
 
 **The launch content budget, against the design**
 
