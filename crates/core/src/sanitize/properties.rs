@@ -372,13 +372,11 @@ fn unicode_and_nerd_tier_markers_cannot_be_typed() {
 fn long_run_every_mode() {
     use proptest::test_runner::{Config, TestRunner};
     let mut runner = TestRunner::new(Config::with_cases(300_000));
-    runner
-        .run(
-            &(prop::collection::vec(any::<u8>(), 0..400), 0usize..200),
-            |(b, max)| all_modes(&String::from_utf8_lossy(&b), max),
-        )
-        .unwrap();
-    runner
-        .run(&(any_text(), 0usize..200), |(s, max)| all_modes(&s, max))
-        .unwrap();
+    let bytes = runner.run(
+        &(prop::collection::vec(any::<u8>(), 0..400), 0usize..200),
+        |(b, max)| all_modes(&String::from_utf8_lossy(&b), max),
+    );
+    assert!(bytes.is_ok(), "{bytes:?}");
+    let text = runner.run(&(any_text(), 0usize..200), |(s, max)| all_modes(&s, max));
+    assert!(text.is_ok(), "{text:?}");
 }
