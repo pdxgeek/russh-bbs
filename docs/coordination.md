@@ -218,6 +218,14 @@ Every slice: adds its permission rows to [access.md](access.md) and the `Permiss
 
 **M3 batches.** Batch 1: M3-A, M3-B, M3-C, M3-D (no shared Owns paths). Batch 2 after the needed batch-1 slices merge: M3-E, M3-F, M3-H, M3-J. Batch 3: M3-G, M3-I. At most four workers at once. Slices that add migrations develop in parallel but merge one at a time: merge `main` first, then take the next migration number. Menu entries in `core::menu` are the one shared file every screen slice touches; add one entry per slice and resolve conflicts at merge.
 
+### Hardening (H-*)
+
+| Slice | Owns | Depends on | Status | Branch / PR |
+|---|---|---|---|---|
+| H-1 Telnet front end fuzz and regression tests | `crates/server/src/telnet` (tests; small fixes) | M3-H | In review: [PR #153](https://github.com/pdxgeek/russh-bbs/pull/153) | `hard/telnet-fuzz`. Added `protocol/fuzz.rs`: property tests over arbitrary byte streams cut at arbitrary points (no panic; subnegotiation buffer, terminal name and replies bounded; replies are whole protocol frames only; output identical however the input is split; typed keys are printable ASCII so nothing a client sends is echoed as an escape; no option ping-pong against a client that answers every reply), plus targeted tests (unterminated SB, stray IAC SE, NAWS 0x0 and 65535x65535, huge or control-character TTYPE, WILL/WONT/DO/DONT flood). No defect found in the decoder, so no code changed. Long run (`-- --ignored`): 2,000 streams of up to 4,000 bytes, clean. |
+
+| FIX-H1-1 An unterminated telnet subnegotiation swallows all later input (H-1, low) | `crates/server/src/telnet/protocol.rs` | H-1 | Open | Repro: send `IAC SB TTYPE IS` and no `IAC SE`; every later byte is consumed inside the subnegotiation until an `IAC SE` arrives (test `an_unterminated_subnegotiation_stays_bounded_and_ends_at_the_next_iac_se`). Memory stays bounded and only the sender is affected, and the idle and authentication timeouts still end the session. Expected: optionally abandon a subnegotiation after a byte budget (for example 4 KiB skipped) and return to data, so a confused client recovers. Needs an owner pick (D-TBD): the current behaviour is the RFC-literal one. |
+
 ## Cross-slice requests
 
 Add a line here if you need a change in code another slice owns. Do not make it yourself.
