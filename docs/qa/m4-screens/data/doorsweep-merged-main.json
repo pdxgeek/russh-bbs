@@ -1,0 +1,258 @@
+{
+ "ds-ssh-alice-80x24-unicode": {
+  "layouts": [
+   "classic",
+   "lightbar",
+   "compact",
+   "dashboard",
+   "wide",
+   "focus",
+   "split"
+  ],
+  "themes": [
+   "default",
+   "phosphor",
+   "neon",
+   "paper",
+   "amber",
+   "deepspace",
+   "ansi",
+   "green",
+   "contrast"
+  ],
+  "combos": 63,
+  "games_per_combo": 6,
+  "door_visits": 378,
+  "totals": {
+   "bold_rev": 0,
+   "bold_rev_off_status": 0,
+   "plain_rev": 0,
+   "bytes": 7244081,
+   "sixel_kitty": 0,
+   "osc_dcs_apc": 0
+  },
+  "violations": 0,
+  "stream": {
+   "bytes": 10020918,
+   "reverse_sgr": 0,
+   "bold_reverse_sgr": 0,
+   "truecolor": 150644,
+   "c256": 40587,
+   "gfx": 0
+  }
+ },
+ "ds-ssh-bob-80x24-ascii": {
+  "layouts": [
+   "classic",
+   "lightbar",
+   "compact",
+   "dashboard",
+   "wide",
+   "focus",
+   "split"
+  ],
+  "themes": [
+   "default",
+   "phosphor",
+   "neon",
+   "paper",
+   "amber",
+   "deepspace",
+   "ansi",
+   "green",
+   "contrast"
+  ],
+  "combos": 63,
+  "games_per_combo": 6,
+  "door_visits": 378,
+  "totals": {
+   "bold_rev": 0,
+   "bold_rev_off_status": 0,
+   "plain_rev": 0,
+   "bytes": 2851303,
+   "nonascii": 0,
+   "sixel_kitty": 0,
+   "osc_dcs_apc": 0,
+   "mono_colour": 0
+  },
+  "violations": 0,
+  "stream": {
+   "bytes": 3843110,
+   "reverse_sgr": 0,
+   "bold_reverse_sgr": 0,
+   "truecolor": 0,
+   "c256": 0,
+   "gfx": 0
+  }
+ },
+ "ds-ssh-founder-80x24-nerd": {
+  "layouts": [
+   "classic",
+   "lightbar",
+   "compact",
+   "dashboard",
+   "wide",
+   "focus",
+   "split"
+  ],
+  "themes": [
+   "default",
+   "phosphor",
+   "neon",
+   "paper",
+   "amber",
+   "deepspace",
+   "ansi",
+   "green",
+   "contrast"
+  ],
+  "combos": 63,
+  "games_per_combo": 6,
+  "door_visits": 378,
+  "totals": {
+   "bold_rev": 378,
+   "bold_rev_off_status": 0,
+   "plain_rev": 0,
+   "bytes": 7072464,
+   "sixel_kitty": 0,
+   "osc_dcs_apc": 0
+  },
+  "violations": 0,
+  "stream": {
+   "bytes": 9835772,
+   "reverse_sgr": 844,
+   "bold_reverse_sgr": 0,
+   "truecolor": 147628,
+   "c256": 40181,
+   "gfx": 0
+  }
+ },
+ "ds-telnet-carol-80x24-nerd": {
+  "layouts": [
+   "classic",
+   "lightbar",
+   "compact",
+   "dashboard",
+   "wide",
+   "focus",
+   "split"
+  ],
+  "themes": [
+   "default",
+   "phosphor",
+   "neon",
+   "paper",
+   "amber",
+   "deepspace",
+   "ansi",
+   "green",
+   "contrast"
+  ],
+  "combos": 63,
+  "games_per_combo": 6,
+  "door_visits": 378,
+  "totals": {
+   "bold_rev": 6372,
+   "bold_rev_off_status": 0,
+   "plain_rev": 0,
+   "bytes": 5991385,
+   "sixel_kitty": 0,
+   "osc_dcs_apc": 0
+  },
+  "violations": 0,
+  "stream": {
+   "bytes": 8300061,
+   "reverse_sgr": 3951,
+   "bold_reverse_sgr": 3951,
+   "truecolor": 0,
+   "c256": 170649,
+   "gfx": 0
+  }
+ },
+ "ds-telnet-dave-80x24-unicode": {
+  "layouts": [
+   "classic",
+   "lightbar",
+   "compact",
+   "dashboard",
+   "wide",
+   "focus",
+   "split"
+  ],
+  "themes": [
+   "default",
+   "phosphor",
+   "neon",
+   "paper",
+   "amber",
+   "deepspace",
+   "ansi",
+   "green",
+   "contrast"
+  ],
+  "combos": 63,
+  "games_per_combo": 6,
+  "door_visits": 378,
+  "totals": {
+   "bold_rev": 9558,
+   "bold_rev_off_status": 0,
+   "plain_rev": 0,
+   "bytes": 6002455,
+   "sixel_kitty": 0,
+   "osc_dcs_apc": 0
+  },
+  "violations": 0,
+  "stream": {
+   "bytes": 8313994,
+   "reverse_sgr": 3952,
+   "bold_reverse_sgr": 3952,
+   "truecolor": 0,
+   "c256": 170575,
+   "gfx": 0
+  }
+ },
+ "ds-telnet-erin-80x24-ascii": {
+  "layouts": [
+   "lightbar",
+   "compact",
+   "dashboard",
+   "wide",
+   "focus",
+   "split",
+   "classic"
+  ],
+  "themes": [
+   "neon",
+   "paper",
+   "amber",
+   "deepspace",
+   "ansi",
+   "green",
+   "contrast",
+   "default",
+   "phosphor"
+  ],
+  "combos": 63,
+  "games_per_combo": 6,
+  "door_visits": 378,
+  "totals": {
+   "bold_rev": 35046,
+   "bold_rev_off_status": 0,
+   "plain_rev": 0,
+   "bytes": 2998998,
+   "nonascii": 0,
+   "sixel_kitty": 0,
+   "osc_dcs_apc": 0,
+   "mono_colour": 0
+  },
+  "violations": 0,
+  "stream": {
+   "bytes": 4025288,
+   "reverse_sgr": 3952,
+   "bold_reverse_sgr": 3952,
+   "truecolor": 0,
+   "c256": 0,
+   "gfx": 0
+  }
+ }
+}
