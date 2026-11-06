@@ -3,8 +3,8 @@
 //!
 //! **Lockdown policy.** A session gets exactly one `session` channel, with a PTY and a shell.
 //! Every other request is refused *explicitly*: russh sends no reply by default, which would
-//! leave a client hanging, so each handler below answers. Refused: exec, subsystem (including
-//! sftp, for now), env, agent forwarding, X11, direct-tcpip, forwarded-tcpip, streamlocal, and
+//! leave a client hanging, so each handler below answers. Refused: exec, every subsystem but `sftp`
+//! (served to a signed-in member when `[files] sftp` is on, M4-F2), env, agent forwarding, X11, direct-tcpip, forwarded-tcpip, streamlocal, and
 //! both tcpip-forward and streamlocal-forward. Authentication is public-key, plus `password` only
 //! when the sysop opted in (D28); the method list advertised in `server::russh_config` says so.
 //! Keyboard-interactive is the trait default, which rejects (D81).
@@ -12,7 +12,7 @@
 //! Logs carry fingerprints, request kinds and sizes. They never carry key material, command
 //! lines, environment values or anything the client typed.
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::net::SocketAddr;
 use std::sync::Arc;
 use std::time::Instant;
@@ -86,6 +86,13 @@ pub(crate) struct ClientHandler<D> {
     authenticated: Option<oneshot::Sender<()>>,
     /// Open session channels (capped). Most are probes that only ever get refusals.
     open_channels: HashSet<ChannelId>,
+    /// The channel a signed-in member might turn into an SFTP session (M4-F2): russh hands the
+    /// channel object over only when it opens, so it is held until the client's first request
+    /// shows what it is for. At most one, never for a visitor, and dropped (so nothing queues
+    /// on it) the moment the client asks for a PTY, a shell or a command instead.
+    pending_sftp: HashMap<ChannelId, Channel<Msg>>,
+    /// Whether an SFTP session has started on this connection (one per connection).
+    sftp_started: bool,
     /// The one channel that was granted a PTY and may run the shell.
     shell_channel: Option<ChannelId>,
     pty: Option<PtySize>,
@@ -142,6 +149,8 @@ impl<D> ClientHandler<D> {
             guard,
             authenticated: Some(authenticated),
             open_channels: HashSet::new(),
+            pending_sftp: HashMap::new(),
+            sftp_started: false,
             shell_channel: None,
             pty: None,
             shell_started: false,
@@ -553,6 +562,13 @@ impl<D: Backend> Handler for ClientHandler<D> {
             return Ok(());
         }
         self.open_channels.insert(channel.id());
+        if (self.member || self.password_account.is_some())
+            && self.pending_sftp.is_empty()
+            && !self.sftp_started
+            && self.ui.files().is_some_and(|files| files.sftp)
+        {
+            self.pending_sftp.insert(channel.id(), channel);
+        }
         reply.accept().await;
         Ok(())
     }
@@ -631,6 +647,7 @@ impl<D: Backend> Handler for ClientHandler<D> {
         _modes: &[(Pty, u32)],
         session: &mut Session,
     ) -> Result<(), Self::Error> {
+        self.pending_sftp.remove(&channel);
         if !self.open_channels.contains(&channel) || self.shell_channel.is_some() {
             self.refused("pty-req");
             session.channel_failure(channel)?;
@@ -651,6 +668,7 @@ impl<D: Backend> Handler for ClientHandler<D> {
         channel: ChannelId,
         session: &mut Session,
     ) -> Result<(), Self::Error> {
+        self.pending_sftp.remove(&channel);
         // A shell needs a PTY (`ssh -T` is refused) and may start only once.
         let Some(size) = self.pty.filter(|_| self.is_shell_channel(channel)) else {
             self.refused("shell-without-pty");
@@ -785,6 +803,7 @@ impl<D: Backend> Handler for ClientHandler<D> {
         _session: &mut Session,
     ) -> Result<(), Self::Error> {
         self.open_channels.remove(&channel);
+        self.pending_sftp.remove(&channel);
         if self.is_shell_channel(channel) {
             // The client closed first; there is no terminal left to restore.
             self.inbox.close();
@@ -803,6 +822,7 @@ impl<D: Backend> Handler for ClientHandler<D> {
         _data: &[u8],
         session: &mut Session,
     ) -> Result<(), Self::Error> {
+        self.pending_sftp.remove(&channel);
         self.refused("exec");
         session.channel_failure(channel)?;
         Ok(())
@@ -811,12 +831,60 @@ impl<D: Backend> Handler for ClientHandler<D> {
     async fn subsystem_request(
         &mut self,
         channel: ChannelId,
-        _name: &str,
+        name: &str,
         session: &mut Session,
     ) -> Result<(), Self::Error> {
-        // Includes `sftp`: SFTP arrives in M4 with its own virtual filesystem.
-        self.refused("subsystem");
-        session.channel_failure(channel)?;
+        // Only `sftp`, only for a signed-in member, only once per connection, and only when
+        // `[files] sftp` is on (M4-F2). Everything else is refused, as before.
+        let taken = if name == "sftp" {
+            self.pending_sftp.remove(&channel)
+        } else {
+            self.pending_sftp.remove(&channel);
+            None
+        };
+        let (Some(pending), Some(files)) = (taken, self.ui.files()) else {
+            self.refused("subsystem");
+            session.channel_failure(channel)?;
+            return Ok(());
+        };
+        let account = if let Some(account) = &self.password_account {
+            Some(account.id)
+        } else if let Some(fingerprint) = self.fingerprint.clone() {
+            match timeout(
+                MEMBER_START_TIMEOUT,
+                self.directory.account_for_key(&fingerprint),
+            )
+            .await
+            {
+                Ok(Ok(account)) => account,
+                Ok(Err(error)) => {
+                    warn!(session = ?self.guard.id(), %error, "the sftp member could not be looked up");
+                    None
+                }
+                Err(_) => {
+                    warn!(session = ?self.guard.id(), "looking up the sftp member timed out");
+                    None
+                }
+            }
+        } else {
+            None
+        };
+        let Some(account) = account.filter(|_| !self.sftp_started) else {
+            self.refused("subsystem");
+            session.channel_failure(channel)?;
+            return Ok(());
+        };
+        session.channel_success(channel)?;
+        self.sftp_started = true;
+        self.account = Some(account);
+        self.guard.set_account(account);
+        info!(session = ?self.guard.id(), peer = ?self.peer, "sftp session started");
+        tokio::spawn(crate::sftp::serve(
+            pending.into_stream(),
+            Arc::clone(&self.directory),
+            files,
+            account,
+        ));
         Ok(())
     }
 

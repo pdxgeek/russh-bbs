@@ -15,6 +15,7 @@ use russh_bbs_server::feeds::{
     proxy_in_environment,
 };
 use russh_bbs_server::founder;
+use russh_bbs_server::sftp::{ClamdScanner, ClamdTarget, FileServices, Scanner};
 use russh_bbs_server::shutdown;
 use russh_bbs_server::ssh::{Backend, HostKey, ServerConfig, SshServer};
 use russh_bbs_server::telnet::{TelnetConfig, TelnetServer};
@@ -51,14 +52,25 @@ async fn main() -> anyhow::Result<()> {
     // The fingerprint is public: the sysop publishes it so users can verify the first connect.
     info!(path = %paths.host_key.display(), fingerprint = %host_key.fingerprint(), "host key ready");
 
-    // The blob store (D30, M4-F1): built now so a bad directory or bucket is a boot error. Nothing
-    // uses it until the file areas land (M4-F2).
+    // The blob store (D30, M4-F1): built now so a bad directory or bucket is a boot error. The
+    // file areas and the SFTP subsystem (M4-F2) read and write through it.
     let blobs = russh_bbs_server::blobs::open(&loaded.config.blobs, paths.blobs_dir.as_deref())
         .await
         .context("opening the blob store")?;
     info!(backend = blobs.backend_name(), "blob store ready");
-    // Held for the life of the process; M4-F2 hands it to the SFTP subsystem.
-    let _blobs = blobs;
+    let files = Arc::new(FileServices {
+        blobs,
+        scanner: scanner_of(&loaded.config.files),
+        sftp: loaded.config.files.sftp,
+    });
+    info!(
+        sftp = files.sftp,
+        scanner = match files.scanner {
+            Scanner::None(_) => "none (uploads are stored unscanned)",
+            Scanner::Clamd(_) => "clamd",
+        },
+        "file areas ready"
+    );
 
     // The datasource is chosen by configuration and never falls back (D6, D38): a Postgres
     // that cannot be reached or verified is a boot error, not a SQLite file.
@@ -75,6 +87,7 @@ async fn main() -> anyhow::Result<()> {
                 &paths.mail_key,
                 themes_dir.as_deref(),
                 art_dir.as_deref(),
+                files,
             )
             .await?;
         }
@@ -91,6 +104,7 @@ async fn main() -> anyhow::Result<()> {
                 &paths.mail_key,
                 themes_dir.as_deref(),
                 art_dir.as_deref(),
+                files,
             )
             .await?;
         }
@@ -104,6 +118,20 @@ async fn main() -> anyhow::Result<()> {
 fn board_of(loaded: &Loaded) -> anyhow::Result<russh_bbs_server::ui::Board> {
     russh_bbs_server::ui::Board::from_config(&loaded.config.board)
         .context("reading the [board] settings")
+}
+
+/// The scanner `[files]` names (M4-F2). Validation already refused a half-set clamd section.
+fn scanner_of(config: &russh_bbs_server::config::FilesConfig) -> Scanner {
+    use russh_bbs_server::config::ScanBackend;
+    match (config.scan, &config.clamd_address, &config.clamd_socket) {
+        (ScanBackend::Clamd, Some(address), _) => {
+            Scanner::Clamd(ClamdScanner::new(ClamdTarget::Tcp(address.clone())))
+        }
+        (ScanBackend::Clamd, None, Some(socket)) => {
+            Scanner::Clamd(ClamdScanner::new(ClamdTarget::Unix(socket.clone())))
+        }
+        _ => Scanner::None(russh_bbs_core::files::NoScan),
+    }
 }
 
 /// The sysop's widget settings (UI-10); the same checks the config ran.
@@ -123,6 +151,7 @@ async fn serve<S: Backend + SettingsStore + SchedulerStore + Close + Clone>(
     mail_key_path: &std::path::Path,
     themes_dir: Option<&std::path::Path>,
     art_dir: Option<&std::path::Path>,
+    files: Arc<FileServices>,
 ) -> anyhow::Result<()> {
     // Before anything listens, so a stop signal at any point after "listening" is handled.
     let mut signals = shutdown::Signals::install().context("installing the signal handlers")?;
@@ -168,6 +197,7 @@ async fn serve<S: Backend + SettingsStore + SchedulerStore + Close + Clone>(
         None => ui,
     }
     .with_mail_keys(Arc::new(mail_keys))
+    .with_files(files)
     // The doors built into this board (M4-D0): the example coin toss until a game replaces it.
     .with_doors(
         Doors::builtin()

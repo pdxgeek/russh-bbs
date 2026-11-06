@@ -39,6 +39,7 @@ use russh_bbs_core::credits::CreditStore;
 use russh_bbs_core::doors::DoorStore;
 use russh_bbs_core::drafts::DraftStore;
 use russh_bbs_core::feeds::FeedStore;
+use russh_bbs_core::files::FileStore;
 use russh_bbs_core::forums::ForumStore;
 use russh_bbs_core::founder::FounderStore;
 use russh_bbs_core::invites::InviteStore;
@@ -76,6 +77,7 @@ pub trait Backend:
     + DraftStore
     + ForumStore
     + FeedStore
+    + FileStore
     + MailStore
     + AuditStore
     + DoorStore
@@ -103,6 +105,7 @@ impl<T> Backend for T where
         + DraftStore
         + ForumStore
         + FeedStore
+        + FileStore
         + MailStore
         + AuditStore
         + DoorStore

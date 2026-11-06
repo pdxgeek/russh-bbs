@@ -6,7 +6,7 @@ use std::path::Path;
 
 use super::error::{ConfigError, Source};
 use super::layers::Sources;
-use super::model::{BlobBackend, Config, DatasourceKind, SshConfig, TlsMode};
+use super::model::{BlobBackend, Config, DatasourceKind, ScanBackend, SshConfig, TlsMode};
 use crate::ssh::RenderCap;
 use crate::ssh::terminal::{MAX_COLS, MAX_ROWS};
 
@@ -205,7 +205,8 @@ pub(crate) fn validate(config: &Config, sources: &Sources) -> Result<(), ConfigE
     widgets(&c, config)?;
     feeds(&c, config)?;
     datasource(&c, config)?;
-    blobs(&c, config)
+    blobs(&c, config)?;
+    files(&c, config)
 }
 
 /// `[board]` (UI-2): the same checks the screens' `Board` is built with.
@@ -314,6 +315,47 @@ fn datasource(c: &Check<'_>, config: &Config) -> Result<(), ConfigError> {
                 }
             }
         }
+    }
+    Ok(())
+}
+
+/// `[files]` (M4-F2): a scanner needs exactly one way to reach it; the settings of a scanner
+/// that is off are refused rather than ignored.
+fn files(c: &Check<'_>, config: &Config) -> Result<(), ConfigError> {
+    let f = &config.files;
+    match f.scan {
+        ScanBackend::None => {
+            let need = "files.scan = \"clamd\"";
+            c.only_with("files.clamd_address", need)?;
+            c.only_with("files.clamd_socket", need)?;
+        }
+        ScanBackend::Clamd => match (&f.clamd_address, &f.clamd_socket) {
+            (Some(_), Some(_)) => {
+                return Err(c.fail(
+                    "files.clamd_socket",
+                    "and files.clamd_address are both set; name one",
+                ));
+            }
+            (None, None) => {
+                return Err(c.fail(
+                    "files.scan",
+                    "is \"clamd\" but neither files.clamd_address nor files.clamd_socket is set",
+                ));
+            }
+            (Some(address), None) => {
+                let ok = address
+                    .rsplit_once(':')
+                    .is_some_and(|(host, port)| !host.is_empty() && port.parse::<u16>().is_ok());
+                if !ok
+                    || address
+                        .chars()
+                        .any(|ch| ch.is_whitespace() || ch.is_control())
+                {
+                    return Err(c.fail("files.clamd_address", "must be host:port"));
+                }
+            }
+            (None, Some(socket)) => c.path("files.clamd_socket", socket, false)?,
+        },
     }
     Ok(())
 }

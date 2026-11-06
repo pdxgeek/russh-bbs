@@ -54,3 +54,6 @@ pub use text::{
 pub use transfer::{
     RESERVE_BLOCK, SCAN_TIMEOUT, UploadMeter, UploadPlan, Uploaded, plan_upload, record_upload,
 };
+
+#[cfg(test)]
+mod tests;

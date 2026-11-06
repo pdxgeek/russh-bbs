@@ -82,6 +82,9 @@ pub struct Ui {
     /// The layouts members may pick from.
     layouts: Vec<LayoutId>,
     mail: MailKeysHandle,
+    /// The blob store, scanner and SFTP switch for file areas (M4-F2); none in a board built
+    /// without them (tests), where the Files screens say files are not available.
+    files: FilesHandle,
     doors: crate::doors::Doors,
     /// The banner and header art (UI-3): bundled, plus the sysop's `art/` directory.
     art: art::ArtSet,
@@ -131,6 +134,33 @@ impl std::fmt::Debug for MailKeysHandle {
     }
 }
 
+/// The file services (blob store, scanner, SFTP switch) a board runs with. Shared by every
+/// transport through the one [`Ui`], like the mail keys; compared by identity.
+#[derive(Clone, Default)]
+struct FilesHandle(Option<Arc<crate::sftp::FileServices>>);
+
+impl PartialEq for FilesHandle {
+    fn eq(&self, other: &Self) -> bool {
+        match (&self.0, &other.0) {
+            (Some(a), Some(b)) => Arc::ptr_eq(a, b),
+            (None, None) => true,
+            _ => false,
+        }
+    }
+}
+
+impl Eq for FilesHandle {}
+
+impl std::fmt::Debug for FilesHandle {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(if self.0.is_some() {
+            "Files(on)"
+        } else {
+            "Files(none)"
+        })
+    }
+}
+
 impl Ui {
     /// The shipped table, tree and themes. Fails only if the build itself is inconsistent,
     /// which a unit test also catches.
@@ -144,6 +174,19 @@ impl Ui {
     pub fn with_mail_keys(mut self, keys: Arc<russh_bbs_core::mail::MailKeys>) -> Self {
         self.mail = MailKeysHandle(Some(keys));
         self
+    }
+
+    /// The same screens with file areas wired to a blob store and a scanner (M4-F2).
+    #[must_use]
+    pub fn with_files(mut self, files: Arc<crate::sftp::FileServices>) -> Self {
+        self.files = FilesHandle(Some(files));
+        self
+    }
+
+    /// The file services, if the board has them.
+    #[must_use]
+    pub fn files(&self) -> Option<Arc<crate::sftp::FileServices>> {
+        self.files.0.clone()
     }
 
     /// The mail keys, if the board has them.
@@ -222,6 +265,7 @@ impl Ui {
             board: Board::default(),
             themes: ThemeSet::shipped(&strings)?,
             mail: MailKeysHandle::default(),
+            files: FilesHandle::default(),
             doors: crate::doors::Doors::none(),
             art: art::ArtSet::bundled().map_err(|error| UiError::Art(error.to_string()))?,
             widgets: widgets::WidgetSettings::default(),
