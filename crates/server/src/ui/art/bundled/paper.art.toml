@@ -45,3 +45,50 @@ ascii = [
   "                       o   o   o   o   o   o   o                        ",
   "                                                                        ",
 ]
+
+[[piece]]
+slot = "area"
+fallback = "- {board} -"
+rows = [
+  "◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ",
+  "╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌ ◆ ◇ ◆ ◇ ◆ ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌",
+  "◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ◦ ",
+]
+fg = [
+  "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+  "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+  "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+]
+ascii = [
+  "o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o ",
+  "-------------------------- * o * o * -----------------------------------",
+  "o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o ",
+]
+
+[[piece]]
+slot = "logoff"
+fallback = "Until next time. - {board}"
+rows = [
+  "╭────────────────────────────────────────────╮",
+  "│              Until next time,              │",
+  "│         keep well and write soon.          │",
+  "│                                            │",
+  "│                              — your sysop  │",
+  "╰────────────────────────────────────────────╯",
+]
+fg = [
+  "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+  "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+  "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+  "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+  "B............................................B",
+  "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+]
+ascii = [
+  "+--------------------------------------------+",
+  "|              Until next time,              |",
+  "|         keep well and write soon.          |",
+  "|                                            |",
+  "|                              - your sysop  |",
+  "+--------------------------------------------+",
+]

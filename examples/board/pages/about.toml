@@ -1,0 +1,25 @@
+version = 1
+title = "About this board"
+art = "about.art.toml"
+text = """
+# What this place is
+[Your board's name] is a bulletin board you reach with a plain ssh client.
+No app, no browser, no tracking pixel: a terminal, a key and a few kind people.
+
+# What you will find
+- Message boards for long, slow conversation.
+- A post office for letters between members.
+- A chat room that is mostly quiet and sometimes not.
+- Doors: small games that keep a season and a hall of fame.
+- A notice board, which is this room.
+
+# Calling hours
+We never close. The sysop sleeps, though, so a request may wait until morning.
+
+# Who keeps the lights on
+[Your name] runs the board from [your town or your closet]. Co-sysops are listed on the Who's who page.
+
+# Getting in
+Membership is by invite. Ask a member you know, or ask the sysop politely.
+Every invite is single-use and traceable to whoever gave it, so give them to people you would vouch for.
+"""

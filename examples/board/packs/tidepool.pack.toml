@@ -1,0 +1,159 @@
+pack = 1
+theme = '''
+version = 2
+# Example style for the russh-bbs board kit: a rock pool at dusk. Deep teal water, coral and
+# sand accents, rounded boxes and a gentle tide. Original; edit it freely.
+name = "tidepool"
+
+[meta]
+title = "Tidepool"
+credit = "russh-bbs project (example kit)"
+
+[colors]
+surface = "#08201f"
+panel = "#0d2b2a"
+popup = "#12383a"
+stripe = "#0b2625"
+head = "#14494a"
+bar = "#0f3637"
+bar_text = "#e9f5ef"
+text = "#d8ece4"
+muted = "#86aca2"
+border = "#3fa59a"
+heading = "#ffb48a"
+key = "#ffd37a"
+accent = "#ff8f6b"
+accent2 = "#5fd7c8"
+selected = "#08201f"
+select_bg = "#ffb48a"
+info = "#6cc7ee"
+success = "#7de0a0"
+warning = "#ffd37a"
+error = "#ff7a7a"
+link = "#7fd8ff"
+quote = "#a5cfc4"
+timestamp = "#86aca2"
+title = "#ffcba8"
+
+[style.borders]
+frame = "rounded"
+pane = "rounded"
+popup = "rounded"
+
+[style.title]
+treatment = "rule"
+align = "left"
+
+[style.header]
+decoration = "diamonds"
+gradient = false
+
+[style.backdrop]
+kind = "none"
+
+[style.motion]
+default = true
+'''
+
+[[art]]
+kind = "art.toml"
+text = '''
+format = 1
+name = "tidepool"
+style = "tidepool"
+credit = "russh-bbs project (original art)"
+
+[[piece]]
+slot = "login"
+fallback = "{board}"
+rows = [
+  "        .        o           .           o       .          ",
+  "    ~~~~   ~~~~~~    ~~~~   ~~~~~    ~~~~~~   ~~~~~~~       ",
+  "  ~~    ~~~       ~~~    ~~~       ~~~     ~~~        ~~    ",
+  "       ▄▄██▄          ▄▄██▄▄        ▄▄▄██▄▄       ▄██▄      ",
+  "    ▄▄██████▄▄   *  ▄██████████▄  * ▄████████▄▄  ▄██████▄   ",
+  "▄▄▄████████████▄▄▄▄████████████▄▄▄▄██████████████████████▄▄ ",
+]
+fg = [
+  "........c........W...........c...........W.......c..........",
+  "....CCCC...CCCCCC....CCCC...CCCCC....CCCCCC...CCCCCCC.......",
+  "..CC....CCC.......CCC....CCC.......CCC.....CCC........CC....",
+  ".......ccccc..........cccccc........ccccccc.......cccc......",
+  "....cccccccccc...R..cccccccccccc..R.ccccccccccc..cccccccc...",
+  "ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc.",
+]
+ascii = [
+  "        .        o           .           o       .          ",
+  "    ~~~~   ~~~~~~    ~~~~   ~~~~~    ~~~~~~   ~~~~~~~       ",
+  "  ~~    ~~~       ~~~    ~~~       ~~~     ~~~        ~~    ",
+  "       __##_          __##__        ___##__       _##_      ",
+  "    __######__   *  _##########_  * _########__  _######_   ",
+  "___############____############____######################__ ",
+]
+
+[[piece]]
+slot = "menu"
+fallback = "{board}"
+rows = [
+  "    o      .         O        .          o         .      o    ",
+  "~~  ~~~~  ~~~  ~~~~~  ~~~   ~~~~  ~~~  ~~~~~  ~~~   ~~~~  ~~~  ",
+  "▄▄▄██▄▄▄▄▄▄██▄▄▄▄▄▄▄▄██▄▄▄▄▄▄▄▄██▄▄▄▄▄▄▄▄▄▄██▄▄▄▄▄▄▄▄██▄▄▄▄▄▄▄▄",
+]
+fg = [
+  "....W......c.........W........c..........W.........c......W....",
+  "CC..CCCC..CCC..CCCCC..CCC...CCCC..CCC..CCCCC..CCC...CCCC..CCC..",
+  "ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+]
+ascii = [
+  "    o      .         O        .          o         .      o    ",
+  "~~  ~~~~  ~~~  ~~~~~  ~~~   ~~~~  ~~~  ~~~~~  ~~~   ~~~~  ~~~  ",
+  "___##______##________##________##__________##________##________",
+]
+
+[[piece]]
+slot = "area"
+fallback = "~ {board} ~"
+rows = [
+  "  o      .        O         .       o          .        O      .  ",
+  " ~~~ ~~~~  ~~~  ~~~~~ ~~~  ~~~~  ~~~  ~~~~~  ~~~ ~~~~  ~~~  ~~    ",
+  "▄██▄▄▄▄██▄▄▄▄▄▄██▄▄▄▄▄██▄▄▄▄▄▄██▄▄▄▄▄▄██▄▄▄▄▄██▄▄▄▄▄▄▄▄██▄▄▄▄▄▄   ",
+]
+fg = [
+  "..W......c........W.........c.......W..........c........W......c..",
+  ".CCC.CCCC..CCC..CCCCC.CCC..CCCC..CCC..CCCCC..CCC.CCCC..CCC..CC....",
+  "ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc...",
+]
+ascii = [
+  "  o      .        O         .       o          .        O      .  ",
+  " ~~~ ~~~~  ~~~  ~~~~~ ~~~  ~~~~  ~~~  ~~~~~  ~~~ ~~~~  ~~~  ~~    ",
+  "_##____##______##_____##______##______##_____##________##______   ",
+]
+
+[[piece]]
+slot = "logoff"
+fallback = "The tide goes out - {board}"
+rows = [
+  "      .            o                  .        ",
+  "  ~~~~   ~~~~~~   ~~~   ~~~~~~   ~~~~   ~~~    ",
+  "      ~~~     ~~~    ~~~~     ~~~     ~~~~     ",
+  "                                               ",
+  " the tide goes out. see you at the next one.   ",
+  "▄▄██▄▄▄▄▄▄██▄▄▄▄▄▄▄▄██▄▄▄▄▄▄██▄▄▄▄▄▄▄▄██▄▄▄▄▄  ",
+]
+fg = [
+  "......c............W..................c........",
+  "..CCCC...CCCCCC...CCC...CCCCCC...CCCC...CCC....",
+  "......CCC.....CCC....CCCC.....CCC.....CCCC.....",
+  "...............................................",
+  ".WWW.WWWW.WWWW.WWWW.WWW.WWW.WW.WWW.WWWW.WWWW...",
+  "ccccccccccccccccccccccccccccccccccccccccccccc..",
+]
+ascii = [
+  "      .            o                  .        ",
+  "  ~~~~   ~~~~~~   ~~~   ~~~~~~   ~~~~   ~~~    ",
+  "      ~~~     ~~~    ~~~~     ~~~     ~~~~     ",
+  "                                               ",
+  " the tide goes out. see you at the next one.   ",
+  "__##______##________##______##________##_____  ",
+]
+'''
