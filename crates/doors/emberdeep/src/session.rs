@@ -188,7 +188,9 @@ impl Session {
                     Some(mut game) => {
                         game.world = world;
                         game.season = start.season;
-                        let events = game.new_day(&session.content, today);
+                        let mut events = game.new_day(&session.content, today);
+                        game.collect_notes(&session.content, &mut events);
+                        game.sync_roster(&session.content);
                         session.absorb(events);
                         session.dirty = !session.log.is_empty() || game.day != today;
                         session.game = Some(game);
@@ -917,6 +919,9 @@ impl Session {
             DoorStyle::Accent,
         ));
         body.extend(wrap(&template.text, WRAP).into_iter().map(plain));
+        if let Some(event) = level.event(&self.content, room) {
+            body.extend(wrap(&event.text, WRAP).into_iter().map(plain));
+        }
         if let Some((_, shortcut)) = game
             .ways_down(&self.content)
             .into_iter()

@@ -80,6 +80,8 @@ pub(crate) struct Room {
     pub(crate) kind: RoomKind,
     /// The room reached by going north, east, south, west.
     pub(crate) links: [Option<u8>; 4],
+    /// Index into the dungeon events: a scene laid over an ordinary room (M4-E4).
+    pub(crate) event: Option<usize>,
 }
 
 /// A generated level.
@@ -271,14 +273,66 @@ pub(crate) fn generate(content: &Content, season: u32, epoch: u16, depth: u8) ->
             template,
             kind,
             links: links[i],
+            event: None,
         });
     }
+    lay_events(content, season, epoch, depth, band, &mut rooms);
     Level {
         depth,
         rooms,
         entry: 0,
         exit: u8::try_from(exit).unwrap_or(0),
         shaft: u8::try_from(shaft).unwrap_or(0),
+    }
+}
+
+/// Percent of ordinary rooms that carry a dungeon event.
+const EVENT_PCT: u32 = 40;
+
+/// Lay events over ordinary rooms. A separate generator keeps the rooms themselves unchanged.
+fn lay_events(
+    content: &Content,
+    season: u32,
+    epoch: u16,
+    depth: u8,
+    band: u8,
+    rooms: &mut [Room],
+) {
+    let mut rng = rng_for(
+        "events",
+        &[i64::from(season), i64::from(epoch), i64::from(depth)],
+    );
+    let mut used: Vec<usize> = Vec::new();
+    for room in rooms.iter_mut() {
+        let eligible = matches!(
+            room.kind,
+            RoomKind::Corridor
+                | RoomKind::Vault
+                | RoomKind::Forge
+                | RoomKind::Flooded
+                | RoomKind::Shrine
+        );
+        if !eligible || rng.below(100) >= EVENT_PCT {
+            continue;
+        }
+        let pool: Vec<usize> = content
+            .events
+            .event
+            .iter()
+            .enumerate()
+            .filter(|(i, e)| {
+                e.kinds.contains(&room.kind)
+                    && e.bands.contains(&u32::from(band))
+                    && !used.contains(i)
+            })
+            .map(|(i, _)| i)
+            .collect();
+        if pool.is_empty() {
+            continue;
+        }
+        let pick = pool[below(&mut rng, pool.len())];
+        used.push(pick);
+        room.event = Some(pick);
     }
 }
 
@@ -307,6 +361,17 @@ impl Level {
     pub(crate) fn template<'a>(&self, content: &'a Content, at: u8) -> Option<&'a RoomTemplate> {
         self.room(at)
             .and_then(|r| content.rooms.room.get(r.template))
+    }
+
+    /// The dungeon event laid over a room, if any.
+    pub(crate) fn event<'a>(
+        &self,
+        content: &'a Content,
+        at: u8,
+    ) -> Option<&'a crate::content_story::EventDef> {
+        self.room(at)
+            .and_then(|r| r.event)
+            .and_then(|i| content.events.event.get(i))
     }
 
     /// Room indexes within a bitmask-friendly range (levels have at most 20 rooms).

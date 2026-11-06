@@ -770,6 +770,7 @@ impl Game {
         }
         if let Place::Delve { depth, room } = self.place {
             self.today.cleared.push((depth, room));
+            self.share_clear(depth, room);
             if let Some(name) = guardian_name {
                 let band = dungeon::band_of(depth);
                 self.hero.relics = self.hero.relics.saturating_add(1);

@@ -17,6 +17,7 @@
 
 mod codec;
 mod combat;
+mod company;
 pub mod content;
 pub mod content_story;
 pub mod content_town;
