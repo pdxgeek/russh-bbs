@@ -886,11 +886,11 @@
 ╭ Classmates ─────────────────────────────────────────────────╮╭ The pupil ────────────────────────────────────────────────────────╮
 │ 1 Wick (38 legend)                                          ││Who? (a name from the roster; you                                  │
 │ b Back                                                      ││                                                                   │
-│                                                             ││Who? (a name from the roster; you                                  │
-│                                                             ││cannot type one)                                                   │
-│                                                             ││Sol has opted out and cannot be                                    │
-│                                                             ││reached.                                                           │
-│                                                             ││                                                                   │
+│                                                             ││Wick                                                               │
+│                                                             ││38 legend this term                                                │
+│                                                             ││last at school on day 11                                           │
+│                                                             ││Pick a scheme from the fixed list. Whatever happens, they will hear│
+│                                                             ││it was you.                                                        │
 │                                                             ││                                                                   │
 │                                                             ││                                                                   │
 │                                                             ││                                                                   │

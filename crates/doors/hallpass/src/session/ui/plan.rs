@@ -216,6 +216,27 @@ fn detail_lines(ui: &Ui<'_>, width: u16) -> Vec<Line<'static>> {
                 out.push(bond_line(ui, g.bond(&n.id), width));
             }
         }
+        (Cmd::To(Mode::PlotKinds(who)), _) => {
+            if let Some(m) = g.classmates().into_iter().find(|m| m.name == *who) {
+                out.push(Line::styled(m.name.clone(), pal.chalk()));
+                out.push(Line::styled(
+                    format!("{} legend this term", m.legend),
+                    pal.ink(),
+                ));
+                out.push(Line::styled(
+                    format!(
+                        "last at school on day {}",
+                        m.last_day - g.world.term_start + 1
+                    ),
+                    pal.slate(),
+                ));
+                text(
+                    &mut out,
+                    "Pick a scheme from the fixed list. Whatever happens, they will hear it was you.",
+                    pal.chalk_soft(),
+                );
+            }
+        }
         (Cmd::Do(Action::Plot { kind, to }), _) => {
             if let Some(spec) = g.content.plot(kind) {
                 out.push(Line::styled(spec.name.clone(), pal.chalk()));

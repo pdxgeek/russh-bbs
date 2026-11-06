@@ -1,6 +1,6 @@
 # Hallpass: a school-life door (design)
 
-Status: **Proposed** design; slice 1 (the engine, M4-H1, merged) and slice 2 (classes, clubs and characters, M4-H2, merged) and slice 3 (the UI, M4-H3, in review on branch `m4/hallpass-ui`) are **implemented** and described under [Implementation notes (M4-H1)](#implementation-notes-m4-h1), [Implementation notes (M4-H2)](#implementation-notes-m4-h2) and [Implementation notes (M4-H3)](#implementation-notes-m4-h3) at the end. Shared platform rules are in [README.md](README.md).
+Status: **Proposed** design; slice 1 (the engine, M4-H1), slice 2 (classes, clubs and characters, M4-H2) and slice 3 (the UI, M4-H3) are merged, and slice 4 (social, mystery and balance, M4-H4, in review on branch `m4/hallpass-social`) is the last: all four are **implemented** and described under [Implementation notes (M4-H1)](#implementation-notes-m4-h1), [(M4-H2)](#implementation-notes-m4-h2), [(M4-H3)](#implementation-notes-m4-h3) and [(M4-H4)](#implementation-notes-m4-h4) at the end. Shared platform rules are in [README.md](README.md).
 
 ## Pitch
 
@@ -76,7 +76,7 @@ The core tension: **the bigger the prank, the bigger the heat.** Every period go
 ### Conflict, kept in the game
 
 - **Rivalries:** the game's antagonists are non-player characters: a rival clique leader, a prefect with a grudge, a bully who picks on the Strays. Standing up to them is a central thread.
-- **Player conflict is structured and safe by design:**
+- **Player conflict is structured and safe by design** (built in M4-H4):
   - Players compete for clique standing, the school election, sports results and the end-of-term awards.
   - Schemes against another player's character come from a fixed list (a swapped timetable, a glued locker, a fake note from a teacher). Each costs nerve and has a counterplay, and a player is protected after being targeted. Most mischief targets the school and its non-player characters, not other players.
   - **There is no free-text targeting of another player.** Rumours are chosen from templates, never typed, so the game can't become a way to harass a real person.
@@ -95,6 +95,8 @@ The core tension: **the bigger the prank, the bigger the heat.** Every period go
 - **How you advance it:** exploring after lights-out, friendships and clues found in places.
 - **Endings:** several, depending on whom you trust.
 - **Finale:** a term finale that all players on the board share. The east wing opens.
+
+Built in M4-H4 (see [Implementation notes (M4-H4)](#implementation-notes-m4-h4)): twelve clues in four acts, three ways to the key, six endings of a pupil's story, and a finale on day 38 where the school's verdicts decide one of five endings that change the wing for everyone. **That is 12 clues, not the 40 steps the design names.**
 
 ## UI
 
@@ -275,3 +277,54 @@ Tests in `tests/ui.rs` and `session/ui/map.rs`: every screen (29 states: the enr
 ### Not done, deliberately
 
 A scheme run reached by hand over `ssh` (it needs a scheme that is ready, the items and a moment the target allows; the run, the conversation and the end-of-term screens are drawn and tested through the harness and pictured as designs), mouse (UI-9), animation and effects (UI-8), the Nerd Font glyphs (the board neutralizes them, D104), per-member colour depth (the board composites doors at sixteen colours today), the school events, the social layer and the mystery (H4).
+
+
+## Implementation notes (M4-H4)
+
+Slice 4 is the last Hallpass slice: the social layer, the east wing's mystery, a content pass and the balance pass. Decision D-TBD (number assigned at merge) records the choices that were real alternatives. New code: `src/commons.rs` (what the social layer keeps: a character's `Social` and the school's `Commons`), `src/social.rs` (the rules: schemes on pupils, rumours, the election, the awards, the search), `src/social_spec.rs` (the two new tables and their checks), `src/session/social_views.rs` (the screens); new tables `content/social.toml` and `content/mystery.toml`, and additions to `arcs.toml`, `talks.toml`, `world.toml`, `items.toml`, `places.toml`, `traits.toml`, `clubs.toml`.
+
+### What is implemented (and tested)
+
+| Area | What exists | Where |
+|---|---|---|
+| Schemes on another pupil | Seven templates (four mischief: a swapped timetable, a glued locker, a fake note from a teacher, squeaky laces; three kind: a good word, a pep talk, spare change), aimed at a name from the roster (you cannot type one). Each costs nerve (and some cash), needs a build or kit to be offered (the swap needs a forgery kit, the glue a tinkerer's hands, the note some bluff), and a mischief scheme has a **counterplay** that depends on the target (a spare timetable card or a trusted pupil's good name stops the swap, a padlock or a tinkerer the glue, bluff 3 or charm the note, a fast exit or sneak 3 the laces). What lands is only a small change of cool, nerve or cash; the load check refuses anything that reaches the file, the world, a friendship or a standing. A target is left alone for two days after one reaches them. | `social.toml`, `social.rs` (`plot_block`, `send_plot`, `deliver_plots`) |
+| How it travels | The sender posts a record to the shared world; the target's own session delivers it when their visit opens (an opt-out, the protection window and the counterplay each stop it) and writes the outcome back; the sender collects it at their next visit (a scheme that landed pays legend, one seen through costs a little cool). The **stored** world re-checks both opt-outs and every cap when it accepts the record, so a session working from an old view cannot get past them. | `world.rs` (`post_plot`), `social.rs` |
+| Caps against griefing | Two schemes a day per sender, a rest of three days between the same two pupils, three waiting for any one target, sixteen in the post; a scheme costs a period as well as nerve; plots expire after six days. | `social.toml` rules, `commons.rs` caps |
+| The opt-out | One flag on the character, in `Social`, shown on the roster. An opted-out pupil can neither send nor receive anything aimed at a player; it follows them from term to term. Rumours, the election and the awards are not aimed at a person and carry on. | `social.rs` (`set_opt_out`), `world.rs` |
+| Rumours | Eight templates about a character, a clique or yourself (praise, gossip about staff and prefects and rival cliques only, tall tales about yourself); never about a player, never gossip about a Stray or a pupil (checked at load). A rumour moves your standing, a friendship, your cool and legend, sometimes the heat or the patrols where the character is found, shows in everyone's paper for a week, and moves a candidate's backing in the election. One a day, and only with an audience present. | `social.toml`, `social.rs` (`spread`) |
+| The election | Head of School. Three characters run (Bramley, Wren, Hollis); a pupil may stand from day 11 (a record that is not poor, some cool), canvass twice a day (each door knocked on wins less as the campaign saturates, at 44 backing at most), and vote once from day 20; the votes are counted by the daily tick on day 27. The characters campaign too, the school's mood favours a different one each term, rumours and what the school has done (the prefects stood down, the paper hijacked) swing them, and a pupil's vote counts three times a point of backing. The winner (a character or a pupil) changes the school for everyone through the world edit; a winning pupil takes legend and the trait Head of School. | `social.rs` (`ballot_of`, `tally`, `count_election`), `world.rs` |
+| The awards | Seven, scored from the roster at term end (legend, grades, schemes, clues, club merit, friends, a clean getaway) with a minimum to win anything; the paper prints them, the winners are told and paid at their next visit (also between terms), and the list outlives the term. | `social.toml`, `social.rs` (`give_awards`) |
+| The mystery | Twelve clues in four acts, each found by searching a place (mostly after lights-out or in the free periods), gated by day, by earlier clues, by the storyline's step and by build (items, skills, bonds); a search can be noticed and costs a line on the file. **Three ways to the East Wing's key:** lift it from the caretaker's shed (sneak), have Mr. Fenn give it to a friend who found the locket, or have the chaplain give it to a pupil he likes (the choir; the East Light story's `shared` ending still gives him a reason to help, and a shortcut past the organ's key). `diary_page` from the H2 story is the evidence the paper and the bonfire ask for. | `mystery.toml`, `arcs.toml` (`the_wing`), `talks.toml`, `social.rs` (`search`) |
+| The endings | Six endings of a pupil's story, from conversations only some builds are offered (Fenn needs a friendship, the chaplain one, the headmistress a clean file and no troublemaker's name, the paper standing with the Ink Society, the bonfire the diary; walking away needs only to have read it). Five cast a **verdict**; on day 38 the daily tick counts them and one of five comes about for **everyone**: the wing opened by the caretaker, a vigil, the diary in the paper (the wing and tunnels open, for different prices), the wing sealed for good, or a bonfire (both closed even to a key). A tie goes by a fixed order; nobody settling it is a sixth outcome (the wing stays as it was). | `social.rs` (`finale`), `world.toml`, `places.toml` |
+| Saves | `SAVE_VERSION = 3` appends `Social` to the character; `WORLD_VERSION = 2` appends `Commons` to the school. `save::migrate` brings a version 1 or 2 character and a version 1 school forward, each by appending the empty value after checking the bytes decode; all three are pinned against hand-kept old bytes (`tests/fixtures/*.hex`). | `commons.rs`, `save.rs` |
+| Screens | An `o` Social hub from the day screen (classmates and the schemes you can play on each, rumours, the election, the opt-out, awards and what was done to you lately) and an `e` search order that appears only where a clue can be found. They are the same `[key] label` lists as every screen (so the bots, the replay logs and the look-around all work) and draw in the scheme planner's list style at every size and tier. | `session/social_views.rs`, `session/ui/*` |
+
+### How the RPG rule is met
+
+Every part changes what happens (`tests/social.rs`, `tests/mystery.rs`). **Options depend on build:** a forger is offered the swapped timetable, a tinkerer the glue and a plain runner only the laces and the kind schemes; which of three routes finds the key, and which of five endings is on offer, depend on a pupil's skills, bonds, standing and file. **Branches close doors:** casting a verdict ends the pupil's story and no other ending is offered after; a choice in the East Light story (the chaplain's trust, the diary) opens or shuts a route into this one. **Consequences persist:** an opt-out follows the pupil across terms; awards, the roster and the verdicts are in the shared world; a scheme that landed protects its target and pays its sender. **The world changes:** the election's winner and the east wing's ending are applied to everyone through the one idempotent world edit, at the daily tick. **Several endings:** six for a pupil, six for the school (five verdicts and "nobody settled it"), five election winners (three characters, a pupil, and who the school's mood favours).
+
+### Content is data
+
+Two new tables (`social.toml`, `mystery.toml`), parsed with `deny_unknown_fields` and checked when they load (`social_spec.rs`): a scheme's effect on a player may only be a small change of cool, nerve or cash with the right sign; a mischief scheme needs a counterplay; a kind scheme cannot cost its target; a rumour template needs `{about}`, may be gossip only about staff, prefects and rival cliques, and is never about a Stray or a pupil; a tall tale is about the speaker; no Stray runs for election or is gossiped about; an election's days rise; every clue has a real place that is open when it can be found and follows an earlier clue; every act has a clue; every verdict is cast by some ending and brings about a real world effect; the finale falls inside the term. `tests/content.rs` breaks each on purpose and expects the named problem. **Tone rules are checks, not hopes** (they are tests): no target is a Stray and none can be typed (the targets are ids), and a scheme on a pupil never touches their file.
+
+### Seams for what comes next
+
+- **FW-1 (a read of the current world in `Ctx`).** Delivery happens when a visit opens, because a session sees the world as it was then. With a current read, a scheme could be delivered mid-visit (the target's screen would change as it landed) and the roster would be fresh. The workaround is small: `Session::key` flushes `Game::take_world_changes()` on every key. Until FW-1's world-aware replay log lands, the mystery's talks (open late in the term) are replayed through `Running` against a store seeded with a world (`tests/mystery.rs`), because a `ReplayLog` has no world to say what day of the term it is.
+- **More mystery.** More clues are rows in `mystery.toml`; more endings are a verdict row, a world effect, and an arc ending with `verdict:ID`; the checks refuse a verdict nothing casts.
+- **The design's 60 scheme templates, 40 students and 12 staff.** See below.
+
+### Content budget, said plainly
+
+The design asks for about 60 scheme templates, 40 students, 12 staff, 150 school-day events, 25 minigame variants, 8 school events and a 40-step mystery. **This slice falls short of that**, and the pull request says so: see the counts in the next paragraph. The school events are partly there (the election, the awards, each club's term-end event, the Friday report, the big schemes); the house match, the winter play, the formal dance and exam week are not (`docs/features.md`).
+
+CONTENT_COUNTS_PLACEHOLDER
+
+### Not done, deliberately
+
+Free-text player messages (the design forbids them where templates serve), a typed target of any kind, applying an effect to another pupil's save from the sender's session (the framework gives a session no write to another save), delivery in the middle of a visit (needs FW-1), the house match, the winter play, the formal dance and exam week, per-character storylines for all 40 students, 25 minigame variants (six kinds with levels), the design's 40 mystery steps (12 clues, 7 steps, 3 key routes and 6 endings), pacts or alliances between pupils, and a Hallpass-specific staff tool to reset one pupil's opt-out (staff cannot undo it; the pupil can).
+
+### Verified
+
+See the pull request for the commands and their results. In short: `tests/social.rs` (a scheme posted, delivered and its outcome heard, each counterplay, the list never offering what the engine refuses, the caps and the protection, kind schemes, the opt-out both ways and against a stale snapshot, the opt-out across a term, rumours and their limits, the election from standing to the winner's effect and through the rule of the mood, a close race by votes, the awards and their payment, and the whole two-player flow through the framework's real store and keys); `tests/mystery.rs` (the twelve clues in order with every gate, the day gate and a risky search, three routes to the key and a build with none, each of the six endings replayed twice through the store and the keys, the doors it shuts, the endings closed to builds that have not earned them, the five finales and what each does to the wing for a pupil with and without the key, the count and its tie-break, the finale through the real board and tick); `tests/migrate.rs` (versions 1 and 2 of a character and version 1 of the school against pinned bytes, and the store opening an old save and an old school); `tests/content.rs` (each new table broken on purpose); the framework's source audit (`tests/sandbox.rs`) with no new dependency; `tests/ui.rs` (the six new screens at every size, tier and colour setting, with a look-around, and snapshots); the simulation below. The walk over a real `ssh` client with two accounts is [qa/m4-h4-walk.md](../qa/m4-h4-walk.md).
+
+BALANCE_PLACEHOLDER
