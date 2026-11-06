@@ -10,8 +10,8 @@ use crate::code::{self, Build, CODE_CYCLES, CODED_BASE, CODED_MAX, FRAGMENTS_MAX
 use crate::content::{Content, Family, ScriptDef};
 use crate::net::Network;
 use crate::run::{Run, RunResult, RunSetup, Status};
-use crate::world::{Contract, World};
 use crate::social::PROTECT_DAYS;
+use crate::world::{Contract, World};
 
 /// Marks a new character starts with: enough for one tool script and a proxy.
 pub const START_MARKS: u32 = 90;
@@ -150,7 +150,7 @@ pub struct Ties {
     pub pvp: bool,
     /// Takes crew invitations.
     pub crews_open: bool,
-    /// The day PvP was last switched off (it cannot come back for a couple of days).
+    /// The day `pvp` was last switched off (it cannot come back for a couple of days).
     pub pvp_off_on: i64,
     /// Honeypot levels at the hideout, 0 to 3.
     pub honeypot: u8,
@@ -189,7 +189,12 @@ impl Ties {
             credited_to: 0,
             sent: Vec::new(),
             stake: None,
-            arcs: [ArcState { step: 0, awaiting: false, since: 0, ending: 0 }; ARCS_MAX],
+            arcs: [ArcState {
+                step: 0,
+                awaiting: false,
+                since: 0,
+                ending: 0,
+            }; ARCS_MAX],
             flags: 0,
             endings: 0,
             legend: Vec::new(),

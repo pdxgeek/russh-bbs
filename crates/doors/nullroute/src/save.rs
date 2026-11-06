@@ -9,15 +9,15 @@
 //! `lib.rs` and add the arm to `Door::migrate`.
 
 use crate::code::{Build, CODED_MAX, FRAGMENTS_MAX};
-use crate::learn::ROWS_MAX;
 use crate::crew::{Crew, Member, Op, OpState};
+use crate::learn::ROWS_MAX;
 use crate::player::{
     ARCS_MAX, ArcState, DONE_MAX, FIXERS_MAX, LEGEND_MAX, Legend, MODS, PARTS, Player, SENT_MAX,
     STATS, Sent, Stake, Ties,
 };
 use crate::social::{
-    Bounty, Deed, Delivery, Effect, Order, Pair, Posted, SeasonRecord, Social, Tallies,
-    BOUNTIES_MAX, DEEDS_MAX, DELIVERIES_MAX, HALL_MAX, HIST_MAX, ORDERS_MAX, PAIRS_MAX, POSTED_MAX,
+    BOUNTIES_MAX, Bounty, DEEDS_MAX, DELIVERIES_MAX, Deed, Delivery, Effect, HALL_MAX, HIST_MAX,
+    ORDERS_MAX, Order, PAIRS_MAX, POSTED_MAX, Pair, Posted, SeasonRecord, Social, Tallies,
 };
 use crate::world::{BOARD_MAX, Contract, HOLES_MAX, Learned, NetState, World};
 

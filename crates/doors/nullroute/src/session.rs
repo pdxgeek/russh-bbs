@@ -239,19 +239,28 @@ impl Session {
             msgs.push((note, DoorStyle::Accent));
         }
         if let Some(stake) = p.ties.stake
-            && !world.social.ops.iter().any(|o| o.id == stake.op && o.index_of(&p.name).is_some())
+            && !world
+                .social
+                .ops
+                .iter()
+                .any(|o| o.id == stake.op && o.index_of(&p.name).is_some())
             && let Some(note) = p.drop_stake()
         {
             msgs.push((note, DoorStyle::Accent));
         }
         let mut world = world;
         world.social.post(p.posted(today));
-        if p
-            .ties
-            .stake
-            .is_some_and(|s| world.social.ops.iter().any(|o| o.id == s.op && o.state == crate::crew::OpState::Done))
-        {
-            msgs.push(("A crew run of yours is over. Collect your share: [k] crew, [c].".into(), DoorStyle::Good));
+        if p.ties.stake.is_some_and(|s| {
+            world
+                .social
+                .ops
+                .iter()
+                .any(|o| o.id == s.op && o.state == crate::crew::OpState::Done)
+        }) {
+            msgs.push((
+                "A crew run of yours is over. Collect your share: [k] crew, [c].".into(),
+                DoorStyle::Good,
+            ));
         }
         let mut offers: Vec<Contract> = if world.board.is_empty() {
             crate::world::first_board(&content, today)
@@ -414,10 +423,7 @@ impl Session {
                     "[h]ideout [p]rofile [t]heat [l]ie low [q]uit".into(),
                     Strong,
                 ));
-                hint.push((
-                    "[v]rivals [k]crew [a]rcs [w]orld".into(),
-                    Strong,
-                ));
+                hint.push(("[v]rivals [k]crew [a]rcs [w]orld".into(), Strong));
             }
             View::Contracts => {
                 body.push(("CONTRACTS".into(), Accent));
@@ -733,7 +739,11 @@ impl Session {
                     .map(|e| e.title.as_str())
                     .collect();
                 if !ending_titles.is_empty() {
-                    push_wrapped(&mut body, &format!("Endings reached: {}", ending_titles.join(", ")), Dim);
+                    push_wrapped(
+                        &mut body,
+                        &format!("Endings reached: {}", ending_titles.join(", ")),
+                        Dim,
+                    );
                 }
                 hint.push(("[Esc] back".into(), Strong));
             }
@@ -1097,11 +1107,18 @@ impl Session {
         }
         if let Some(link) = &active.crew {
             body.push((
-                format!("CREW RUN: trace shared. {} in the run.", link.op.members.len()),
+                format!(
+                    "CREW RUN: trace shared. {} in the run.",
+                    link.op.members.len()
+                ),
                 Accent,
             ));
             for (node, _, name) in social::mates(link) {
-                let at = run.net().nodes.get(usize::from(node)).map_or("?", |n| n.name.as_str());
+                let at = run
+                    .net()
+                    .nodes
+                    .get(usize::from(node))
+                    .map_or("?", |n| n.name.as_str());
                 body.push((format!("  crewmate {name} is at {at}"), Plain));
             }
         }
@@ -1349,7 +1366,11 @@ impl Session {
         let (corp, tier, season) = (contract.corp, contract.tier, self.season);
         self.world.apply_run(corp, tier, &result);
         let applied = result.clone();
-        let (handle, day, content) = (self.p.name.clone(), ctx.today().as_raw(), Arc::clone(&self.content));
+        let (handle, day, content) = (
+            self.p.name.clone(),
+            ctx.today().as_raw(),
+            Arc::clone(&self.content),
+        );
         self.world.record_run(&handle, tier, &result, day);
         ctx.edit_world(move |old| {
             let mut world = old.and_then(save::decode_world).unwrap_or_default();
@@ -1372,7 +1393,13 @@ impl Session {
             return;
         };
         if let Some(link) = &finished.crew {
-            if let Some(mine) = self.world.social.ops.iter_mut().find(|o| o.id == link.op.id) {
+            if let Some(mine) = self
+                .world
+                .social
+                .ops
+                .iter_mut()
+                .find(|o| o.id == link.op.id)
+            {
                 *mine = link.op.clone();
             }
             self.view = View::Crew;
@@ -1381,7 +1408,8 @@ impl Session {
                 if over {
                     "The crew run is over. Collect your share: [c].".to_owned()
                 } else {
-                    "You are out. The rest of the crew is still in; collect when the run ends.".to_owned()
+                    "You are out. The rest of the crew is still in; collect when the run ends."
+                        .to_owned()
                 },
                 DoorStyle::Accent,
             )];

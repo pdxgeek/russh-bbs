@@ -205,10 +205,11 @@ pub struct LinesTable {
     pub line: Vec<LineDef>,
 }
 
-
 fn text_problem(what: &str, text: &str, max: usize, problems: &mut Vec<String>) {
     if text.trim().is_empty() || text.chars().count() > max || !plain_text(text) {
-        problems.push(format!("{what}: must be plain text of 1 to {max} characters"));
+        problems.push(format!(
+            "{what}: must be plain text of 1 to {max} characters"
+        ));
     }
 }
 
@@ -220,7 +221,9 @@ impl Table for StoryTable {
         }
         for (i, f) in self.flags.iter().enumerate() {
             if f.is_empty() || !f.bytes().all(|b| b.is_ascii_lowercase() || b == b'_') {
-                p.push(format!("flag `{f}`: lowercase letters and underscores only"));
+                p.push(format!(
+                    "flag `{f}`: lowercase letters and underscores only"
+                ));
             }
             if self.flags[..i].contains(f) {
                 p.push(format!("flag `{f}` is listed twice"));
@@ -266,10 +269,15 @@ impl Table for StoryTable {
                 p.push(format!("{what}: tier 1 to 3 and a reward of 1 to 2000"));
             }
             if !matches!(s.effect, Effect::Copy | Effect::Plant | Effect::Shred) {
-                p.push(format!("{what}: the objective effect must be copy, plant or shred"));
+                p.push(format!(
+                    "{what}: the objective effect must be copy, plant or shred"
+                ));
             }
             if !crate::content::objective_possible(&s.target, s.effect) {
-                p.push(format!("{what}: {:?} cannot be done at a {} node", s.effect, s.target));
+                p.push(format!(
+                    "{what}: {:?} cannot be done at a {} node",
+                    s.effect, s.target
+                ));
             }
             if s.target.len() != 2 || !s.target.bytes().all(|b| b.is_ascii_uppercase()) {
                 p.push(format!("{what}: target is a two-letter node code"));
@@ -279,13 +287,17 @@ impl Table for StoryTable {
             text_problem(&format!("{what} done"), &s.done, 220, &mut p);
             cond(&what, &s.open, &mut p);
             if s.give.len() > 3 || s.give.iter().any(|n| *n == 0 || *n > 31) {
-                p.push(format!("{what}: `give` is up to three fragment numbers, 1 to 31"));
+                p.push(format!(
+                    "{what}: `give` is up to three fragment numbers, 1 to 31"
+                ));
             }
             if s.choice.is_empty() {
                 p.push(format!("{what}: needs at least one choice"));
             }
             if !s.choice.iter().any(|c| c.gate.is_empty()) {
-                p.push(format!("{what}: needs a choice with no gate, so nobody is stuck"));
+                p.push(format!(
+                    "{what}: needs a choice with no gate, so nobody is stuck"
+                ));
             }
             for (k, c) in s.choice.iter().enumerate() {
                 let what = format!("{what} choice {}", k + 1);
@@ -306,17 +318,29 @@ impl Table for StoryTable {
                     }
                 }
                 if c.ending != 0
-                    && !self.ending.iter().any(|e| e.num == c.ending && e.arc == s.arc)
+                    && !self
+                        .ending
+                        .iter()
+                        .any(|e| e.num == c.ending && e.arc == s.arc)
                 {
-                    p.push(format!("{what}: ending {} is not one of this arc's", c.ending));
+                    p.push(format!(
+                        "{what}: ending {} is not one of this arc's",
+                        c.ending
+                    ));
                 }
                 for f in c.set.iter().chain(&c.clear) {
                     if !self.flags.contains(f) {
                         p.push(format!("{what}: no flag `{f}`"));
                     }
                 }
-                if c.standing.iter().any(|[f, d]| *f < 0 || usize::from(f.unsigned_abs()) >= crate::player::FIXERS_MAX || d.abs() > 5) {
-                    p.push(format!("{what}: standing is [fixer, change] with a change of at most 5"));
+                if c.standing.iter().any(|[f, d]| {
+                    *f < 0
+                        || usize::from(f.unsigned_abs()) >= crate::player::FIXERS_MAX
+                        || d.abs() > 5
+                }) {
+                    p.push(format!(
+                        "{what}: standing is [fixer, change] with a change of at most 5"
+                    ));
                 }
                 if c.rep.abs() > 40 || c.marks.abs() > 1_000 || c.heat.abs() > 40 {
                     p.push(format!("{what}: effects out of range"));
@@ -353,7 +377,9 @@ fn verdict_problems(what: &str, list: &[VerdictDef], p: &mut Vec<String>) {
         }
     }
     if list.last().is_some_and(|v| !v.rule.is_empty()) {
-        p.push(format!("{what}: the last one must have no rule (the default)"));
+        p.push(format!(
+            "{what}: the last one must have no rule (the default)"
+        ));
     }
 }
 
@@ -389,7 +415,10 @@ impl Table for LinesTable {
             let plain_part = l.text.replace("{a}", "A").replace("{n}", "1");
             text_problem(&format!("line {}", l.num), &plain_part, 110, &mut p);
             if !placeholders_ok(&l.text) {
-                p.push(format!("line {}: only {{a}} and {{n}} are placeholders", l.num));
+                p.push(format!(
+                    "line {}: only {{a}} and {{n}} are placeholders",
+                    l.num
+                ));
             }
         }
         p
@@ -496,7 +525,9 @@ impl Content {
     /// A social line with `{a}` and `{n}` filled in.
     #[must_use]
     pub fn say(&self, num: u8, a: &str, n: i64) -> String {
-        self.line(num).replace("{a}", a).replace("{n}", &n.to_string())
+        self.line(num)
+            .replace("{a}", a)
+            .replace("{n}", &n.to_string())
     }
 }
 

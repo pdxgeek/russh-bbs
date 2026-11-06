@@ -152,15 +152,11 @@ impl World {
             .season_ending
             .iter()
             .find(|e| {
-                crate::cond::Cond::parse(&e.rule, &[])
-                    .is_ok_and(|c| c.eval(None, &s.tallies))
+                crate::cond::Cond::parse(&e.rule, &[]).is_ok_and(|c| c.eval(None, &s.tallies))
             })
             .map_or(0, |e| e.num);
-        let mut top: Vec<(String, u32)> = s
-            .posted
-            .iter()
-            .map(|p| (p.handle.clone(), p.rep))
-            .collect();
+        let mut top: Vec<(String, u32)> =
+            s.posted.iter().map(|p| (p.handle.clone(), p.rep)).collect();
         top.sort_by(|a, b| b.1.cmp(&a.1).then_with(|| a.0.cmp(&b.0)));
         top.truncate(5);
         s.hall.push(crate::social::SeasonRecord {
@@ -301,7 +297,8 @@ impl World {
         self.learned.retain(|l| l.uses > 0);
         self.nets
             .retain(|n| !n.holes.is_empty() || n.alert > 0 || n.backdoor || n.breaches > 0);
-        self.hist.push(u8::try_from(self.market_pct.min(255)).unwrap_or(100));
+        self.hist
+            .push(u8::try_from(self.market_pct.min(255)).unwrap_or(100));
         while self.hist.len() > HIST_MAX {
             self.hist.remove(0);
         }

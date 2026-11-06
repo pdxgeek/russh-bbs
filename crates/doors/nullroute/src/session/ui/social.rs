@@ -2,12 +2,12 @@
 //! look-around text with the key hints under it, coloured by kind, so the screens a screen reader
 //! gets and the ones a sighted player gets say the same words.
 
+use russh_bbs_door::DoorStyle;
 use russh_bbs_door::layout::{Constraint, Rect};
 use russh_bbs_door::style::Style;
 use russh_bbs_door::text::Line;
-use russh_bbs_door::DoorStyle;
 
-use super::{AMBER, CYAN, GREEN, Pen, RED, STEEL, bold, fg, rows};
+use super::{AMBER, CYAN, GREEN, Pen, RED, STEEL, bold, clip, fg, rows};
 use crate::session::{Session, View};
 
 fn tone(view: &View) -> russh_bbs_door::style::Color {
@@ -33,6 +33,7 @@ fn title(view: &View) -> &'static str {
 /// Draw a social screen.
 pub(super) fn draw(pen: &mut Pen<'_, '_>, s: &Session, area: Rect) {
     let lines = s.lines(usize::from(area.height).saturating_sub(2));
+    let width = usize::from(area.width).saturating_sub(2);
     let [main, _] = rows(area, [Constraint::Min(4), Constraint::Length(0)]);
     let inner = pen.panel(main, title(&s.view), tone(&s.view));
     let height = usize::from(inner.height);
@@ -52,8 +53,8 @@ pub(super) fn draw(pen: &mut Pen<'_, '_>, s: &Session, area: Rect) {
                 DoorStyle::Dim => pen.ink.dim,
                 _ => pen.ink.plain,
             };
-            Line::styled(text.clone(), st)
+            Line::styled(clip(text, width), st)
         })
         .collect();
-    pen.wrapped(inner, out);
+    pen.text(inner, out);
 }

@@ -20,9 +20,7 @@ use crate::crew::{self, Live, Op, OpState};
 use crate::player::stat;
 use crate::run::{Act, Refused, Status};
 use crate::save;
-use crate::social::{
-    BOUNTY_STAKE, NOTE_MAX, PROTECT_DAYS, Posted, Why, same,
-};
+use crate::social::{BOUNTY_STAKE, NOTE_MAX, PROTECT_DAYS, Posted, Why, same};
 use crate::story::ARC_TMPL;
 use crate::world::{Contract, World};
 
@@ -161,6 +159,7 @@ impl Session {
 
     // ---- text ----
 
+    #[allow(clippy::needless_late_init)]
     pub(super) fn social_lines(&self, rows: usize) -> Option<Vec<Line>> {
         use DoorStyle::{Accent, Bad, Dim, Good, Plain, Strong};
         let c = &*self.content;
@@ -279,13 +278,22 @@ impl Session {
                         if !cr.invited.is_empty() {
                             body.push((format!("Invited: {}", cr.invited.join(", ")), Dim));
                         }
-                        match s.ops.iter().find(|o| o.crew == cr.id && o.state != OpState::Done)
-                            .or_else(|| s.ops.iter().find(|o| o.crew == cr.id && o.index_of(me).is_some() && !o.settled.iter().any(|x| same(x, me))))
-                        {
+                        match s
+                            .ops
+                            .iter()
+                            .find(|o| o.crew == cr.id && o.state != OpState::Done)
+                            .or_else(|| {
+                                s.ops.iter().find(|o| {
+                                    o.crew == cr.id
+                                        && o.index_of(me).is_some()
+                                        && !o.settled.iter().any(|x| same(x, me))
+                                })
+                            }) {
                             None => body.push(("No crew run is open.".into(), Dim)),
                             Some(op) => {
                                 let job = c.job(&op.contract);
-                                let corp = c.corp(op.contract.corp).map_or("?", |x| x.name.as_str());
+                                let corp =
+                                    c.corp(op.contract.corp).map_or("?", |x| x.name.as_str());
                                 body.push((
                                     format!(
                                         "Run: {} at {corp} (tier {}), {}",
@@ -302,7 +310,11 @@ impl Session {
                                 body.push((
                                     format!(
                                         "In it: {}  ({} actions so far)",
-                                        op.members.iter().map(|m| m.handle.as_str()).collect::<Vec<_>>().join(", "),
+                                        op.members
+                                            .iter()
+                                            .map(|m| m.handle.as_str())
+                                            .collect::<Vec<_>>()
+                                            .join(", "),
                                         op.log.len()
                                     ),
                                     Plain,
@@ -325,8 +337,18 @@ impl Session {
             View::Arcs => {
                 body.push(("ARCS: each fixer's story".into(), Accent));
                 for arc in &c.story.arc {
-                    let st = self.p.ties.arcs.get(usize::from(arc.num)).copied().unwrap_or_default();
-                    let mark = if usize::from(arc.num) == self.sel { '>' } else { ' ' };
+                    let st = self
+                        .p
+                        .ties
+                        .arcs
+                        .get(usize::from(arc.num))
+                        .copied()
+                        .unwrap_or_default();
+                    let mark = if usize::from(arc.num) == self.sel {
+                        '>'
+                    } else {
+                        ' '
+                    };
                     body.push((
                         format!(
                             "{mark}{:<20} {:<12} step {} of 7: {}",
@@ -335,7 +357,11 @@ impl Session {
                             st.step.max(1),
                             self.p.arc_status(c, arc.num, today)
                         ),
-                        if usize::from(arc.num) == self.sel { Strong } else { Plain },
+                        if usize::from(arc.num) == self.sel {
+                            Strong
+                        } else {
+                            Plain
+                        },
                     ));
                 }
                 if let Some(arc) = c.arc(u8::try_from(self.sel).unwrap_or(0)) {
@@ -345,10 +371,20 @@ impl Session {
                 hint = "[Up/Down] pick  [Enter] open its job or its choice  [Esc] back";
             }
             View::Scene(arc) => {
-                let st = self.p.ties.arcs.get(usize::from(*arc)).copied().unwrap_or_default();
+                let st = self
+                    .p
+                    .ties
+                    .arcs
+                    .get(usize::from(*arc))
+                    .copied()
+                    .unwrap_or_default();
                 let step = c.step(*arc, st.step);
                 body.push((
-                    format!("{}: {}", c.arc(*arc).map_or("?", |a| a.title.as_str()), step.map_or("?", |s| s.title.as_str())),
+                    format!(
+                        "{}: {}",
+                        c.arc(*arc).map_or("?", |a| a.title.as_str()),
+                        step.map_or("?", |s| s.title.as_str())
+                    ),
                     Accent,
                 ));
                 if let Some(step) = step {
@@ -380,10 +416,16 @@ impl Session {
                 match tab {
                     0 => {
                         if s.deeds.is_empty() {
-                            body.push(("Quiet. Nothing has happened that anyone is saying.".into(), Dim));
+                            body.push((
+                                "Quiet. Nothing has happened that anyone is saying.".into(),
+                                Dim,
+                            ));
                         }
                         for d in s.deeds.iter().rev().take(8) {
-                            body.push((format!("day {}: {}", d.day, c.say(d.line, &d.who, i64::from(d.n))), Plain));
+                            body.push((
+                                format!("day {}: {}", d.day, c.say(d.line, &d.who, i64::from(d.n))),
+                                Plain,
+                            ));
                         }
                         let t = &s.tallies;
                         body.push((
@@ -409,7 +451,11 @@ impl Session {
                                     b.reward,
                                     c.fixer(b.fixer).map_or("?", |f| f.name.as_str()),
                                     b.expires,
-                                    if b.poster.is_empty() { String::new() } else { format!("  from {}", b.poster) }
+                                    if b.poster.is_empty() {
+                                        String::new()
+                                    } else {
+                                        format!("  from {}", b.poster)
+                                    }
                                 ),
                                 Plain,
                             ));
@@ -429,7 +475,13 @@ impl Session {
                         }
                         for cr in s.crews.iter().take(8) {
                             body.push((
-                                format!("{:<20} {} members, {} jobs, led by {}", cr.name, cr.members.len(), cr.jobs, cr.leader),
+                                format!(
+                                    "{:<20} {} members, {} jobs, led by {}",
+                                    cr.name,
+                                    cr.members.len(),
+                                    cr.jobs,
+                                    cr.leader
+                                ),
                                 Plain,
                             ));
                         }
@@ -449,7 +501,11 @@ impl Session {
                                 format!(
                                     "Season {}: {title}. Top: {}",
                                     h.season,
-                                    h.top.iter().map(|(n, r)| format!("{n} {r}")).collect::<Vec<_>>().join(", ")
+                                    h.top
+                                        .iter()
+                                        .map(|(n, r)| format!("{n} {r}"))
+                                        .collect::<Vec<_>>()
+                                        .join(", ")
                                 ),
                                 Plain,
                             ));
@@ -461,7 +517,10 @@ impl Session {
                                 .iter()
                                 .find(|e| e.num == l.ending)
                                 .map_or("?", |e| e.title.as_str());
-                            body.push((format!("Yours, season {}: {title} (rep {})", l.season, l.rep), Strong));
+                            body.push((
+                                format!("Yours, season {}: {title} (rep {})", l.season, l.rep),
+                                Strong,
+                            ));
                         }
                     }
                 }
@@ -470,10 +529,14 @@ impl Session {
             }
             _ => return None,
         }
-        let mut out = Vec::new();
         let hint_lines = wrap_hint(hint);
-        out.extend(super::fit(body, hint_lines, rows));
-        Some(out)
+        // On a drawn screen the key hints sit on the last rows; the look-around is not padded.
+        if rows < 200 {
+            while body.len() + hint_lines.len() < rows {
+                body.push((String::new(), DoorStyle::Plain));
+            }
+        }
+        Some(super::fit(body, hint_lines, rows))
     }
 
     /// The ending the season would get if it closed on today's tallies.
@@ -512,7 +575,7 @@ impl Session {
                 let r = self.p.buy_honeypot();
                 self.say(r);
             }
-            (View::Rivals, DoorKey::Up) => self.sel = self.sel.saturating_sub(1),
+            (View::Rivals | View::Arcs, DoorKey::Up) => self.sel = self.sel.saturating_sub(1),
             (View::Rivals, DoorKey::Down) => {
                 self.sel = (self.sel + 1).min(self.rivals().len().min(8).saturating_sub(1));
             }
@@ -542,7 +605,9 @@ impl Session {
                         let me = self.p.name.clone();
                         let t2 = target.clone();
                         let r = self.edit(ctx, move |w, _| {
-                            w.social.file_hack(&me, &t2, today, nonce).map_err(|e| e.text().to_owned())
+                            w.social
+                                .file_hack(&me, &t2, today, nonce)
+                                .map_err(|e| e.text().to_owned())
                         });
                         match r {
                             Ok(()) => self.say(Ok(format!(
@@ -572,13 +637,18 @@ impl Session {
                 }));
             }
             (View::Crew, _) => return self.crew_key(key, ctx),
-            (View::Arcs, DoorKey::Up) => self.sel = self.sel.saturating_sub(1),
             (View::Arcs, DoorKey::Down) => {
                 self.sel = (self.sel + 1).min(self.content.story.arc.len().saturating_sub(1));
             }
             (View::Arcs, DoorKey::Enter) => {
                 let arc = u8::try_from(self.sel).unwrap_or(0);
-                let st = self.p.ties.arcs.get(usize::from(arc)).copied().unwrap_or_default();
+                let st = self
+                    .p
+                    .ties
+                    .arcs
+                    .get(usize::from(arc))
+                    .copied()
+                    .unwrap_or_default();
                 if st.awaiting {
                     self.msgs.clear();
                     self.view = View::Scene(arc);
@@ -608,7 +678,7 @@ impl Session {
             }
             (View::Street(_), DoorKey::Char(ch)) => {
                 if let Some(n) = ch.to_digit(10).filter(|n| (1..=4).contains(n)) {
-                    self.view = View::Street(n as u8 - 1);
+                    self.view = View::Street(u8::try_from(n - 1).unwrap_or(0));
                     self.msgs.clear();
                 }
             }
@@ -654,15 +724,15 @@ impl Session {
         match input.kind {
             InputKind::CrewName => {
                 self.view = View::Crew;
-                let name = match ctx.player_name(&input.buf) {
-                    Ok(n) => n.as_str().chars().take(crew::NAME_MAX).collect::<String>(),
-                    Err(_) => {
-                        self.say(Err("That is not a name the board allows.".into()));
-                        return;
-                    }
+                let Ok(name) = ctx.player_name(&input.buf) else {
+                    self.say(Err("That is not a name the board allows.".into()));
+                    return;
                 };
+                let name: String = name.as_str().chars().take(crew::NAME_MAX).collect();
                 let r = self.edit(ctx, move |w, _| {
-                    w.social.crew_create(&name, &me, today).map_err(|e| e.text().to_owned())
+                    w.social
+                        .crew_create(&name, &me, today)
+                        .map_err(|e| e.text().to_owned())
                 });
                 self.say(r.map(|()| "Crew founded.".to_owned()));
             }
@@ -673,9 +743,13 @@ impl Session {
                     return;
                 }
                 let r = self.edit(ctx, move |w, _| {
-                    w.social.crew_invite(&me, &who, today).map_err(|e| e.text().to_owned())
+                    w.social
+                        .crew_invite(&me, &who, today)
+                        .map_err(|e| e.text().to_owned())
                 });
-                self.say(r.map(|()| "Invitation sent. They see a line with your handle, nothing more.".to_owned()));
+                self.say(r.map(|()| {
+                    "Invitation sent. They see a line with your handle, nothing more.".to_owned()
+                }));
             }
             InputKind::Note { target, stake } => {
                 self.view = View::Rivals;
@@ -718,7 +792,10 @@ impl Session {
             .social
             .ops
             .iter()
-            .find(|o| o.crew == crew.id && o.state != OpState::Done && o.index_of(me).is_some() || o.crew == crew.id && o.state == OpState::Lobby)
+            .find(|o| {
+                o.crew == crew.id && o.state != OpState::Done && o.index_of(me).is_some()
+                    || o.crew == crew.id && o.state == OpState::Lobby
+            })
             .or_else(|| {
                 self.world.social.ops.iter().find(|o| {
                     o.crew == crew.id
@@ -766,7 +843,9 @@ impl Session {
                     return Some(Flow::Stay);
                 };
                 let r = self.edit(ctx, move |w, _| {
-                    w.social.crew_accept(&me, id).map_err(|e| e.text().to_owned())
+                    w.social
+                        .crew_accept(&me, id)
+                        .map_err(|e| e.text().to_owned())
                 });
                 self.say(r.map(|()| "You are in the crew.".to_owned()));
             }
@@ -834,12 +913,16 @@ impl Session {
         match self.p.begin_crew_run(&self.content, &contract, id) {
             Ok(member) => {
                 let r = self.edit(ctx, move |w, _| {
-                    w.op_open(id, contract, member.clone(), today).map_err(|e| e.text().to_owned())
+                    w.op_open(id, contract, member.clone(), today)
+                        .map_err(|e| e.text().to_owned())
                 });
                 match r {
                     Ok(()) => {
                         self.view = View::Crew;
-                        self.say(Ok("The run is open. Your crew can join from [k]; the leader starts it.".into()));
+                        self.say(Ok(
+                            "The run is open. Your crew can join from [k]; the leader starts it."
+                                .into(),
+                        ));
                     }
                     Err(e) => {
                         self.p.drop_stake();
@@ -864,7 +947,8 @@ impl Session {
         match self.p.begin_crew_run(&self.content, &op.contract, op.id) {
             Ok(member) => {
                 let r = self.edit(ctx, move |w, _| {
-                    w.op_join(op.id, member.clone()).map_err(|e| e.text().to_owned())
+                    w.op_join(op.id, member.clone())
+                        .map_err(|e| e.text().to_owned())
                 });
                 match r {
                     Ok(()) => self.say(Ok("You are in. The leader starts the run.".into())),
@@ -898,7 +982,9 @@ impl Session {
         };
         let run = live.runs[idx].clone();
         if run.status != Status::Active {
-            self.say(Err("You are out of this run. Wait for the crew to finish, then collect.".into()));
+            self.say(Err(
+                "You are out of this run. Wait for the crew to finish, then collect.".into(),
+            ));
             return;
         }
         let feed = super::Feed::new(&run);
@@ -937,9 +1023,15 @@ impl Session {
             Ok(())
         });
         let idx = op.index_of(&me).unwrap_or(0);
-        let result = live.result_of(idx).unwrap_or_else(|| live.runs[idx].result());
+        let result = live
+            .result_of(idx)
+            .unwrap_or_else(|| live.runs[idx].result());
         let total = {
-            let base = if op.is_finale() { crew::FINALE_REWARD } else { op.contract.reward };
+            let base = if op.is_finale() {
+                crew::FINALE_REWARD
+            } else {
+                op.contract.reward
+            };
             base * crew::PAY_PCT[op.members.len().clamp(1, 5) - 1] / 100
         };
         let shares = live.shares(total);
@@ -985,9 +1077,7 @@ impl Session {
         };
         let today = ctx.today().as_raw();
         let nth = link.op.log.len();
-        link.live
-            .apply(content, &link.op, link.me, act, nth)
-            .map_err(|e| e)?;
+        link.live.apply(content, &link.op, link.me, act, nth)?;
         link.op.log.push(crew::pack(link.me, act));
         link.op.last = today;
         if link.live.over() {
@@ -1033,7 +1123,11 @@ pub(super) fn split_lines(split: &[(String, u32, u32, Status)]) -> Vec<Line> {
                     Status::Active => "in",
                 }
             ),
-            if *status == Status::Burned { DoorStyle::Bad } else { DoorStyle::Plain },
+            if *status == Status::Burned {
+                DoorStyle::Bad
+            } else {
+                DoorStyle::Plain
+            },
         ));
     }
     out
@@ -1054,4 +1148,3 @@ pub(super) fn stat_line(stats: &[u16; crate::player::STATS]) -> String {
         stats[stat::FINALE]
     )
 }
-

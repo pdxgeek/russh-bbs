@@ -488,8 +488,9 @@ fn plan_deck(content: &Content, p: &mut Player, c: &Contract, world: &World, sea
     // A fight is won with break scripts (the weak lock family hurts most) and jammed away if
     // possible, so the kit is a break script or two, a jam, then the quiet helpers.
     for _ in 0..2 {
-        if let Some(s) = best_of(&have, |s| s.effect.lock().is_some() && !p.deck.contains(&s.num))
-        {
+        if let Some(s) = best_of(&have, |s| {
+            s.effect.lock().is_some() && !p.deck.contains(&s.num)
+        }) {
             let _ = p.load(content, s.num);
         }
     }
@@ -589,7 +590,8 @@ fn bit(id: u8) -> u32 {
 }
 
 /// A bot at the controls of one run: it decides the next action from what a person can see.
-struct Pilot {
+/// Public so a test can drive a real session with the same hands the harness uses.
+pub struct Pilot {
     target: String,
     effect: Effect,
     scanned_at: u32,
@@ -602,10 +604,15 @@ struct Pilot {
     bad: Vec<Act>,
     /// In a crew a member who cannot go on waits for a crewmate to open the way, not leaves.
     crew: bool,
+    /// A pilot with a script tuned to wardens stays for the warden once the job is done: it pays
+    /// reputation and drops code, and the pilot has the one tool that answers it.
+    pub hunt: bool,
 }
 
 impl Pilot {
-    fn new(run: &Run, bail_at: u32) -> Self {
+    /// A pilot for a solo run that jacks out at `bail_at` trace.
+    #[must_use]
+    pub fn new(run: &Run, bail_at: u32) -> Self {
         let (t, e) = run.objective_target();
         Self {
             target: t.to_owned(),
@@ -618,10 +625,13 @@ impl Pilot {
             jammed: Vec::new(),
             bad: Vec::new(),
             crew: false,
+            hunt: false,
         }
     }
 
-    fn in_crew(run: &Run, bail_at: u32) -> Self {
+    /// A pilot for a member of a crew run: when the way is shut to its kit it waits (`None`).
+    #[must_use]
+    pub fn in_crew(run: &Run, bail_at: u32) -> Self {
         Self {
             crew: true,
             ..Self::new(run, bail_at)
@@ -629,7 +639,7 @@ impl Pilot {
     }
 
     /// Tell the pilot how its last action went.
-    fn result(&mut self, act: Act, ok: bool) {
+    pub fn result(&mut self, act: Act, ok: bool) {
         if ok {
             self.bad.clear();
             self.fails = 0;
@@ -640,7 +650,7 @@ impl Pilot {
     }
 
     /// The next action. `others_done` means the crew's objective is done: get out.
-    fn decide(&mut self, content: &Content, run: &Run, others_done: bool) -> Option<Act> {
+    pub fn decide(&mut self, content: &Content, run: &Run, others_done: bool) -> Option<Act> {
         let act = self.decide_one(content, run, others_done);
         // A crew member with nowhere to go yet (the way is shut to their kit) waits.
         if self.crew && act == Act::JackOut && self.waiting(run, others_done) {
@@ -671,6 +681,19 @@ impl Pilot {
                 .into_iter()
                 .find(|a| !self.bad.contains(a))
                 .unwrap_or(Act::BreakOff);
+        }
+        if self.hunt
+            && run.objective_done()
+            && run.cycles > 8
+            && run.trace <= 78
+            && run.warden().is_some_and(|w| w.awake && !w.down)
+            && let Some(to) = run
+                .exits()
+                .into_iter()
+                .find(|id| run.is_open(*id) && run.visited & bit(*id) != 0)
+        {
+            // Wait for it, a step at a time: it arrives after a few moves.
+            return Act::Move(to);
         }
         if run.objective_done() || others_done || run.trace >= self.bail_at || run.cycles <= 2 {
             return Act::JackOut;
@@ -773,8 +796,9 @@ impl Pilot {
 }
 
 /// Play one solo run with the information a person has. Returns when the run is over.
-fn play(content: &Content, run: &mut Run, rng: &mut DoorRng, bail_at: u32) {
+fn play(content: &Content, run: &mut Run, rng: &mut DoorRng, bail_at: u32, hunt: bool) {
     let mut pilot = Pilot::new(run, bail_at);
+    pilot.hunt = hunt;
     for _ in 0..400 {
         if run.status != Status::Active {
             return;
@@ -923,7 +947,17 @@ pub fn simulate(content: &Content, cfg: Config) -> Report {
         }
         for (idx, p) in players.iter_mut().enumerate() {
             let before = p.earned;
-            solo_day(content, p, idx, &mut mem[idx], &mut world, &mut report, today, cfg, &mut rng);
+            solo_day(
+                content,
+                p,
+                idx,
+                &mut mem[idx],
+                &mut world,
+                &mut report,
+                today,
+                cfg,
+                &mut rng,
+            );
             if cfg.social {
                 social_day(content, p, idx, &mut world, &mut report, today, opt_out, d);
                 world.social.post(p.posted(today));
@@ -964,13 +998,8 @@ pub fn simulate(content: &Content, cfg: Config) -> Report {
     report.social.hacks_in = t.hacks_in;
     report.social.hacks_caught = t.hacks_caught;
     report.social.bounties_paid = t.bounties_paid;
-    report.social.honeypot_owners = u32::try_from(
-        players
-            .iter()
-            .filter(|p| p.ties.honeypot > 0)
-            .count(),
-    )
-    .unwrap_or(0);
+    report.social.honeypot_owners =
+        u32::try_from(players.iter().filter(|p| p.ties.honeypot > 0).count()).unwrap_or(0);
     report.tuned_owners = u32::try_from(
         players
             .iter()
@@ -1055,12 +1084,9 @@ fn solo_day(
         };
         code_all(content, p, &mut report.coded);
         plan_deck(content, p, &contract, world, cfg.season);
-        let mut run = match p.begin_run(content, cfg.season, world, &contract) {
-            Ok(run) => run,
-            Err(_) => {
-                failed.push(contract.id);
-                continue;
-            }
+        let Ok(mut run) = p.begin_run(content, cfg.season, world, &contract) else {
+            failed.push(contract.id);
+            continue;
         };
         let target = Target {
             world,
@@ -1074,12 +1100,25 @@ fn solo_day(
             report.degraded_decks += 1;
         }
         took += 1;
-        play(content, &mut run, rng, if idx % 3 == 0 { 99 } else { 80 });
+        let tuned = p
+            .deck
+            .iter()
+            .filter_map(|n| p.script(content, *n))
+            .any(|s| s.target == Some(crate::content::CmKind::Warden));
+        play(
+            content,
+            &mut run,
+            rng,
+            if idx.is_multiple_of(3) { 99 } else { 80 },
+            tuned,
+        );
         let result = run.result();
         if run.log.iter().any(|l| l.contains(" finds you.")) {
-            let tuned = p.deck.iter().filter_map(|n| p.script(content, *n)).any(|s| {
-                s.target == Some(crate::content::CmKind::Warden)
-            });
+            let tuned = p
+                .deck
+                .iter()
+                .filter_map(|n| p.script(content, *n))
+                .any(|s| s.target == Some(crate::content::CmKind::Warden));
             report.warden_met[0] += 1;
             if tuned {
                 report.warden_met[1] += 1;
@@ -1113,7 +1152,11 @@ fn solo_day(
             report.dry_why[why] += 1;
             failed.push(contract.id);
         }
-        mem.note(p, contract.id, result.objective && result.status != Status::Burned);
+        mem.note(
+            p,
+            contract.id,
+            result.objective && result.status != Status::Burned,
+        );
         let _ = p.finish_run(content, &contract, &result, rng);
         if let Some((arc, step)) = content.job(&contract).and_then(|j| j.arc)
             && result.objective
@@ -1175,12 +1218,12 @@ fn social_day(
     d: i64,
 ) {
     // Honeypots: a third of the bots, when they can pay for one and still have a rig to run.
-    if idx % 3 == 1 && p.ties.honeypot < crate::social::HONEYPOT_MAX && p.marks >= 600 {
+    if idx % 3 == 1 && p.ties.honeypot < crate::social::HONEYPOT_MAX && p.marks >= 300 {
         let _ = p.buy_honeypot();
     }
     let me = p.name.clone();
     // Hacks: every fourth bot hacks the richest hideout it is allowed to, once a day.
-    if idx % 4 == 0 && p.cycles >= HACK_CYCLES + 4 {
+    if idx.is_multiple_of(4) && p.cycles >= HACK_CYCLES + 4 {
         let mut targets: Vec<_> = world
             .social
             .posted
@@ -1367,28 +1410,23 @@ fn crew_day(cx: &mut CrewCtx<'_>, players: &mut [Player], members: &[usize], rng
                 continue;
             };
             let name = players[*m].name.clone();
-            match cx.world.op_act(content, op_id, &name, act, op.log.len(), today) {
-                Ok(()) => {
-                    pilot.result(act, true);
-                    moved = true;
-                    break;
-                }
-                Err(_) => {
-                    pilot.result(act, false);
-                    if pilot.fails >= 6 {
-                        // This member is stuck: they jack out.
-                        let _ = cx.world.op_act(
-                            content,
-                            op_id,
-                            &name,
-                            Act::JackOut,
-                            op.log.len(),
-                            today,
-                        );
-                        moved = true;
-                        break;
-                    }
-                }
+            if cx
+                .world
+                .op_act(content, op_id, &name, act, op.log.len(), today)
+                .is_ok()
+            {
+                pilot.result(act, true);
+                moved = true;
+                break;
+            }
+            pilot.result(act, false);
+            if pilot.fails >= 6 {
+                // This member is stuck: they jack out.
+                let _ = cx
+                    .world
+                    .op_act(content, op_id, &name, Act::JackOut, op.log.len(), today);
+                moved = true;
+                break;
             }
         }
         if !moved {
@@ -1499,4 +1537,166 @@ fn crew_decks(
     let cap = crate::run::capability_of_defs(union.into_iter());
     let mask = net.reachable(&cap, &overlay);
     goals.iter().any(|g| mask & (1 << g) != 0).then_some(decks)
+}
+
+/// What a batch of tier 3 runs against a warden came to.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct WardenTrial {
+    /// Runs played.
+    pub runs: u32,
+    /// Runs in which the warden woke.
+    pub woke: u32,
+    /// Runs in which it reached the player.
+    pub met: u32,
+    /// Runs in which it was put down.
+    pub down: u32,
+    /// Runs that ended burned.
+    pub burned: u32,
+    /// Runs that finished the objective.
+    pub done: u32,
+}
+
+/// A batch of tier 3 runs with a warden on the network, played by a character who is ready for
+/// one (`prepared`: a script coded and tuned to wardens, the power 6 breaks and purge, a reroute,
+/// a shield, and the will to wait for it) or one with the stock shop deck. This is the balance
+/// evidence for the warden gate: the stock deck never puts one down, the prepared one usually does.
+#[must_use]
+pub fn warden_trial(content: &Content, seed: u64, runs: u32, prepared: bool) -> WardenTrial {
+    let mut out = WardenTrial::default();
+    let mut rng = DoorRng::from_seed(seed);
+    let world = World::default();
+    let day = 20_000;
+    let mut n = 0u32;
+    while out.runs < runs && n < runs * 40 {
+        n += 1;
+        let mut p = Player::new(content, rng.next_u64(), "trial", 1, day);
+        p.rep = 100;
+        p.rig = [2, 3, 3, 3, 3];
+        p.xp = [200; 5];
+        p.marks = 10_000;
+        p.cycles = 60;
+        p.heat = 0;
+        p.standing = [5; crate::player::FIXERS_MAX];
+        for num in [2u8, 6, 7, 9, 10, 12, 13, 14, 16, 18, 21, 22, 24, 25, 58, 59] {
+            if !p.owned.contains(&num) {
+                p.owned.push(num);
+            }
+        }
+        if prepared {
+            // crack-core + warden-lens + piercing, and a spoof twin: two ways to hurt a warden.
+            p.workbench = true;
+            p.fragments = vec![1, 14, 23, 2, 14, 24];
+            for build in [
+                code::Build {
+                    effect: 1,
+                    target: 14,
+                    modifier: 23,
+                },
+                code::Build {
+                    effect: 2,
+                    target: 14,
+                    modifier: 24,
+                },
+            ] {
+                let _ = p.code(content, build);
+            }
+        }
+        p.cycles = 60;
+        let corp = u8::try_from(rng.below(12)).unwrap_or(0);
+        let fixer = content.corp(corp).map_or(0, |c| c.patron);
+        let contract = Contract {
+            id: n,
+            tmpl: 70,
+            corp,
+            fixer,
+            tier: 3,
+            reward: 300,
+            expires: day,
+        };
+        let Some(job) = content.job(&contract) else {
+            continue;
+        };
+        let _ = job;
+        if !plan_deck(content, &mut p, &contract, &world, 1) {
+            continue;
+        }
+        let Ok(mut run) = p.begin_run(content, 1, &world, &contract) else {
+            continue;
+        };
+        if run.warden().is_none() {
+            continue;
+        }
+        let mut pilot = Pilot::new(&run, 99);
+        pilot.hunt = prepared;
+        for _ in 0..400 {
+            if run.status != Status::Active {
+                break;
+            }
+            let act = pilot.decide(content, &run, false).unwrap_or(Act::JackOut);
+            let ok = run.act(content, act, &mut rng).is_ok();
+            pilot.result(act, ok);
+        }
+        let result = run.result();
+        out.runs += 1;
+        out.woke += u32::from(result.warden_woke);
+        out.met += u32::from(run.log.iter().any(|l| l.contains(" finds you.")));
+        out.down += u32::from(result.warden_down);
+        out.burned += u32::from(result.status == Status::Burned);
+        out.done += u32::from(result.objective && result.status != Status::Burned);
+    }
+    out
+}
+
+/// Three characters ready for the season's finale (every break family at power 6, a purge, a
+/// scan, a shield and a script tuned to wardens) take it on in `attempts` different seasons.
+/// Returns how many seasons the crew cracked it in. The balance evidence that the finale is a
+/// heist for crews that can be done, not a wall.
+#[must_use]
+pub fn finale_trial(content: &Content, seed: u64, attempts: u32) -> u32 {
+    let mut rng = DoorRng::from_seed(seed);
+    let mut cracked = 0;
+    for season in 1..=attempts {
+        let day = 20_000;
+        let mut world = World::default();
+        world.sync_season(content, season);
+        let mut players: Vec<Player> = (0..3)
+            .map(|i| {
+                let mut p = Player::new(content, rng.next_u64(), &format!("hand{i}"), season, day);
+                p.rep = 100;
+                p.rig = [2, 3, 3, 3, 3];
+                p.xp = [200; 5];
+                p.marks = 10_000;
+                p.cycles = 70;
+                p.standing = [5; crate::player::FIXERS_MAX];
+                for num in [2u8, 6, 7, 9, 10, 12, 13, 14, 16, 18, 21, 22, 24, 25, 58, 59] {
+                    p.owned.push(num);
+                }
+                p.workbench = true;
+                p.fragments = vec![1, 14, 23];
+                let _ = p.code(
+                    content,
+                    code::Build {
+                        effect: 1,
+                        target: 14,
+                        modifier: 23,
+                    },
+                );
+                p.cycles = 70;
+                world.social.post(p.posted(day));
+                p
+            })
+            .collect();
+        let mut report = Report::default();
+        let mut cx = CrewCtx {
+            content,
+            world: &mut world,
+            report: &mut report,
+            today: day,
+            season,
+            k: 0,
+        };
+        crew_day(&mut cx, &mut players, &[0, 1, 2], &mut rng);
+        cracked += u32::from(world.social.finale.is_some());
+    }
+    cracked
 }

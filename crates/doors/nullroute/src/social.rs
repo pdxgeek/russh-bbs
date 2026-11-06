@@ -336,7 +336,9 @@ impl Why {
     pub const fn text(self) -> &'static str {
         match self {
             Self::SelfTarget => "that is you",
-            Self::NotPosted => "you are not on the rivals board (PvP is off or you have not posted)",
+            Self::NotPosted => {
+                "you are not on the rivals board (PvP is off or you have not posted)"
+            }
             Self::TargetGone => "they are not on the board any more",
             Self::Protected => "they are new: protected for their first week",
             Self::TooLow => "they are a tier below you",
@@ -426,9 +428,7 @@ impl Social {
     /// Whether two players are in one crew.
     #[must_use]
     pub fn crewmates(&self, a: &str, b: &str) -> bool {
-        self.crews
-            .iter()
-            .any(|c| c.has(a) && c.has(b))
+        self.crews.iter().any(|c| c.has(a) && c.has(b))
     }
 
     /// The caps on filing a hack. This is the only place they are decided.
@@ -439,8 +439,14 @@ impl Social {
         if same(from, to) {
             return Err(Why::SelfTarget);
         }
-        let a = self.posted_of(from).filter(|a| a.pvp).ok_or(Why::NotPosted)?;
-        let t = self.posted_of(to).filter(|t| t.pvp).ok_or(Why::TargetGone)?;
+        let a = self
+            .posted_of(from)
+            .filter(|a| a.pvp)
+            .ok_or(Why::NotPosted)?;
+        let t = self
+            .posted_of(to)
+            .filter(|t| t.pvp)
+            .ok_or(Why::TargetGone)?;
         if today - t.born < PROTECT_DAYS {
             return Err(Why::Protected);
         }
@@ -456,9 +462,11 @@ impl Social {
         if self.orders.iter().filter(|o| same(&o.to, to)).count() >= HITS_PER_DAY {
             return Err(Why::Swamped);
         }
-        if self.pairs.iter().any(|p| {
-            same(&p.from, from) && same(&p.to, to) && today - p.day < PAIR_DAYS
-        }) {
+        if self
+            .pairs
+            .iter()
+            .any(|p| same(&p.from, from) && same(&p.to, to) && today - p.day < PAIR_DAYS)
+        {
             return Err(Why::Cooldown);
         }
         if today < t.peace_until {
@@ -496,7 +504,15 @@ impl Social {
             }
             Err(why) => {
                 let cycles = i32::try_from(HACK_CYCLES).unwrap_or(6);
-                self.deliver(from, today, Effect::Cycles, cycles, to, Lines::REFUSED, nonce);
+                self.deliver(
+                    from,
+                    today,
+                    Effect::Cycles,
+                    cycles,
+                    to,
+                    Lines::REFUSED,
+                    nonce,
+                );
                 Err(why)
             }
         }
@@ -513,15 +529,27 @@ impl Social {
         if !(BOUNTY_STAKE.0..=BOUNTY_STAKE.1).contains(&stake) {
             return Err(Why::Stake);
         }
-        let a = self.posted_of(from).filter(|a| a.pvp).ok_or(Why::NotPosted)?;
-        let t = self.posted_of(target).filter(|t| t.pvp).ok_or(Why::TargetGone)?;
+        let a = self
+            .posted_of(from)
+            .filter(|a| a.pvp)
+            .ok_or(Why::NotPosted)?;
+        let t = self
+            .posted_of(target)
+            .filter(|t| t.pvp)
+            .ok_or(Why::TargetGone)?;
         if t.tier < a.tier {
             return Err(Why::Below);
         }
         if self.crewmates(from, target) {
             return Err(Why::Crewmate);
         }
-        if self.bounties.iter().filter(|b| same(&b.poster, from)).count() >= BOUNTIES_PER_POSTER {
+        if self
+            .bounties
+            .iter()
+            .filter(|b| same(&b.poster, from))
+            .count()
+            >= BOUNTIES_PER_POSTER
+        {
             return Err(Why::PosterCap);
         }
         if self
@@ -544,6 +572,7 @@ impl Social {
     }
 
     /// Post a bounty from a stake. Always leaves a receipt: the bounty or a refund of the stake.
+    #[allow(clippy::too_many_arguments)]
     pub fn post_bounty(
         &mut self,
         content: &Content,
@@ -571,7 +600,15 @@ impl Social {
                     expires: today + BOUNTY_DAYS,
                     note: note.chars().take(NOTE_MAX).collect(),
                 });
-                self.deliver(from, today, Effect::None, 0, target, Lines::BOUNTY_FILED, nonce);
+                self.deliver(
+                    from,
+                    today,
+                    Effect::None,
+                    0,
+                    target,
+                    Lines::BOUNTY_FILED,
+                    nonce,
+                );
                 self.deliver(
                     target,
                     today,
@@ -664,15 +701,22 @@ impl Social {
         }
         // Bounties that ran out give the stake back less the fixer's fee. A bounty on someone
         // who left the board (opted out) just runs out, too.
-        let (live, dead): (Vec<Bounty>, Vec<Bounty>) =
-            std::mem::take(&mut self.bounties)
-                .into_iter()
-                .partition(|b| b.expires >= day);
+        let (live, dead): (Vec<Bounty>, Vec<Bounty>) = std::mem::take(&mut self.bounties)
+            .into_iter()
+            .partition(|b| b.expires >= day);
         self.bounties = live;
         for b in dead {
             if !b.poster.is_empty() {
                 let back = i32::try_from(b.stake * (100 - BOUNTY_FEE_PCT) / 100).unwrap_or(0);
-                self.deliver(&b.poster, day, Effect::Marks, back, &b.target, Lines::BOUNTY_LAPSED, 0);
+                self.deliver(
+                    &b.poster,
+                    day,
+                    Effect::Marks,
+                    back,
+                    &b.target,
+                    Lines::BOUNTY_LAPSED,
+                    0,
+                );
             }
         }
         // A fixer notices the hottest name.
@@ -738,7 +782,15 @@ impl Social {
         let _ = content;
         if rng.chance(TRAP_PCT * u32::from(t.honeypot), 100) {
             let fine = i32::try_from(TRAP_FINE).unwrap_or(25);
-            self.deliver(&o.from, day, Effect::Marks, -fine, &o.to, Lines::TRAP_ATT, 0);
+            self.deliver(
+                &o.from,
+                day,
+                Effect::Marks,
+                -fine,
+                &o.to,
+                Lines::TRAP_ATT,
+                0,
+            );
             self.deliver(&o.from, day, Effect::Heat, 6, &o.to, Lines::TRAP_HEAT, 0);
             self.deliver(&o.to, day, Effect::Rep, 2, &o.from, Lines::TRAP_DEF, 0);
             self.tallies.hacks_caught += 1;
@@ -756,8 +808,24 @@ impl Social {
         }
         let steal = (u32::from(t.cash) * 10 * STEAL_PCT / 100).min(STEAL_MAX);
         let steal_i = i32::try_from(steal).unwrap_or(0);
-        self.deliver(&o.from, day, Effect::Marks, steal_i, &o.to, Lines::HACK_ATT, 0);
-        self.deliver(&o.to, day, Effect::Marks, -steal_i, &o.from, Lines::HACK_DEF, 0);
+        self.deliver(
+            &o.from,
+            day,
+            Effect::Marks,
+            steal_i,
+            &o.to,
+            Lines::HACK_ATT,
+            0,
+        );
+        self.deliver(
+            &o.to,
+            day,
+            Effect::Marks,
+            -steal_i,
+            &o.from,
+            Lines::HACK_DEF,
+            0,
+        );
         self.tallies.hacks_in += 1;
         if let Some(p) = self.posted.iter_mut().find(|p| same(&p.handle, &o.to)) {
             p.peace_until = day + PEACE_DAYS;
@@ -765,11 +833,27 @@ impl Social {
         if let Some(at) = self.claimable(&a, &o.to) {
             let b = self.bounties.remove(at);
             let reward = i32::try_from(b.reward).unwrap_or(0);
-            self.deliver(&o.from, day, Effect::Marks, reward, &o.to, Lines::BOUNTY_ATT, 0);
+            self.deliver(
+                &o.from,
+                day,
+                Effect::Marks,
+                reward,
+                &o.to,
+                Lines::BOUNTY_ATT,
+                0,
+            );
             self.deliver(&o.to, day, Effect::Fry, 1, &o.from, Lines::BOUNTY_DEF, 0);
             self.deliver(&o.to, day, Effect::Heat, 6, &o.from, Lines::BOUNTY_HEAT, 0);
             if !b.poster.is_empty() {
-                self.deliver(&b.poster, day, Effect::None, 0, &o.to, Lines::BOUNTY_DONE, 0);
+                self.deliver(
+                    &b.poster,
+                    day,
+                    Effect::None,
+                    0,
+                    &o.to,
+                    Lines::BOUNTY_DONE,
+                    0,
+                );
             }
             self.tallies.bounties_paid += 1;
             self.deed(day, Lines::DEED_BOUNTY, &o.from, b.reward);
@@ -919,7 +1003,11 @@ mod tests {
         assert_eq!(refused, Err(Why::Swamped));
         let back = s.deliveries.iter().find(|d| d.nonce == 9).unwrap();
         assert_eq!((back.effect, back.n), (Effect::Cycles, 6));
-        assert!(s.deliveries.iter().any(|d| d.nonce == 1 && d.effect == Effect::None));
+        assert!(
+            s.deliveries
+                .iter()
+                .any(|d| d.nonce == 1 && d.effect == Effect::None)
+        );
     }
 
     #[test]

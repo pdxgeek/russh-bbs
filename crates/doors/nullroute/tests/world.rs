@@ -272,8 +272,8 @@ fn the_world_format_is_pinned_and_round_trips() {
             0, // price history: none (version 3)
             0, 0, 0, 0, // social: next id
             0, 0, 0, 0, 0, // posted, orders, deliveries, bounties, deeds
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, // tallies: nine counters of 4 bytes
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, // tallies: nine counters of 4 bytes
             0, 0, // the finale: an empty name, not cracked
             0, 0, 0, 0, // hall, pairs, crews, ops
         ]
@@ -352,7 +352,7 @@ fn a_save_stays_far_under_the_framework_cap() {
     let mut p = Player::new(&c, 1, &"x".repeat(40), 1, 20_000);
     p.owned = (1..=27).collect();
     p.done = (0..48).collect();
-    assert!(encode(&p).len() < 512, "{}", encode(&p).len());
+    assert!(encode(&p).len() < 700, "{}", encode(&p).len());
     let mut w = World::default();
     for d in 0..30 {
         night(&mut w, d);

@@ -11,32 +11,32 @@ rule = "tally.finale>=1"
 [[season_ending]]
 num = 2
 title = "Wardens' winter"
-text = "Six corporate wardens went down this season. The corporations did not forget: next season they will learn faster, and so will the freelancers."
-rule = "tally.wardens>=6"
+text = "Three corporate wardens went down this season. The corporations did not forget: next season they will learn faster, and so will the freelancers."
+rule = "tally.wardens>=3"
 
 [[season_ending]]
 num = 3
 title = "A hunters' season"
 text = "Freelancers spent the season breaking into each other's hideouts. The fixers grew rich on bounties and the honest work went begging."
-rule = "tally.hacks_in>=6"
+rule = "tally.hacks_in>=25"
 
 [[season_ending]]
 num = 4
 title = "The burn year"
 text = "More rigs were fried this season than in any other. Repair shops did a roaring trade and nobody talked about the networks themselves."
-rule = "tally.burns>=40"
+rule = "tally.burns>=50"
 
 [[season_ending]]
 num = 5
 title = "Crew weather"
 text = "Crews carried the season. Solo work thinned out, and the best contracts were written for five."
-rule = "tally.crew_jobs>=5"
+rule = "tally.crew_jobs>=35"
 
 [[season_ending]]
 num = 6
 title = "Quiet money"
 text = "A busy, uneventful season. The jobs got done, the networks held, and the only news was the price of a fence."
-rule = "tally.jobs>=60"
+rule = "tally.jobs>=450"
 
 [[season_ending]]
 num = 7

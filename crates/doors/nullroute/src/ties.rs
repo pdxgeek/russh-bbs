@@ -1,5 +1,5 @@
 //! What the social layer and the story ask of a character (M4-N4): posting a hideout, folding in
-//! what the world delivered, filing hacks and bounties, honeypots, the PvP opt-out, joining and
+//! what the world delivered, filing hacks and bounties, honeypots, the `PvP` opt-out, joining and
 //! settling a crew run, and the fixers' arcs.
 //!
 //! Like the rest of [`Player`], nothing here touches the clock, the store or the world: the
@@ -12,7 +12,7 @@ use crate::cond::Cond;
 use crate::content::Content;
 use crate::crew::{COMMIT_MAX, FINALE_REWARD, FINALE_TMPL, Live, Member, Op, PAY_PCT};
 use crate::player::{
-    ArcState, JACK_IN_CYCLES, Legend, PARTS, Player, Sent, Stake, stat, LEGEND_MAX, SENT_MAX,
+    ArcState, JACK_IN_CYCLES, LEGEND_MAX, Legend, PARTS, Player, SENT_MAX, Sent, Stake, stat,
 };
 use crate::run::Status;
 use crate::social::{
@@ -92,7 +92,10 @@ impl Player {
     /// Why not.
     pub fn set_pvp(&mut self, on: bool, today: i64) -> Result<String, String> {
         if on == self.ties.pvp {
-            return Ok(format!("Rivals board already {}.", if on { "on" } else { "off" }));
+            return Ok(format!(
+                "Rivals board already {}.",
+                if on { "on" } else { "off" }
+            ));
         }
         if on {
             if today - self.ties.pvp_off_on < OPT_IN_DAYS {
@@ -231,7 +234,7 @@ impl Player {
 
     fn apply(&mut self, content: &Content, d: &Delivery) {
         let n = d.n;
-        let amount = u32::try_from(n.unsigned_abs()).unwrap_or(0);
+        let amount = n.unsigned_abs();
         match d.effect {
             Effect::None => {}
             Effect::Marks => {
@@ -319,7 +322,8 @@ impl Player {
         {
             return Err(reason);
         }
-        if contract.tmpl == FINALE_TMPL && (self.rep < 40 || self.heat >= crate::player::HEAT_TIER3) {
+        if contract.tmpl == FINALE_TMPL && (self.rep < 40 || self.heat >= crate::player::HEAT_TIER3)
+        {
             return Err("The finale wants reputation 40 and a cool head (heat under 60).".into());
         }
         if self.deck.is_empty() {
@@ -417,7 +421,9 @@ impl Player {
         }
         let id = if st.step == 0 { def.first } else { st.step };
         let step = content.step(arc, id)?;
-        parse(&step.open)?.eval(Some(self), &tallies).then_some(())?;
+        parse(&step.open)?
+            .eval(Some(self), &tallies)
+            .then_some(())?;
         Some(Contract {
             id: arc_id(arc, id),
             tmpl: ARC_TMPL,
@@ -453,7 +459,12 @@ impl Player {
     /// The choices after the step the character just did, each with why it is shut, if it is.
     #[must_use]
     pub fn arc_choices(&self, content: &Content, arc: u8) -> Vec<(ChoiceDef, Option<String>)> {
-        let st = self.ties.arcs.get(usize::from(arc)).copied().unwrap_or_default();
+        let st = self
+            .ties
+            .arcs
+            .get(usize::from(arc))
+            .copied()
+            .unwrap_or_default();
         let Some(step) = content.step(arc, st.step).filter(|_| st.awaiting) else {
             return Vec::new();
         };
@@ -491,11 +502,14 @@ impl Player {
                 self.ties.flags &= !(1 << bit);
             }
         }
-        let apply = |v: u32, d: i32| u32::try_from((i64::from(v) + i64::from(d)).max(0)).unwrap_or(0);
+        let apply =
+            |v: u32, d: i32| u32::try_from((i64::from(v) + i64::from(d)).max(0)).unwrap_or(0);
         self.rep = apply(self.rep, choice.rep);
         self.marks = apply(self.marks, choice.marks);
         if choice.marks > 0 {
-            self.earned = self.earned.saturating_add(u64::from(choice.marks.unsigned_abs()));
+            self.earned = self
+                .earned
+                .saturating_add(u64::from(choice.marks.unsigned_abs()));
         }
         self.heat = apply(self.heat, choice.heat).min(crate::player::HEAT_MAX);
         for [fixer, delta] in &choice.standing {
@@ -525,8 +539,11 @@ impl Player {
 
     /// The step an arc job belongs to is done: its choice is waiting, and the fixer hands over
     /// any fragments the step gives.
-    pub(crate) fn arc_done(&mut self, content: &Content, arc: u8, step: u8) -> Vec<u8> {
-        let given: Vec<u8> = content.step(arc, step).map(|s| s.give.clone()).unwrap_or_default();
+    pub fn arc_done(&mut self, content: &Content, arc: u8, step: u8) -> Vec<u8> {
+        let given: Vec<u8> = content
+            .step(arc, step)
+            .map(|s| s.give.clone())
+            .unwrap_or_default();
         let room = crate::code::FRAGMENTS_MAX.saturating_sub(self.fragments.len());
         let given: Vec<u8> = given.into_iter().take(room).collect();
         self.fragments.extend(given.iter().copied());
@@ -546,9 +563,7 @@ impl Player {
             .seasons
             .epilogue
             .iter()
-            .find(|e| {
-                Cond::parse(&e.rule, &[]).is_ok_and(|c| c.eval(Some(self), &tallies))
-            })
+            .find(|e| Cond::parse(&e.rule, &[]).is_ok_and(|c| c.eval(Some(self), &tallies)))
             .map_or(0, |e| e.num)
     }
 

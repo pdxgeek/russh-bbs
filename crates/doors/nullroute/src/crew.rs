@@ -27,7 +27,7 @@ use crate::net::{Network, NodeId};
 use crate::run::{
     Act, Refused, Run, RunResult, RunSetup, Status, TRACE_MAX, WARDEN_ARRIVES_IN, WARDEN_WAKES_AT,
 };
-use crate::social::{same, Lines, Social};
+use crate::social::{Lines, Social, same};
 use crate::world::{Contract, World};
 
 /// Members in a crew.
@@ -451,7 +451,10 @@ impl Live {
         let mut trial = run.clone();
         trial.crew_set_trace(trace);
         let before = trial.broken_nodes().len();
-        let mut rng = DoorRng::from_label("nullroute-crew", i64::from(op.id) * 1024 + nth as i64);
+        let mut rng = DoorRng::from_label(
+            "nullroute-crew",
+            i64::from(op.id) * 1024 + i64::try_from(nth).unwrap_or(0),
+        );
         trial.act(content, act, &mut rng)?;
         // Accepted: the member's run becomes the trial, and the crew takes what it shares.
         let opened: Vec<NodeId> = trial
@@ -566,7 +569,7 @@ impl Live {
         let sum: u32 = weights.iter().sum();
         weights
             .iter()
-            .map(|w| if sum == 0 { 0 } else { total * w / sum })
+            .map(|w| (total * w).checked_div(sum).unwrap_or(0))
             .collect()
     }
 
@@ -640,7 +643,10 @@ fn warden_of(content: &Content, op: &Op, corp: &crate::content::CorpDef) -> Opti
 
 /// The job a contract stands for, for the screens: its title, verb, target and effect.
 #[must_use]
-pub fn job_of(content: &Content, contract: &Contract) -> Option<(String, String, String, ScriptEffect)> {
+pub fn job_of(
+    content: &Content,
+    contract: &Contract,
+) -> Option<(String, String, String, ScriptEffect)> {
     if contract.tmpl == FINALE_TMPL {
         return Some((
             "The Null Vault".to_owned(),
@@ -717,16 +723,13 @@ impl Social {
         if crew.invited.len() >= INVITES_MAX {
             return Err(CrewWhy::TooManyInvites);
         }
-        if !self
-            .posted_of(who)
-            .is_some_and(|p| p.crews_open)
-        {
+        if !self.posted_of(who).is_some_and(|p| p.crews_open) {
             return Err(CrewWhy::NoInvite);
         }
-        if let Some(c) = self.crews.iter_mut().find(|c| c.id == crew.id) {
-            if !c.invited.iter().any(|i| same(i, who)) {
-                c.invited.push(who.to_owned());
-            }
+        if let Some(c) = self.crews.iter_mut().find(|c| c.id == crew.id)
+            && !c.invited.iter().any(|i| same(i, who))
+        {
+            c.invited.push(who.to_owned());
         }
         self.deliver(
             who,
@@ -768,7 +771,11 @@ impl Social {
     /// Why not.
     pub fn crew_leave(&mut self, who: &str) -> Result<(), CrewWhy> {
         let id = self.crew_of(who).ok_or(CrewWhy::NoCrew)?.id;
-        if self.ops.iter().any(|o| o.crew == id && o.state != OpState::Done) {
+        if self
+            .ops
+            .iter()
+            .any(|o| o.crew == id && o.state != OpState::Done)
+        {
             return Err(CrewWhy::Busy);
         }
         if let Some(c) = self.crews.iter_mut().find(|c| c.id == id) {
@@ -794,7 +801,11 @@ impl Social {
         if same(by, who) || !crew.has(who) {
             return Err(CrewWhy::NotMember);
         }
-        if self.ops.iter().any(|o| o.crew == crew.id && o.state != OpState::Done) {
+        if self
+            .ops
+            .iter()
+            .any(|o| o.crew == crew.id && o.state != OpState::Done)
+        {
             return Err(CrewWhy::Busy);
         }
         if let Some(c) = self.crews.iter_mut().find(|c| c.id == crew.id) {
@@ -868,11 +879,9 @@ impl World {
             .crew_of(&member.handle)
             .ok_or(CrewWhy::NoCrew)?
             .id;
-        let busy = self
-            .social
-            .ops
-            .iter()
-            .any(|o| o.id != id && o.state != OpState::Done && o.index_of(&member.handle).is_some());
+        let busy = self.social.ops.iter().any(|o| {
+            o.id != id && o.state != OpState::Done && o.index_of(&member.handle).is_some()
+        });
         let op = self
             .social
             .ops
@@ -901,7 +910,12 @@ impl World {
     /// Why not.
     pub fn op_start(&mut self, id: u32, by: &str, today: i64) -> Result<(), CrewWhy> {
         let (corp, tier, crew) = {
-            let op = self.social.ops.iter().find(|o| o.id == id).ok_or(CrewWhy::NoOp)?;
+            let op = self
+                .social
+                .ops
+                .iter()
+                .find(|o| o.id == id)
+                .ok_or(CrewWhy::NoOp)?;
             (op.contract.corp, op.contract.tier, op.crew)
         };
         let leader_ok = self
@@ -1022,7 +1036,12 @@ impl World {
                 self.social.finale = Some(crew_name.clone());
                 self.social.deed(today, Lines::DEED_FINALE, &crew_name, 0);
             } else {
-                self.social.deed(today, Lines::DEED_CREW, &crew_name, u32::from(op.contract.tier));
+                self.social.deed(
+                    today,
+                    Lines::DEED_CREW,
+                    &crew_name,
+                    u32::from(op.contract.tier),
+                );
             }
         }
         let _ = content;
@@ -1030,10 +1049,10 @@ impl World {
 
     /// The member collected their share: note it, and drop the run once all have.
     pub fn op_settled(&mut self, id: u32, who: &str) {
-        if let Some(op) = self.social.ops.iter_mut().find(|o| o.id == id) {
-            if !op.settled.iter().any(|s| same(s, who)) {
-                op.settled.push(who.to_owned());
-            }
+        if let Some(op) = self.social.ops.iter_mut().find(|o| o.id == id)
+            && !op.settled.iter().any(|s| same(s, who))
+        {
+            op.settled.push(who.to_owned());
         }
         self.social
             .ops

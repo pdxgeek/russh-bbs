@@ -32,10 +32,10 @@ pub const LOG_MAX: usize = 60;
 pub const MAX_SCRIPT_CYCLES: u32 = 3;
 
 /// Trace at which a warden, if the network keeps one, wakes.
-pub const WARDEN_WAKES_AT: u32 = 55;
+pub const WARDEN_WAKES_AT: u32 = 45;
 
 /// Moves between a warden waking and its arrival.
-pub const WARDEN_ARRIVES_IN: u32 = 3;
+pub const WARDEN_ARRIVES_IN: u32 = 4;
 
 /// Moves before a warden you broke off from comes back.
 pub const WARDEN_RETURNS_IN: u32 = 1;

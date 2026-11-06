@@ -16,7 +16,7 @@
 //! Operators are `>=`, `<=`, `==`, `>` and `<`. An empty condition is true. Conditions are parsed
 //! when content loads, so a typo is a failed schema test, not a dead branch at run time.
 
-use crate::player::{Player, Ties, PARTS};
+use crate::player::{PARTS, Player, Ties};
 use crate::social::Tallies;
 
 /// A number a condition can read.
@@ -81,10 +81,25 @@ pub struct Cond(Vec<(bool, Term)>);
 const SKILLS: [&str; 5] = ["probe", "break", "hide", "fight", "utility"];
 const RIGS: [&str; PARTS] = ["cpu", "memory", "cooling", "iface", "shield"];
 const STATS: [&str; 8] = [
-    "hacks", "hacks_in", "caught", "bounties", "crew_runs", "crew_jobs", "wardens", "finale",
+    "hacks",
+    "hacks_in",
+    "caught",
+    "bounties",
+    "crew_runs",
+    "crew_jobs",
+    "wardens",
+    "finale",
 ];
 const TALLIES: [&str; 9] = [
-    "deep", "wardens", "crew_jobs", "hacks_in", "hacks_caught", "bounties", "burns", "jobs", "finale",
+    "deep",
+    "wardens",
+    "crew_jobs",
+    "hacks_in",
+    "hacks_caught",
+    "bounties",
+    "burns",
+    "jobs",
+    "finale",
 ];
 
 fn index_of(names: &[&str], name: &str) -> Option<usize> {
@@ -101,12 +116,16 @@ fn var(name: &str) -> Result<Var, String> {
         "bots" => Var::Bots,
         "arcs_done" => Var::ArcsDone,
         _ => {
-            let (head, tail) = name.split_once('.').ok_or(format!("unknown name `{name}`"))?;
+            let (head, tail) = name
+                .split_once('.')
+                .ok_or(format!("unknown name `{name}`"))?;
             match head {
                 "skill" => Var::Skill(index_of(&SKILLS, tail).ok_or(format!("no skill `{tail}`"))?),
                 "rig" => Var::Rig(index_of(&RIGS, tail).ok_or(format!("no rig part `{tail}`"))?),
                 "stat" => Var::Stat(index_of(&STATS, tail).ok_or(format!("no stat `{tail}`"))?),
-                "tally" => Var::Tally(index_of(&TALLIES, tail).ok_or(format!("no tally `{tail}`"))?),
+                "tally" => {
+                    Var::Tally(index_of(&TALLIES, tail).ok_or(format!("no tally `{tail}`"))?)
+                }
                 "standing" => {
                     let n: usize = tail.parse().map_err(|_| format!("no fixer `{tail}`"))?;
                     if n >= crate::player::FIXERS_MAX {
@@ -132,25 +151,39 @@ impl Cond {
             if raw.is_empty() {
                 continue;
             }
-            let (not, raw) = raw.strip_prefix('!').map_or((false, raw), |r| (true, r.trim()));
+            let (not, raw) = raw
+                .strip_prefix('!')
+                .map_or((false, raw), |r| (true, r.trim()));
             if let Some(name) = raw.strip_prefix("flag:") {
                 let bit = flags
                     .iter()
                     .position(|f| f == name.trim())
                     .ok_or(format!("no flag `{}`", name.trim()))?;
-                terms.push((not, Term::Flag(u8::try_from(bit).map_err(|_| "too many flags")?)));
+                terms.push((
+                    not,
+                    Term::Flag(u8::try_from(bit).map_err(|_| "too many flags")?),
+                ));
                 continue;
             }
             if let Some(num) = raw.strip_prefix("own:") {
-                let n: u8 = num.trim().parse().map_err(|_| format!("bad script `{num}`"))?;
+                let n: u8 = num
+                    .trim()
+                    .parse()
+                    .map_err(|_| format!("bad script `{num}`"))?;
                 terms.push((not, Term::Own(n)));
                 continue;
             }
-            let (at, op, len) = [(">=", Op::Ge), ("<=", Op::Le), ("==", Op::Eq), (">", Op::Gt), ("<", Op::Lt)]
-                .iter()
-                .filter_map(|(s, op)| raw.find(s).map(|i| (i, *op, s.len())))
-                .min_by_key(|(i, _, _)| *i)
-                .ok_or(format!("no comparison in `{raw}`"))?;
+            let (at, op, len) = [
+                (">=", Op::Ge),
+                ("<=", Op::Le),
+                ("==", Op::Eq),
+                (">", Op::Gt),
+                ("<", Op::Lt),
+            ]
+            .iter()
+            .filter_map(|(s, op)| raw.find(s).map(|i| (i, *op, s.len())))
+            .min_by_key(|(i, _, _)| *i)
+            .ok_or(format!("no comparison in `{raw}`"))?;
             let name = raw[..at].trim();
             let value: i64 = raw[at + len..]
                 .trim()
@@ -216,7 +249,9 @@ fn read(var: Var, p: Option<&Player>, t: &Tallies) -> i64 {
         Var::Jobs => i64::from(p.jobs),
         Var::Burns => i64::from(p.burns),
         Var::Bots => i64::from(p.bots),
-        Var::ArcsDone => i64::try_from(ties.arcs.iter().filter(|a| a.ending != 0).count()).unwrap_or(0),
+        Var::ArcsDone => {
+            i64::try_from(ties.arcs.iter().filter(|a| a.ending != 0).count()).unwrap_or(0)
+        }
         Var::Skill(i) => i64::from(p.skills().get(i).copied().unwrap_or(0)),
         Var::Standing(i) => i64::from(p.standing.get(i).copied().unwrap_or(0)),
         Var::Rig(i) => i64::from(p.level(i)),
@@ -249,14 +284,22 @@ mod tests {
         assert!(ok("rep>=10 & !flag:a & flag:b"));
         assert!(!ok("flag:a"));
         assert!(ok("skill.break<=0 & standing.0==0 & rig.cpu<1"));
-        assert!(ok("own:1") == p.owned.contains(&1));
+        assert_eq!(ok("own:1"), p.owned.contains(&1));
         assert!(ok("tally.wardens>=0"));
     }
 
     #[test]
     fn typos_are_refused_when_the_content_loads() {
         let flags = vec!["a".to_owned()];
-        for bad in ["reputation>=3", "flag:zzz", "rep>=ten", "rep", "skill.sing>=1", "standing.9>=1", "own:x"] {
+        for bad in [
+            "reputation>=3",
+            "flag:zzz",
+            "rep>=ten",
+            "rep",
+            "skill.sing>=1",
+            "standing.9>=1",
+            "own:x",
+        ] {
             assert!(Cond::parse(bad, &flags).is_err(), "{bad}");
         }
     }
