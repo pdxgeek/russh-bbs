@@ -135,7 +135,7 @@ Approved by the owner on 2026-11-04 by adding them here. The other M4 work is in
 | M4-H1 Hallpass engine | `crates/doors/hallpass` | M4-D0 | Done ([PR #94](https://github.com/pdxgeek/russh-bbs/pull/94)) | Timetable, places, character schedules, stats, schemes, heat and the file, day tick; replay tests. |
 | M4-H2 Hallpass classes, clubs and characters | `crates/doors/hallpass` | M4-H1 | Done ([PR #105](https://github.com/pdxgeek/russh-bbs/pull/105)) | Class minigames, clubs, conversations, friendships, storylines. |
 | M4-H3 Hallpass UI | `crates/doors/hallpass` | M4-H2, UI-5 | Done ([PR #111](https://github.com/pdxgeek/russh-bbs/pull/111)) | Timetable strip, day, school map, scheme planner and run, the file, lessons, conversations, clubs, journal, paper, hall and yearbook on full ratatui (D104), three tiers and sizes, look-around, real-ssh walk. Built: see [doors/hallpass.md](doors/hallpass.md) and [qa/m4-h3-walk.md](qa/m4-h3-walk.md). |
-| M4-H4 Hallpass social, mystery and balance | `crates/doors/hallpass` | M4-H3 | Open | Structured player schemes, template rumours, opt-out, election, awards, the mystery, balance. |
+| M4-H4 Hallpass social, mystery and balance | `crates/doors/hallpass` | M4-H3 | Claimed (`m4/hallpass-social`) | Structured player schemes, template rumours, opt-out, election, awards, the mystery, balance. |
 
 ### M3: Public core
 
