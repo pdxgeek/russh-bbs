@@ -241,7 +241,7 @@ struct Autosaved {
     at: Instant,
 }
 
-/// The least time between two periodic editor autosaves (FIX-M3-7, D133).
+/// The least time between two periodic editor autosaves (FIX-M3-7, D134).
 const AUTOSAVE_EVERY: Duration = Duration::from_secs(20);
 
 /// How long a member keeps receiving a room's events after losing `chat.join` on it when they
@@ -269,7 +269,7 @@ impl<D: Backend> Shell<D> {
     pub(crate) async fn run(mut self) {
         self.run_loop().await;
         // However the loop ended (the client left, the connection dropped, a limit), the open
-        // editor's text is kept (FIX-M3-7, D133).
+        // editor's text is kept (FIX-M3-7, D134).
         self.autosave_draft(true).await;
         self.settle_meter().await;
     }
@@ -475,7 +475,7 @@ impl<D: Backend> Shell<D> {
 
     /// What the parser noticed in the input that just arrived: the client's answers to the
     /// effect probes, and non-ASCII characters it had to drop, which are said once in a toast
-    /// so the loss is not silent (FIX-M3-7, D133 (1)).
+    /// so the loss is not silent (FIX-M3-7, D134 (1)).
     fn take_parser_reports(&mut self) {
         self.pacer.acked(self.keys.take_acks());
         if self.keys.take_dropped() > 0 {
@@ -483,7 +483,7 @@ impl<D: Backend> Shell<D> {
         }
     }
 
-    /// Keep the open editor's text as a draft (FIX-M3-7, D133). `force` is the end of the
+    /// Keep the open editor's text as a draft (FIX-M3-7, D134). `force` is the end of the
     /// session; otherwise it is the periodic autosave, which runs each cycle before the frame (the
     /// text only changes on keys, and unchanged text is skipped), at most every [`AUTOSAVE_EVERY`], and only when the text is not
     /// what was last stored. Stored through the existing drafts store inside D80's caps; a

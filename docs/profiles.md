@@ -38,7 +38,7 @@ The two edit permissions do not stand in for each other: `members.edit` is about
 - `[p] My profile`: your own profile, read-only, with `e` to edit.
 - `[e] Edit my profile`: the form.
 
-On a profile, `e` is offered only if an edit would be allowed (own profile with `account.edit_profile`; someone else's with `members.edit` **and** a target whose top global rank is below yours, FIX-M2-7, D133 (4)). The refusal for a rank that is too high stays in core and shows its notice if an edit is asked for anyway. The form starts from the current text, edits one field at a time (typing appends, Backspace erases, **Enter moves to the next field, and Enter on the last field saves**), and Esc discards. When staff edit someone else's profile the title names them ("Editing the profile of bob (staff edit)").
+On a profile, `e` is offered only if an edit would be allowed (own profile with `account.edit_profile`; someone else's with `members.edit` **and** a target whose top global rank is below yours, FIX-M2-7, D134 (4)). The refusal for a rank that is too high stays in core and shows its notice if an edit is asked for anyway. The form starts from the current text, edits one field at a time (typing appends, Backspace erases, **Enter moves to the next field, and Enter on the last field saves**), and Esc discards. When staff edit someone else's profile the title names them ("Editing the profile of bob (staff edit)").
 
 All text comes from the string table (`ui/strings.toml`), so a theme can reword it. Content goes in the classic layout's content rectangle; the last row is the reserved status row and shows the server-readable marker, which content cannot reach.
 

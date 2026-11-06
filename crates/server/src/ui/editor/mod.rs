@@ -471,7 +471,7 @@ impl Editor {
         })
     }
 
-    /// The draft to save on logoff, on a lost connection and while editing (FIX-M3-7, D133):
+    /// The draft to save on logoff, on a lost connection and while editing (FIX-M3-7, D134):
     /// only if there is somewhere to keep it and something new.
     #[must_use]
     pub fn pending_draft(&self) -> Option<DraftSave> {

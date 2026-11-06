@@ -705,7 +705,7 @@ async fn losing_members_view_closes_the_screen_on_the_next_key() {
     rig.server.shutdown().await;
 }
 
-/// FIX-M3-7 (D133): a pasted line break in a one-line input is one space, and a character the
+/// FIX-M3-7 (D134): a pasted line break in a one-line input is one space, and a character the
 /// input cannot take (it is ASCII only) is dropped with a short hint, not silently.
 #[tokio::test]
 async fn a_paste_with_a_line_break_joins_with_a_space_and_dropped_letters_are_said() {

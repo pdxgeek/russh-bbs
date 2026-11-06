@@ -1874,7 +1874,7 @@ impl Screen {
         self.rebuild = true;
     }
 
-    /// The open message editor's unsaved draft, if there is one to keep (FIX-M3-7, D133): what
+    /// The open message editor's unsaved draft, if there is one to keep (FIX-M3-7, D134): what
     /// a lost connection and the periodic autosave store. Only the forum editor has a draft
     /// context. The mail editor has none on purpose (D78 (5), D90: a stored draft would be
     /// readable beside mail kept sealed), and neither has the poll description editor, so
@@ -1897,13 +1897,13 @@ impl Screen {
             }
     }
 
-    /// Characters the key parser dropped because they are not ASCII (FIX-M3-7, D133): say so
+    /// Characters the key parser dropped because they are not ASCII (FIX-M3-7, D134): say so
     /// once, in a toast, so a name like `café` that arrives as `caf` is not a silent surprise.
     pub(crate) fn note_dropped_text(&mut self) {
         self.toast(ToastKind::Notice, ToastText::Key("toast.ascii_only"));
     }
 
-    /// In a single-line input a pasted line break is one space (FIX-M3-7, D133): a run of
+    /// In a single-line input a pasted line break is one space (FIX-M3-7, D134): a run of
     /// breaks is one space, and the break never presses Enter. Everywhere else, and in the
     /// message editor (which keeps lines), the keys are unchanged.
     fn paste_breaks_to_spaces(&self, keys: &[Key]) -> Option<Vec<Key>> {

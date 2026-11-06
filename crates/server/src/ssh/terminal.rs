@@ -320,7 +320,7 @@ impl KeyParser {
         }
     }
 
-    /// How many non-ASCII characters were dropped since the last call (FIX-M3-7, D133): typed
+    /// How many non-ASCII characters were dropped since the last call (FIX-M3-7, D134): typed
     /// or pasted letters the key set has no key for. The shell turns a non-zero count into one
     /// short hint, so the loss is not silent.
     pub(crate) fn take_dropped(&mut self) -> usize {

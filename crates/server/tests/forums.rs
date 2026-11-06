@@ -447,7 +447,7 @@ async fn until_texts(rig: &Rig, sql: &str, want: &[String]) {
     panic!("{sql}: wanted {want:?}, last saw {last:?}");
 }
 
-/// FIX-M3-7 (D133): the text in an open forum editor survives a lost connection. The first
+/// FIX-M3-7 (D134): the text in an open forum editor survives a lost connection. The first
 /// change is autosaved while the member is still typing; more typing after that is stored when
 /// the connection drops (no Ctrl-C, no Esc, no save key), and the next session resumes it.
 #[tokio::test]

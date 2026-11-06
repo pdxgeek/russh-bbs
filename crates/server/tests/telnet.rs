@@ -1647,7 +1647,7 @@ async fn an_ssh_key_session_setting_the_password_ends_the_telnet_session_that_us
 
 // ------------------------------------------------------- FIX-M3-7: a lost connection mid-edit
 
-/// FIX-M3-7 (D133): over telnet too, the text in an open forum editor is autosaved while the
+/// FIX-M3-7 (D134): over telnet too, the text in an open forum editor is autosaved while the
 /// member types, and the rest is stored when the connection drops without a word.
 #[tokio::test]
 async fn a_forum_draft_survives_a_dropped_telnet_connection() {
