@@ -873,6 +873,7 @@ impl Game {
         if self.is_hostile(content, level, target) {
             say(ev, Tone::Bad, "A pack is here, and it has seen you.");
         }
+        self.company_spoils(content, level, target, ev);
         if let Some(t) = level.room(target) {
             self.contract_room(content, t.kind, level.depth, ev);
         }

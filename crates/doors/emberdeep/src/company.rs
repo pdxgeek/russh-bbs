@@ -14,6 +14,9 @@ use crate::social::{
 };
 use crate::world::Change;
 
+/// Marks, in `Today::spent`, that the company's spoils in a den were taken (not a room option).
+const SPOILS_MARK: u8 = 250;
+
 /// Something a hero does about the others.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum SocialAct {
@@ -87,6 +90,56 @@ impl Game {
                 .world
                 .commons
                 .party_cleared(self.me(), self.day, depth, room)
+    }
+
+    /// A pack a companion dealt with today leaves two thirds of its spoils to everyone in the
+    /// company who walks into its den (once each, per day), so riding together is never poorer than
+    /// riding alone.
+    pub(crate) fn company_spoils(
+        &mut self,
+        content: &Content,
+        level: &crate::dungeon::Level,
+        room: u8,
+        ev: &mut Vec<Event>,
+    ) {
+        let depth = level.depth;
+        let marker = (depth, room, SPOILS_MARK);
+        if level
+            .room(room)
+            .is_none_or(|r| r.kind != crate::content::RoomKind::Lair)
+            || self.today.is_cleared(depth, room)
+            || !self
+                .world
+                .commons
+                .party_cleared(&self.hero.name, self.day, depth, room)
+            || self.today.spent.contains(&marker)
+        {
+            return;
+        }
+        self.today.spent.push(marker);
+        let pack = crate::dungeon::pack_at(content, level, self.season, self.epoch, room, self.day);
+        let two_thirds = |sum: u32| (sum * 2).div_ceil(3);
+        let xp = two_thirds(pack.iter().map(|m| m.xp).sum());
+        let coin = two_thirds(
+            pack.iter()
+                .map(|m| u32::midpoint(m.coin[0], m.coin[1]))
+                .sum(),
+        );
+        let salvage = two_thirds(
+            pack.iter()
+                .map(|m| u32::midpoint(m.salvage[0], m.salvage[1]))
+                .sum(),
+        );
+        self.hero.coin = self.hero.coin.saturating_add(coin);
+        self.hero.salvage = self.hero.salvage.saturating_add(salvage);
+        say(
+            ev,
+            Tone::Good,
+            format!(
+                "Your company dealt with the pack here earlier. You take two thirds of the spoils: +{xp} xp, +{coin} coin, +{salvage} salvage."
+            ),
+        );
+        self.gain_xp(xp, ev);
     }
 
     /// Tell the company a pack is dealt with (every companion walks through today).

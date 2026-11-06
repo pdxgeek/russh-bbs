@@ -102,6 +102,16 @@ fn a_company_shares_the_packs_a_member_dealt_with_today_and_only_today() {
     share(&mut a, &mut b);
     assert!(b.pack_cleared(depth, room), "Bo walks through Ann's work");
     assert!(!b.today.is_cleared(depth, room), "but it is not Bo's save");
+    // A companion who walks into the den takes a third of the spoils, once.
+    let c = content();
+    let level = crate::dungeon::generate(&c, b.season, b.epoch, depth);
+    let (coin, xp) = (b.hero.coin, b.hero.xp);
+    let mut ev = Vec::new();
+    b.company_spoils(&c, &level, room, &mut ev);
+    assert!(b.hero.coin > coin && b.hero.xp > xp, "{}", said(&ev));
+    let (coin, xp) = (b.hero.coin, b.hero.xp);
+    b.company_spoils(&c, &level, room, &mut ev);
+    assert_eq!((b.hero.coin, b.hero.xp), (coin, xp), "once a day");
     // The next day it is all fresh again.
     b.day += 1;
     assert!(!b.pack_cleared(depth, room));

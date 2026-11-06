@@ -288,7 +288,7 @@ The core tension: **how deep do you go today?** Each level down is richer and mo
 
 **No player's save is written by another player's session.** Anything owed *to* a hero is a **note** in the world, collected (once, guarded by the ids the hero's own save keeps) the next time that hero opens the door. A rescue is thanked by a note out of the rescued hero's own purse; a bruise from the ring arrives the same way.
 
-**Companies (parties).** Up to three heroes. Only an invitation brings a hero in (the world refuses a join without one); an invitation stands three days; a hero may have two outstanding; a hero who has closed the door to invitations (the opt-out, on by default) is not listed. The shared state: **a pack any companion dealt with today is dealt with for every companion today** (the world holds the list for the day; each companion's own save still says what *they* did), the company's deepest level and the companions it carried home are on the hall. The sharing is asynchronous by design: a hero sees what their company did before they opened the door (see Differences).
+**Companies (parties).** Up to three heroes. Only an invitation brings a hero in (the world refuses a join without one); an invitation stands three days; a hero may have two outstanding; a hero who has closed the door to invitations (the opt-out, on by default) is not listed. The shared state: **a pack any companion dealt with today is dealt with for every companion today** (the world holds the list for the day; each companion's own save still says what *they* did). A companion who walks into the den takes **two thirds of the spoils** (xp, coin, salvage; once a day), so riding together is not poorer than riding alone. The company's deepest level and the companions it carried home are on the hall. The sharing is asynchronous by design: a hero sees what their company did before they opened the door (see Differences).
 
 **Rescues.** The 3-day window and the carry from E1 stand. New: the rescuer's count of heroes carried home (a questline goal); the rescued hero, waking, sends **a fifth of their purse, at most 10 + 3 per level of the fall**, to the rescuer as a note. A **companion** carries a fallen companion for 2 turns instead of 3, the companion wakes with three quarters of their health and no wound, owes no thanks, and the carry counts for the company.
 
@@ -330,7 +330,33 @@ Harness: `cargo test -p russh-bbs-door-emberdeep --test sim -- --nocapture` (env
 
 - **The ring was owned by one calling.** With the hero's real hit points and armour, three wardens won 205, 193 and 176 duels against 4, 15 and 33 losses while cutthroats won two of 201. The ring now uses ring rules (above). After: the best warden is 151-57, the worst cutthroat 16-194, duelists remain the strongest in the ring (about 85% wins; they are the calling that is meant to win by timing), and no calling is shut out of the ladder.
 - **Wanderer and cutthroat hit points** 32 to 36 and 30 to 33: they were the two callings with deaths and the lowest level in a season (wanderer level 6.7, cutthroat 8.3 over three seeds); the cutthroat now averages 9.3 to 11.7. The wanderer still lags (5.3 to 7.3 against 10 to 12 for the best). It is viable (alive, level 5 or more, depth 5 or more in a season) but it is the weakest calling and is recorded as open for the content pass that follows.
-- **Dungeon events and the descent.** More options per room cost the careful bots more turns; the harness now lets a bot skip cheap options on the way down.
+- **Dungeon events and the descent.** More options per room cost the careful bots more turns; the harness now lets a bot skip cheap options on the way down. (A harness bug found on the way: a bot read the word "sealed" in a room's text as "the door is sealed" and quit; events made that common. Fixed in the bot.)
+- **Companions' spoils.** Sharing cleared packs alone made a company poorer than riding alone (one fight pays three heroes' worth of nothing but the fighter). A companion now takes two thirds of the spoils of a den a companion cleared.
+
+### Balance numbers
+
+Seed 4242 unless stated; `cargo test -p russh-bbs-door-emberdeep --test sim -- --nocapture`.
+
+| Run | Before (E3 `main`, 12 bots, 30 days) | After, same shape, no social chores (`EMBERDEEP_SIM_LEGACY=1 EMBERDEEP_SIM_NO_SOCIAL=1`) |
+|---|---|---|
+| Mean hero level, day 30 | 5.9 | 5.8 |
+| Projects finished | 10 of 11 | 9 of 12 |
+| Coin / salvage given to the works | 4095 / 1271 | 3295 / 1100 |
+| Deepest level | 7 | 3 (the lifts to 6 and 11 were not finished in time) |
+| Deaths | 4 | 1 |
+
+The content pass (more rooms, 40 monsters, events) is nearly neutral on levels and slightly slower on the works.
+
+| 18 bots, 42 days (the season shape) | Day 6 | Day 12 | Day 24 | Day 42 |
+|---|---|---|---|---|
+| Mean hero level | 3.4 | 4.5 | 6.3 | 9.8 |
+| Projects finished (of 12) | 1 | 4 | 10 | 11 |
+| Coin / salvage given | 625 / 290 | 1535 / 564 | 3545 / 1400 | 4780 / 1553 |
+| Mean blow / armour | 10.7 / 2.6 | 11.4 / 3.0 | 12.3 / 3.4 | 17.4 / 6.3 |
+
+By calling (three heroes each, careful / greedy / reckless, mean over the season; level, deepest level, heroes who died at least once): warden 11.0, 8.3, 0/3; cutthroat 10.0, 7.3, 0/3; ember-priest 11.7, 7.3, 0/3; runesmith 8.0, 7.0, 0/3; wanderer 6.7, 6.7, 1/3; duelist 11.7, 8.3, 0/3. Over three seeds the wanderer is the lowest (5.3 to 7.3) and the ember-priest, duelist and warden the highest (10 to 12); every calling is alive, past level 5 and below level 6 in a season. By style: careful level 7.3, depth 3.7; greedy 11.2, 6.8; reckless 11.0, 12.0 (the only deaths). Before the ring and hit-point changes the season had 3 deaths (a cutthroat, a runesmith, a wanderer); after, 0 to 1 per seed: **deaths are rare**, so rescues are rare in a bot season (0 to 3) and the rescue rates are measured by the two-account tests, not the harness. The ring: before ring rules a warden went 205-4 and a cutthroat 2-199; after, wardens are between 148-60 and 65-145, duelists about 80-5, cutthroats 20-190 (the cutthroat is still weak in the ring: it relies on tricks the duel does not model).
+
+**An open finding.** With the bots joining companies (the 12-bot, 30-day shape with the Company chore) the works finish 3 to 4 of 12 against 9 of 12 without; in the 18-bot, 42-day season they finish 11 of 12. The wanderer and the duelist, in a company, fight about a fifth as often (kills 85 to 9, 93 to 16), so the company is leaving loot on the table in the harness: a hero whose companion cleared the den takes two thirds of its spoils (raising it from a third did not change the 12-bot number), so the cause is not isolated. It is recorded for the next balance pass, not fixed.
 
 ### Differences from the design above
 

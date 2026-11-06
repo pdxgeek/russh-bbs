@@ -802,7 +802,18 @@ impl Delver {
             self.skills_done = false;
             self.no_route = false;
             self.raised = false;
-            self.chores = "fmigwbcuj".chars().collect();
+            self.chores = if let Ok(chores) = std::env::var("EMBERDEEP_CHORES") {
+                chores
+            } else if std::env::var("EMBERDEEP_SIM_NO_SOCIAL").is_ok() {
+                "fmigwb".to_owned()
+            } else if visit.is_multiple_of(3) {
+                // The ring is for a day in three: it costs a turn a bout and a loser's bruise.
+                "fmigwbcuj".to_owned()
+            } else {
+                "fmigwbcj".to_owned()
+            }
+            .chars()
+            .collect();
             self.crafted = 0;
             self.drank = false;
             self.drilled = false;
@@ -810,7 +821,6 @@ impl Delver {
             self.cored = false;
             self.cores_bought = 0;
         }
-        let _ = visit;
         if let Some(key) = self.queue.pop_front() {
             return Some(key);
         }
