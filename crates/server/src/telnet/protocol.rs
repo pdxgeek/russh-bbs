@@ -301,4 +301,6 @@ pub(super) fn encode(bytes: &[u8]) -> Vec<u8> {
 }
 
 #[cfg(test)]
+mod fuzz;
+#[cfg(test)]
 mod tests;
