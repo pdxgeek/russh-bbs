@@ -137,6 +137,12 @@ Approved by the owner on 2026-11-04 by adding them here. The other M4 work is in
 | M4-H3 Hallpass UI | `crates/doors/hallpass` | M4-H2, UI-5 | Done ([PR #111](https://github.com/pdxgeek/russh-bbs/pull/111)) | Timetable strip, day, school map, scheme planner and run, the file, lessons, conversations, clubs, journal, paper, hall and yearbook on full ratatui (D104), three tiers and sizes, look-around, real-ssh walk. Built: see [doors/hallpass.md](doors/hallpass.md) and [qa/m4-h3-walk.md](qa/m4-h3-walk.md). |
 | M4-H4 Hallpass social, mystery and balance | `crates/doors/hallpass` | M4-H3 | In review (`m4/hallpass-social`, [PR #138](https://github.com/pdxgeek/russh-bbs/pull/138)) | Structured player schemes, template rumours, opt-out, election, awards, the mystery, balance. |
 
+### Documentation
+
+| Slice | Owns | Depends on | Status | Branch / PR |
+|---|---|---|---|---|
+| DOC-1 Sysop and member guides | new `docs/guide/` (`sysop/`, `member/`, `img/`), links from `README.md` and `docs/README.md`, this row | none (docs only; no product code) | Claimed | `docs/sysop-member-guide` |
+
 ### M3: Public core
 
 Proposed by the orchestrator on 2026-11-03; **not claimable until the owner approves this table** (merging the PR that adds it is the approval). M5 and later milestones are not claimable until the owner adds their slices here.
