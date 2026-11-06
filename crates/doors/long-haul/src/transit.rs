@@ -171,6 +171,27 @@ pub enum Req {
         /// Its id.
         id: String,
     },
+    /// The captain is about to play this step of an arc (it has done the one before).
+    ArcAt {
+        /// The arc's id.
+        arc: String,
+        /// The step, from 1.
+        step: u8,
+    },
+    /// A branch of an arc was taken.
+    ArcBranch {
+        /// The arc's id.
+        arc: String,
+        /// The branch's name.
+        branch: String,
+    },
+    /// At least this many days have passed since the arc's last step.
+    ArcWait {
+        /// The arc's id.
+        arc: String,
+        /// Days.
+        days: u8,
+    },
     /// The condition does not hold.
     Not {
         /// The condition.
@@ -295,6 +316,25 @@ pub enum Effect {
         /// Its value.
         value: u32,
     },
+    /// Move an arc on one step.
+    ArcStep {
+        /// The arc's id.
+        arc: String,
+    },
+    /// Take a branch of an arc.
+    ArcBranch {
+        /// The arc's id.
+        arc: String,
+        /// The branch's name.
+        branch: String,
+    },
+    /// End an arc with one of its endings.
+    Ending {
+        /// The arc's id.
+        arc: String,
+        /// The ending's id.
+        ending: String,
+    },
 }
 
 /// A weight tilt on an outcome.
@@ -373,6 +413,12 @@ pub struct EventDef {
     /// A flag that makes it happen at most once to a captain (set when it fires).
     #[serde(default)]
     pub once: String,
+    /// The arc this scene belongs to (arc scenes only).
+    #[serde(default)]
+    pub arc: String,
+    /// Which step of the arc it is, from 1 (arc scenes only).
+    #[serde(default)]
+    pub step: u8,
     /// The choices.
     pub options: Vec<EventOption>,
 }
@@ -388,7 +434,7 @@ pub struct TransitTable {
 }
 
 /// The families of event.
-pub const FAMILIES: [&str; 11] = [
+pub const FAMILIES: [&str; 12] = [
     "distress",
     "pirate",
     "inspection",
@@ -400,6 +446,7 @@ pub const FAMILIES: [&str; 11] = [
     "crew",
     "trade",
     "omen",
+    "arc",
 ];
 
 impl TransitTable {
@@ -434,8 +481,9 @@ impl Table for TransitTable {
                     "event `{id}`: title <= 40, text <= 360 plain characters"
                 ));
             }
-            if e.weight == 0 || e.weight > 100 {
-                p.push(format!("event `{id}`: weight 1 to 100"));
+            let top = if e.family == "arc" { 2000 } else { 100 };
+            if e.weight == 0 || e.weight > top {
+                p.push(format!("event `{id}`: weight 1 to {top}"));
             }
             if !e.once.is_empty() && self.flag_bit(&e.once).is_none() {
                 p.push(format!("event `{id}`: unknown once-flag `{}`", e.once));
@@ -624,6 +672,19 @@ impl Player {
                 .backgrounds
                 .get(usize::from(self.background))
                 .is_some_and(|b| b.id == *id),
+            Req::ArcAt { arc, step } => content
+                .arc_ix(arc)
+                .and_then(|i| self.social.arcs.get(i))
+                .is_some_and(|a| !a.finished() && a.step + 1 == *step),
+            Req::ArcBranch { arc, branch } => content
+                .arc_ix(arc)
+                .zip(content.arc_branch_bit(arc, branch))
+                .and_then(|(i, bit)| self.social.arcs.get(i).map(|a| a.branches & bit != 0))
+                .unwrap_or(false),
+            Req::ArcWait { arc, days } => content
+                .arc_ix(arc)
+                .and_then(|i| self.social.arcs.get(i))
+                .is_some_and(|a| self.last_day - a.day >= i64::from(*days)),
             Req::Not { req } => !self.meets(w, req),
         }
     }
@@ -954,6 +1015,25 @@ impl Player {
                         });
                     }
                 }
+                Effect::ArcStep { arc } => {
+                    if let Some(a) = content
+                        .arc_ix(arc)
+                        .and_then(|i| self.social.arcs.get_mut(i))
+                    {
+                        a.step = a.step.saturating_add(1);
+                        a.day = env.today;
+                    }
+                }
+                Effect::ArcBranch { arc, branch } => {
+                    if let Some((i, bit)) = content
+                        .arc_ix(arc)
+                        .zip(content.arc_branch_bit(arc, branch))
+                        && let Some(a) = self.social.arcs.get_mut(i)
+                    {
+                        a.branches |= bit;
+                    }
+                }
+                Effect::Ending { arc, ending } => self.reach_ending(env, arc, ending, events),
             }
         }
         match scene {

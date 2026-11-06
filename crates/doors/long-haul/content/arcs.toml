@@ -1,0 +1,875 @@
+# STUB: replaced by the real arcs.
+[[arc]]
+id = "gates"
+title = "The Gate Song"
+
+hint = "Something is waiting to happen to a captain who listens."
+blurb = "A story in The Gate Song."
+branches = ["bold", "careful"]
+[[arc.ending]]
+id = "triumph"
+title = "Triumph"
+text = "It worked out."
+gates = true
+[[arc.ending]]
+id = "ruin"
+title = "Ruin"
+text = "It did not."
+
+[[arc]]
+id = "league"
+title = "The Long Patrol"
+faction = "league"
+hint = "Something is waiting to happen to a captain who listens."
+blurb = "A story in The Long Patrol."
+branches = ["bold", "careful"]
+[[arc.ending]]
+id = "triumph"
+title = "Triumph"
+text = "It worked out."
+
+[[arc.ending]]
+id = "ruin"
+title = "Ruin"
+text = "It did not."
+
+[[arc]]
+id = "union"
+title = "The Deep Strike"
+faction = "miners"
+hint = "Something is waiting to happen to a captain who listens."
+blurb = "A story in The Deep Strike."
+branches = ["bold", "careful"]
+[[arc.ending]]
+id = "triumph"
+title = "Triumph"
+text = "It worked out."
+
+[[arc.ending]]
+id = "ruin"
+title = "Ruin"
+text = "It did not."
+
+[[arc]]
+id = "free"
+title = "The Black Ledger"
+faction = "free"
+hint = "Something is waiting to happen to a captain who listens."
+blurb = "A story in The Black Ledger."
+branches = ["bold", "careful"]
+[[arc.ending]]
+id = "triumph"
+title = "Triumph"
+text = "It worked out."
+
+[[arc.ending]]
+id = "ruin"
+title = "Ruin"
+text = "It did not."
+
+[[arc]]
+id = "guild"
+title = "The Blank Charts"
+faction = "guild"
+hint = "Something is waiting to happen to a captain who listens."
+blurb = "A story in The Blank Charts."
+branches = ["bold", "careful"]
+[[arc.ending]]
+id = "triumph"
+title = "Triumph"
+text = "It worked out."
+
+[[arc.ending]]
+id = "ruin"
+title = "Ruin"
+text = "It did not."
+
+[[arc]]
+id = "church"
+title = "The Quiet Vigil"
+faction = "church"
+hint = "Something is waiting to happen to a captain who listens."
+blurb = "A story in The Quiet Vigil."
+branches = ["bold", "careful"]
+[[arc.ending]]
+id = "triumph"
+title = "Triumph"
+text = "It worked out."
+
+[[arc.ending]]
+id = "ruin"
+title = "Ruin"
+text = "It did not."
+
+[[season_ending]]
+id = "tycoon"
+title = "Tycoon"
+text = "You ended the season among the richest."
+[[season_ending]]
+id = "solvent"
+title = "Solvent"
+text = "You paid what you owed and kept the ship."
+[[season_ending]]
+id = "pirate_king"
+title = "Pirate King"
+text = "Your name made haulers change course."
+[[season_ending]]
+id = "folk_hero"
+title = "Folk Hero"
+text = "The lanes remember who stood in the way."
+[[season_ending]]
+id = "cartographer"
+title = "Cartographer"
+text = "Your charts will outlast the frontier."
+[[season_ending]]
+id = "bankrupt"
+title = "Bankrupt"
+text = "The lender took what was left."
+[[season_ending]]
+id = "drifter"
+title = "Drifter"
+text = "You got through the season. That was something."
+
+[[event]]
+id = "gates_1"
+family = "arc"
+title = "The Gate Song 1"
+text = "Step 1 of The Gate Song."
+weight = 2000
+arc = "gates"
+step = 1
+when = [{ kind = "arc_at", arc = "gates", step = 1 }, { kind = "arc_wait", arc = "gates", days = 0 }]
+[[event.options]]
+label = "Carry on"
+[[event.options.outcomes]]
+weight = 1
+text = "Onward."
+effects = [{ kind = "arc_step", arc = "gates" }]
+
+[[event]]
+id = "gates_2"
+family = "arc"
+title = "The Gate Song 2"
+text = "Step 2 of The Gate Song."
+weight = 2000
+arc = "gates"
+step = 2
+when = [{ kind = "arc_at", arc = "gates", step = 2 }, { kind = "arc_wait", arc = "gates", days = 0 }]
+[[event.options]]
+label = "Carry on"
+[[event.options.outcomes]]
+weight = 1
+text = "Onward."
+effects = [{ kind = "arc_step", arc = "gates" }]
+[[event.options]]
+label = "The bold way"
+[[event.options.outcomes]]
+weight = 1
+text = "You take the bold way."
+effects = [{ kind = "arc_branch", arc = "gates", branch = "bold" }, { kind = "arc_step", arc = "gates" }]
+
+[[event]]
+id = "gates_3"
+family = "arc"
+title = "The Gate Song 3"
+text = "Step 3 of The Gate Song."
+weight = 2000
+arc = "gates"
+step = 3
+when = [{ kind = "arc_at", arc = "gates", step = 3 }, { kind = "arc_wait", arc = "gates", days = 0 }]
+[[event.options]]
+label = "Carry on"
+[[event.options.outcomes]]
+weight = 1
+text = "Onward."
+effects = [{ kind = "arc_step", arc = "gates" }]
+[[event.options]]
+label = "Only for the bold"
+req = [{ kind = "arc_branch", arc = "gates", branch = "bold" }]
+needs = "you took the bold way"
+[[event.options.outcomes]]
+weight = 1
+text = "Boldness pays."
+effects = [{ kind = "arc_branch", arc = "gates", branch = "careful" }, { kind = "arc_step", arc = "gates" }]
+
+[[event]]
+id = "gates_4"
+family = "arc"
+title = "The Gate Song 4"
+text = "Step 4 of The Gate Song."
+weight = 2000
+arc = "gates"
+step = 4
+when = [{ kind = "arc_at", arc = "gates", step = 4 }, { kind = "arc_wait", arc = "gates", days = 0 }]
+[[event.options]]
+label = "Carry on"
+[[event.options.outcomes]]
+weight = 1
+text = "Onward."
+effects = [{ kind = "arc_step", arc = "gates" }]
+[[event.options]]
+label = "Only the careful"
+req = [{ kind = "arc_branch", arc = "gates", branch = "careful" }]
+needs = "you went carefully"
+[[event.options.outcomes]]
+weight = 1
+text = "Care pays."
+effects = [{ kind = "arc_step", arc = "gates" }]
+
+[[event]]
+id = "gates_5"
+family = "arc"
+title = "The Gate Song 5"
+text = "Step 5 of The Gate Song."
+weight = 2000
+arc = "gates"
+step = 5
+when = [{ kind = "arc_at", arc = "gates", step = 5 }, { kind = "arc_wait", arc = "gates", days = 0 }]
+[[event.options]]
+label = "Carry on"
+[[event.options.outcomes]]
+weight = 1
+text = "Onward."
+effects = [{ kind = "arc_step", arc = "gates" }]
+
+[[event]]
+id = "gates_6"
+family = "arc"
+title = "The Gate Song 6"
+text = "Step 6 of The Gate Song."
+weight = 2000
+arc = "gates"
+step = 6
+when = [{ kind = "arc_at", arc = "gates", step = 6 }, { kind = "arc_wait", arc = "gates", days = 0 }]
+[[event.options]]
+label = "Carry on"
+[[event.options.outcomes]]
+weight = 1
+text = "It ends well."
+effects = [{ kind = "ending", arc = "gates", ending = "triumph" }]
+[[event.options]]
+label = "Walk away"
+[[event.options.outcomes]]
+weight = 1
+text = "You walk away."
+effects = [{ kind = "ending", arc = "gates", ending = "ruin" }]
+
+[[event]]
+id = "league_1"
+family = "arc"
+title = "The Long Patrol 1"
+text = "Step 1 of The Long Patrol."
+weight = 2000
+arc = "league"
+step = 1
+when = [{ kind = "arc_at", arc = "league", step = 1 }, { kind = "arc_wait", arc = "league", days = 0 }]
+[[event.options]]
+label = "Carry on"
+[[event.options.outcomes]]
+weight = 1
+text = "Onward."
+effects = [{ kind = "arc_step", arc = "league" }]
+
+[[event]]
+id = "league_2"
+family = "arc"
+title = "The Long Patrol 2"
+text = "Step 2 of The Long Patrol."
+weight = 2000
+arc = "league"
+step = 2
+when = [{ kind = "arc_at", arc = "league", step = 2 }, { kind = "arc_wait", arc = "league", days = 0 }]
+[[event.options]]
+label = "Carry on"
+[[event.options.outcomes]]
+weight = 1
+text = "Onward."
+effects = [{ kind = "arc_step", arc = "league" }]
+[[event.options]]
+label = "The bold way"
+[[event.options.outcomes]]
+weight = 1
+text = "You take the bold way."
+effects = [{ kind = "arc_branch", arc = "league", branch = "bold" }, { kind = "arc_step", arc = "league" }]
+
+[[event]]
+id = "league_3"
+family = "arc"
+title = "The Long Patrol 3"
+text = "Step 3 of The Long Patrol."
+weight = 2000
+arc = "league"
+step = 3
+when = [{ kind = "arc_at", arc = "league", step = 3 }, { kind = "arc_wait", arc = "league", days = 0 }]
+[[event.options]]
+label = "Carry on"
+[[event.options.outcomes]]
+weight = 1
+text = "Onward."
+effects = [{ kind = "arc_step", arc = "league" }]
+[[event.options]]
+label = "Only for the bold"
+req = [{ kind = "arc_branch", arc = "league", branch = "bold" }]
+needs = "you took the bold way"
+[[event.options.outcomes]]
+weight = 1
+text = "Boldness pays."
+effects = [{ kind = "arc_branch", arc = "league", branch = "careful" }, { kind = "arc_step", arc = "league" }]
+
+[[event]]
+id = "league_4"
+family = "arc"
+title = "The Long Patrol 4"
+text = "Step 4 of The Long Patrol."
+weight = 2000
+arc = "league"
+step = 4
+when = [{ kind = "arc_at", arc = "league", step = 4 }, { kind = "arc_wait", arc = "league", days = 0 }]
+[[event.options]]
+label = "Carry on"
+[[event.options.outcomes]]
+weight = 1
+text = "Onward."
+effects = [{ kind = "arc_step", arc = "league" }]
+[[event.options]]
+label = "Only the careful"
+req = [{ kind = "arc_branch", arc = "league", branch = "careful" }]
+needs = "you went carefully"
+[[event.options.outcomes]]
+weight = 1
+text = "Care pays."
+effects = [{ kind = "arc_step", arc = "league" }]
+
+[[event]]
+id = "league_5"
+family = "arc"
+title = "The Long Patrol 5"
+text = "Step 5 of The Long Patrol."
+weight = 2000
+arc = "league"
+step = 5
+when = [{ kind = "arc_at", arc = "league", step = 5 }, { kind = "arc_wait", arc = "league", days = 0 }]
+[[event.options]]
+label = "Carry on"
+[[event.options.outcomes]]
+weight = 1
+text = "Onward."
+effects = [{ kind = "arc_step", arc = "league" }]
+
+[[event]]
+id = "league_6"
+family = "arc"
+title = "The Long Patrol 6"
+text = "Step 6 of The Long Patrol."
+weight = 2000
+arc = "league"
+step = 6
+when = [{ kind = "arc_at", arc = "league", step = 6 }, { kind = "arc_wait", arc = "league", days = 0 }]
+[[event.options]]
+label = "Carry on"
+[[event.options.outcomes]]
+weight = 1
+text = "It ends well."
+effects = [{ kind = "ending", arc = "league", ending = "triumph" }]
+[[event.options]]
+label = "Walk away"
+[[event.options.outcomes]]
+weight = 1
+text = "You walk away."
+effects = [{ kind = "ending", arc = "league", ending = "ruin" }]
+
+[[event]]
+id = "union_1"
+family = "arc"
+title = "The Deep Strike 1"
+text = "Step 1 of The Deep Strike."
+weight = 2000
+arc = "union"
+step = 1
+when = [{ kind = "arc_at", arc = "union", step = 1 }, { kind = "arc_wait", arc = "union", days = 0 }]
+[[event.options]]
+label = "Carry on"
+[[event.options.outcomes]]
+weight = 1
+text = "Onward."
+effects = [{ kind = "arc_step", arc = "union" }]
+
+[[event]]
+id = "union_2"
+family = "arc"
+title = "The Deep Strike 2"
+text = "Step 2 of The Deep Strike."
+weight = 2000
+arc = "union"
+step = 2
+when = [{ kind = "arc_at", arc = "union", step = 2 }, { kind = "arc_wait", arc = "union", days = 0 }]
+[[event.options]]
+label = "Carry on"
+[[event.options.outcomes]]
+weight = 1
+text = "Onward."
+effects = [{ kind = "arc_step", arc = "union" }]
+[[event.options]]
+label = "The bold way"
+[[event.options.outcomes]]
+weight = 1
+text = "You take the bold way."
+effects = [{ kind = "arc_branch", arc = "union", branch = "bold" }, { kind = "arc_step", arc = "union" }]
+
+[[event]]
+id = "union_3"
+family = "arc"
+title = "The Deep Strike 3"
+text = "Step 3 of The Deep Strike."
+weight = 2000
+arc = "union"
+step = 3
+when = [{ kind = "arc_at", arc = "union", step = 3 }, { kind = "arc_wait", arc = "union", days = 0 }]
+[[event.options]]
+label = "Carry on"
+[[event.options.outcomes]]
+weight = 1
+text = "Onward."
+effects = [{ kind = "arc_step", arc = "union" }]
+[[event.options]]
+label = "Only for the bold"
+req = [{ kind = "arc_branch", arc = "union", branch = "bold" }]
+needs = "you took the bold way"
+[[event.options.outcomes]]
+weight = 1
+text = "Boldness pays."
+effects = [{ kind = "arc_branch", arc = "union", branch = "careful" }, { kind = "arc_step", arc = "union" }]
+
+[[event]]
+id = "union_4"
+family = "arc"
+title = "The Deep Strike 4"
+text = "Step 4 of The Deep Strike."
+weight = 2000
+arc = "union"
+step = 4
+when = [{ kind = "arc_at", arc = "union", step = 4 }, { kind = "arc_wait", arc = "union", days = 0 }]
+[[event.options]]
+label = "Carry on"
+[[event.options.outcomes]]
+weight = 1
+text = "Onward."
+effects = [{ kind = "arc_step", arc = "union" }]
+[[event.options]]
+label = "Only the careful"
+req = [{ kind = "arc_branch", arc = "union", branch = "careful" }]
+needs = "you went carefully"
+[[event.options.outcomes]]
+weight = 1
+text = "Care pays."
+effects = [{ kind = "arc_step", arc = "union" }]
+
+[[event]]
+id = "union_5"
+family = "arc"
+title = "The Deep Strike 5"
+text = "Step 5 of The Deep Strike."
+weight = 2000
+arc = "union"
+step = 5
+when = [{ kind = "arc_at", arc = "union", step = 5 }, { kind = "arc_wait", arc = "union", days = 0 }]
+[[event.options]]
+label = "Carry on"
+[[event.options.outcomes]]
+weight = 1
+text = "Onward."
+effects = [{ kind = "arc_step", arc = "union" }]
+
+[[event]]
+id = "union_6"
+family = "arc"
+title = "The Deep Strike 6"
+text = "Step 6 of The Deep Strike."
+weight = 2000
+arc = "union"
+step = 6
+when = [{ kind = "arc_at", arc = "union", step = 6 }, { kind = "arc_wait", arc = "union", days = 0 }]
+[[event.options]]
+label = "Carry on"
+[[event.options.outcomes]]
+weight = 1
+text = "It ends well."
+effects = [{ kind = "ending", arc = "union", ending = "triumph" }]
+[[event.options]]
+label = "Walk away"
+[[event.options.outcomes]]
+weight = 1
+text = "You walk away."
+effects = [{ kind = "ending", arc = "union", ending = "ruin" }]
+
+[[event]]
+id = "free_1"
+family = "arc"
+title = "The Black Ledger 1"
+text = "Step 1 of The Black Ledger."
+weight = 2000
+arc = "free"
+step = 1
+when = [{ kind = "arc_at", arc = "free", step = 1 }, { kind = "arc_wait", arc = "free", days = 0 }]
+[[event.options]]
+label = "Carry on"
+[[event.options.outcomes]]
+weight = 1
+text = "Onward."
+effects = [{ kind = "arc_step", arc = "free" }]
+
+[[event]]
+id = "free_2"
+family = "arc"
+title = "The Black Ledger 2"
+text = "Step 2 of The Black Ledger."
+weight = 2000
+arc = "free"
+step = 2
+when = [{ kind = "arc_at", arc = "free", step = 2 }, { kind = "arc_wait", arc = "free", days = 0 }]
+[[event.options]]
+label = "Carry on"
+[[event.options.outcomes]]
+weight = 1
+text = "Onward."
+effects = [{ kind = "arc_step", arc = "free" }]
+[[event.options]]
+label = "The bold way"
+[[event.options.outcomes]]
+weight = 1
+text = "You take the bold way."
+effects = [{ kind = "arc_branch", arc = "free", branch = "bold" }, { kind = "arc_step", arc = "free" }]
+
+[[event]]
+id = "free_3"
+family = "arc"
+title = "The Black Ledger 3"
+text = "Step 3 of The Black Ledger."
+weight = 2000
+arc = "free"
+step = 3
+when = [{ kind = "arc_at", arc = "free", step = 3 }, { kind = "arc_wait", arc = "free", days = 0 }]
+[[event.options]]
+label = "Carry on"
+[[event.options.outcomes]]
+weight = 1
+text = "Onward."
+effects = [{ kind = "arc_step", arc = "free" }]
+[[event.options]]
+label = "Only for the bold"
+req = [{ kind = "arc_branch", arc = "free", branch = "bold" }]
+needs = "you took the bold way"
+[[event.options.outcomes]]
+weight = 1
+text = "Boldness pays."
+effects = [{ kind = "arc_branch", arc = "free", branch = "careful" }, { kind = "arc_step", arc = "free" }]
+
+[[event]]
+id = "free_4"
+family = "arc"
+title = "The Black Ledger 4"
+text = "Step 4 of The Black Ledger."
+weight = 2000
+arc = "free"
+step = 4
+when = [{ kind = "arc_at", arc = "free", step = 4 }, { kind = "arc_wait", arc = "free", days = 0 }]
+[[event.options]]
+label = "Carry on"
+[[event.options.outcomes]]
+weight = 1
+text = "Onward."
+effects = [{ kind = "arc_step", arc = "free" }]
+[[event.options]]
+label = "Only the careful"
+req = [{ kind = "arc_branch", arc = "free", branch = "careful" }]
+needs = "you went carefully"
+[[event.options.outcomes]]
+weight = 1
+text = "Care pays."
+effects = [{ kind = "arc_step", arc = "free" }]
+
+[[event]]
+id = "free_5"
+family = "arc"
+title = "The Black Ledger 5"
+text = "Step 5 of The Black Ledger."
+weight = 2000
+arc = "free"
+step = 5
+when = [{ kind = "arc_at", arc = "free", step = 5 }, { kind = "arc_wait", arc = "free", days = 0 }]
+[[event.options]]
+label = "Carry on"
+[[event.options.outcomes]]
+weight = 1
+text = "Onward."
+effects = [{ kind = "arc_step", arc = "free" }]
+
+[[event]]
+id = "free_6"
+family = "arc"
+title = "The Black Ledger 6"
+text = "Step 6 of The Black Ledger."
+weight = 2000
+arc = "free"
+step = 6
+when = [{ kind = "arc_at", arc = "free", step = 6 }, { kind = "arc_wait", arc = "free", days = 0 }]
+[[event.options]]
+label = "Carry on"
+[[event.options.outcomes]]
+weight = 1
+text = "It ends well."
+effects = [{ kind = "ending", arc = "free", ending = "triumph" }]
+[[event.options]]
+label = "Walk away"
+[[event.options.outcomes]]
+weight = 1
+text = "You walk away."
+effects = [{ kind = "ending", arc = "free", ending = "ruin" }]
+
+[[event]]
+id = "guild_1"
+family = "arc"
+title = "The Blank Charts 1"
+text = "Step 1 of The Blank Charts."
+weight = 2000
+arc = "guild"
+step = 1
+when = [{ kind = "arc_at", arc = "guild", step = 1 }, { kind = "arc_wait", arc = "guild", days = 0 }]
+[[event.options]]
+label = "Carry on"
+[[event.options.outcomes]]
+weight = 1
+text = "Onward."
+effects = [{ kind = "arc_step", arc = "guild" }]
+
+[[event]]
+id = "guild_2"
+family = "arc"
+title = "The Blank Charts 2"
+text = "Step 2 of The Blank Charts."
+weight = 2000
+arc = "guild"
+step = 2
+when = [{ kind = "arc_at", arc = "guild", step = 2 }, { kind = "arc_wait", arc = "guild", days = 0 }]
+[[event.options]]
+label = "Carry on"
+[[event.options.outcomes]]
+weight = 1
+text = "Onward."
+effects = [{ kind = "arc_step", arc = "guild" }]
+[[event.options]]
+label = "The bold way"
+[[event.options.outcomes]]
+weight = 1
+text = "You take the bold way."
+effects = [{ kind = "arc_branch", arc = "guild", branch = "bold" }, { kind = "arc_step", arc = "guild" }]
+
+[[event]]
+id = "guild_3"
+family = "arc"
+title = "The Blank Charts 3"
+text = "Step 3 of The Blank Charts."
+weight = 2000
+arc = "guild"
+step = 3
+when = [{ kind = "arc_at", arc = "guild", step = 3 }, { kind = "arc_wait", arc = "guild", days = 0 }]
+[[event.options]]
+label = "Carry on"
+[[event.options.outcomes]]
+weight = 1
+text = "Onward."
+effects = [{ kind = "arc_step", arc = "guild" }]
+[[event.options]]
+label = "Only for the bold"
+req = [{ kind = "arc_branch", arc = "guild", branch = "bold" }]
+needs = "you took the bold way"
+[[event.options.outcomes]]
+weight = 1
+text = "Boldness pays."
+effects = [{ kind = "arc_branch", arc = "guild", branch = "careful" }, { kind = "arc_step", arc = "guild" }]
+
+[[event]]
+id = "guild_4"
+family = "arc"
+title = "The Blank Charts 4"
+text = "Step 4 of The Blank Charts."
+weight = 2000
+arc = "guild"
+step = 4
+when = [{ kind = "arc_at", arc = "guild", step = 4 }, { kind = "arc_wait", arc = "guild", days = 0 }]
+[[event.options]]
+label = "Carry on"
+[[event.options.outcomes]]
+weight = 1
+text = "Onward."
+effects = [{ kind = "arc_step", arc = "guild" }]
+[[event.options]]
+label = "Only the careful"
+req = [{ kind = "arc_branch", arc = "guild", branch = "careful" }]
+needs = "you went carefully"
+[[event.options.outcomes]]
+weight = 1
+text = "Care pays."
+effects = [{ kind = "arc_step", arc = "guild" }]
+
+[[event]]
+id = "guild_5"
+family = "arc"
+title = "The Blank Charts 5"
+text = "Step 5 of The Blank Charts."
+weight = 2000
+arc = "guild"
+step = 5
+when = [{ kind = "arc_at", arc = "guild", step = 5 }, { kind = "arc_wait", arc = "guild", days = 0 }]
+[[event.options]]
+label = "Carry on"
+[[event.options.outcomes]]
+weight = 1
+text = "Onward."
+effects = [{ kind = "arc_step", arc = "guild" }]
+
+[[event]]
+id = "guild_6"
+family = "arc"
+title = "The Blank Charts 6"
+text = "Step 6 of The Blank Charts."
+weight = 2000
+arc = "guild"
+step = 6
+when = [{ kind = "arc_at", arc = "guild", step = 6 }, { kind = "arc_wait", arc = "guild", days = 0 }]
+[[event.options]]
+label = "Carry on"
+[[event.options.outcomes]]
+weight = 1
+text = "It ends well."
+effects = [{ kind = "ending", arc = "guild", ending = "triumph" }]
+[[event.options]]
+label = "Walk away"
+[[event.options.outcomes]]
+weight = 1
+text = "You walk away."
+effects = [{ kind = "ending", arc = "guild", ending = "ruin" }]
+
+[[event]]
+id = "church_1"
+family = "arc"
+title = "The Quiet Vigil 1"
+text = "Step 1 of The Quiet Vigil."
+weight = 2000
+arc = "church"
+step = 1
+when = [{ kind = "arc_at", arc = "church", step = 1 }, { kind = "arc_wait", arc = "church", days = 0 }]
+[[event.options]]
+label = "Carry on"
+[[event.options.outcomes]]
+weight = 1
+text = "Onward."
+effects = [{ kind = "arc_step", arc = "church" }]
+
+[[event]]
+id = "church_2"
+family = "arc"
+title = "The Quiet Vigil 2"
+text = "Step 2 of The Quiet Vigil."
+weight = 2000
+arc = "church"
+step = 2
+when = [{ kind = "arc_at", arc = "church", step = 2 }, { kind = "arc_wait", arc = "church", days = 0 }]
+[[event.options]]
+label = "Carry on"
+[[event.options.outcomes]]
+weight = 1
+text = "Onward."
+effects = [{ kind = "arc_step", arc = "church" }]
+[[event.options]]
+label = "The bold way"
+[[event.options.outcomes]]
+weight = 1
+text = "You take the bold way."
+effects = [{ kind = "arc_branch", arc = "church", branch = "bold" }, { kind = "arc_step", arc = "church" }]
+
+[[event]]
+id = "church_3"
+family = "arc"
+title = "The Quiet Vigil 3"
+text = "Step 3 of The Quiet Vigil."
+weight = 2000
+arc = "church"
+step = 3
+when = [{ kind = "arc_at", arc = "church", step = 3 }, { kind = "arc_wait", arc = "church", days = 0 }]
+[[event.options]]
+label = "Carry on"
+[[event.options.outcomes]]
+weight = 1
+text = "Onward."
+effects = [{ kind = "arc_step", arc = "church" }]
+[[event.options]]
+label = "Only for the bold"
+req = [{ kind = "arc_branch", arc = "church", branch = "bold" }]
+needs = "you took the bold way"
+[[event.options.outcomes]]
+weight = 1
+text = "Boldness pays."
+effects = [{ kind = "arc_branch", arc = "church", branch = "careful" }, { kind = "arc_step", arc = "church" }]
+
+[[event]]
+id = "church_4"
+family = "arc"
+title = "The Quiet Vigil 4"
+text = "Step 4 of The Quiet Vigil."
+weight = 2000
+arc = "church"
+step = 4
+when = [{ kind = "arc_at", arc = "church", step = 4 }, { kind = "arc_wait", arc = "church", days = 0 }]
+[[event.options]]
+label = "Carry on"
+[[event.options.outcomes]]
+weight = 1
+text = "Onward."
+effects = [{ kind = "arc_step", arc = "church" }]
+[[event.options]]
+label = "Only the careful"
+req = [{ kind = "arc_branch", arc = "church", branch = "careful" }]
+needs = "you went carefully"
+[[event.options.outcomes]]
+weight = 1
+text = "Care pays."
+effects = [{ kind = "arc_step", arc = "church" }]
+
+[[event]]
+id = "church_5"
+family = "arc"
+title = "The Quiet Vigil 5"
+text = "Step 5 of The Quiet Vigil."
+weight = 2000
+arc = "church"
+step = 5
+when = [{ kind = "arc_at", arc = "church", step = 5 }, { kind = "arc_wait", arc = "church", days = 0 }]
+[[event.options]]
+label = "Carry on"
+[[event.options.outcomes]]
+weight = 1
+text = "Onward."
+effects = [{ kind = "arc_step", arc = "church" }]
+
+[[event]]
+id = "church_6"
+family = "arc"
+title = "The Quiet Vigil 6"
+text = "Step 6 of The Quiet Vigil."
+weight = 2000
+arc = "church"
+step = 6
+when = [{ kind = "arc_at", arc = "church", step = 6 }, { kind = "arc_wait", arc = "church", days = 0 }]
+[[event.options]]
+label = "Carry on"
+[[event.options.outcomes]]
+weight = 1
+text = "It ends well."
+effects = [{ kind = "ending", arc = "church", ending = "triumph" }]
+[[event.options]]
+label = "Walk away"
+[[event.options.outcomes]]
+weight = 1
+text = "You walk away."
+effects = [{ kind = "ending", arc = "church", ending = "ruin" }]

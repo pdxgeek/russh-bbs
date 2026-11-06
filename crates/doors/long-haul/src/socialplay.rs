@@ -889,3 +889,38 @@ impl Player {
             .map(|(i, a)| (i, a.ending))
     }
 }
+
+impl Player {
+    /// An arc reaches one of its endings: remembered in the save, and, for the ending that opens
+    /// or seals the gates, told to the whole frontier through the world.
+    pub(crate) fn reach_ending(
+        &mut self,
+        env: &mut Env<'_>,
+        arc: &str,
+        ending: &str,
+        events: &mut Vec<Event>,
+    ) {
+        let content = env.content;
+        let (Some(ai), Some(ei)) = (content.arc_ix(arc), content.arc_ending_ix(arc, ending)) else {
+            return;
+        };
+        let Some(state) = self.social.arcs.get_mut(ai) else {
+            return;
+        };
+        if state.finished() {
+            return;
+        }
+        let code = u8::try_from(ai * 8).unwrap_or(0) + ei;
+        state.ending = code;
+        state.day = env.today;
+        let def = &content.arcs.arc[ai].ending[usize::from(ei)];
+        events.push(say(format!("THE END OF A STORY - {}: {}", def.title, def.text), 1));
+        if def.gates {
+            env.push(Delta::Social(SocialDelta::Gates(social::Gates {
+                day: env.today,
+                by: self.captain.clone(),
+                ending: code,
+            })));
+        }
+    }
+}
