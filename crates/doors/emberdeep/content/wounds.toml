@@ -21,4 +21,13 @@ wound = [
   { id = "roughed-up", name = "Roughed Up", days = 3, effects = [{ kind = "max_hp", amount = -6 }, { kind = "damage", amount = -1 }] },
   { id = "ring-bruise", name = "Ring Bruise", days = 1, effects = [{ kind = "max_hp", amount = -3 }, { kind = "damage", amount = -1 }] },
   { id = "ring-pride", name = "Ring Pride", boon = true, days = 2, effects = [{ kind = "crit_pct", amount = 2 }, { kind = "attr", attr = "spirit", amount = 1 }] },
+  # Dungeon events (E4): trouble and gifts that last days.
+  { id = "soot-lung", name = "Soot Lung", source = "fire", days = 2, effects = [{ kind = "fatigue_guard", amount = -12 }, { kind = "attr", attr = "spirit", amount = -1 }] },
+  { id = "glass-sliver", name = "Glass Sliver", source = "blade", days = 3, effects = [{ kind = "evade_pct", amount = -5 }, { kind = "trap_sense", amount = -2 }], scar_pct = 20, scar = "weeping-gash" },
+  { id = "cold-touch", name = "Cold Touch", source = "cold", days = 3, effects = [{ kind = "fatigue_guard", amount = -15 }, { kind = "attr", attr = "finesse", amount = -1 }], scar_pct = 20, scar = "frostbitten" },
+  { id = "hollow-ache", name = "Hollow Ache", days = 3, effects = [{ kind = "max_hp", amount = -5 }, { kind = "death_save", amount = -4 }], scar_pct = 15, scar = "nightmares" },
+  { id = "ember-blessing", name = "Ember Blessing", boon = true, days = 2, effects = [{ kind = "max_hp", amount = 6 }, { kind = "attr", attr = "spirit", amount = 1 }] },
+  { id = "smiths-favour", name = "Smiths' Favour", boon = true, days = 2, effects = [{ kind = "damage", amount = 1 }, { kind = "armor", amount = 1 }] },
+  { id = "lamplight-grace", name = "Lamplight Grace", boon = true, days = 1, effects = [{ kind = "trap_sense", amount = 3 }, { kind = "evade_pct", amount = 4 }] },
+  { id = "flame-marked", name = "Flame-Marked", boon = true, days = 3, effects = [{ kind = "crit_pct", amount = 3 }, { kind = "loot_pct", amount = 6 }] },
 ]
