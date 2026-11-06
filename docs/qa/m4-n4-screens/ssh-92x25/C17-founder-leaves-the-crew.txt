@@ -1,0 +1,25 @@
+
+┌─────────────────────────────────────── russh-bbs ────────────────────────────────────────┐
+│Nullroute                                                                                 │
+│                                                                                          │
+│╭ CREW ──────────────────────────────────────────────────────────────────────────────────╮│
+││CREW                                                                                    ││
+││You are not in a crew.                                                                  ││
+││No invitations. Found a crew, or be asked.                                              ││
+││The Null Vault stands: a heist built for a crew of three or more (rep 40).              ││
+││You left the crew.                                                                      ││
+││                                                                                        ││
+││                                                                                        ││
+││                                                                                        ││
+││                                                                                        ││
+││                                                                                        ││
+││                                                                                        ││
+││                                                                                        ││
+││                                                                                        ││
+││                                                                                        ││
+││[n] found  [1-5] accept  [i] invite  [o] open a run  [j] join  [s]                      ││
+││start  [e] enter  [c] collect  [f] finale  [l] leave  [m] invites                       ││
+││on/off  [Esc]                                                                           ││
+│╰────────────────────────────────────────────────────────────────────────────────────────╯│
+└──────────────────────────────────────────────────────────────────────────────────────────┘
+

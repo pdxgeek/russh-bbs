@@ -2,6 +2,8 @@
 # locked; `bias` weights the lock family as [crack, spoof, overflow]. `sec` is the type's base security.
 # `watches`: a live camera feed that adds trace to every move until it is cut. `code` shows in the
 # node name (for example FW-2). Objective types name the contract targets that use them.
+# M4-N4: `corp` (optional) makes a type part of that one corporation's home template; types without it
+# are used by every corporation.
 
 [[node]]
 num = 0
@@ -108,5 +110,278 @@ weight = 0
 sec = 2
 lock_pct = 100
 bias = [1, 2, 2]
+noise = 3
+watches = false
+
+[[node]]
+num = 9
+code = "DK"
+name = "Dock manifest"
+role = "mid"
+corp = 5
+weight = 18
+sec = 1
+lock_pct = 40
+bias = [3, 1, 1]
+noise = 1
+watches = false
+
+[[node]]
+num = 10
+code = "CU"
+name = "Customs relay"
+role = "mid"
+corp = 5
+weight = 18
+sec = 2
+lock_pct = 80
+bias = [1, 3, 1]
+noise = 2
+watches = false
+
+[[node]]
+num = 11
+code = "HL"
+name = "Hold lock-up"
+role = "mid"
+corp = 5
+weight = 18
+sec = 2
+lock_pct = 70
+bias = [2, 1, 3]
+noise = 1
+watches = false
+
+[[node]]
+num = 12
+code = "MT"
+name = "Smart meter hub"
+role = "mid"
+corp = 6
+weight = 18
+sec = 1
+lock_pct = 30
+bias = [2, 1, 1]
+noise = 2
+watches = false
+
+[[node]]
+num = 13
+code = "SB"
+name = "Substation bridge"
+role = "mid"
+corp = 6
+weight = 18
+sec = 2
+lock_pct = 85
+bias = [1, 1, 4]
+noise = 2
+watches = false
+
+[[node]]
+num = 14
+code = "LB"
+name = "Load balancer"
+role = "mid"
+corp = 6
+weight = 18
+sec = 2
+lock_pct = 60
+bias = [1, 2, 2]
+noise = 1
+watches = false
+
+[[node]]
+num = 15
+code = "CL"
+name = "Cold lab door"
+role = "mid"
+corp = 7
+weight = 18
+sec = 2
+lock_pct = 90
+bias = [1, 4, 1]
+noise = 1
+watches = false
+
+[[node]]
+num = 16
+code = "SQ"
+name = "Sequencer"
+role = "mid"
+corp = 7
+weight = 18
+sec = 2
+lock_pct = 70
+bias = [1, 1, 3]
+noise = 2
+watches = false
+
+[[node]]
+num = 17
+code = "QR"
+name = "Quarantine relay"
+role = "mid"
+corp = 7
+weight = 18
+sec = 3
+lock_pct = 80
+bias = [1, 2, 2]
+noise = 2
+watches = false
+
+[[node]]
+num = 18
+code = "PL"
+name = "Privilege log"
+role = "mid"
+corp = 8
+weight = 18
+sec = 1
+lock_pct = 40
+bias = [1, 3, 1]
+noise = 1
+watches = false
+
+[[node]]
+num = 19
+code = "DR"
+name = "Discovery room"
+role = "mid"
+corp = 8
+weight = 18
+sec = 2
+lock_pct = 75
+bias = [2, 3, 1]
+noise = 1
+watches = false
+
+[[node]]
+num = 20
+code = "SL"
+name = "Seal registry"
+role = "mid"
+corp = 8
+weight = 18
+sec = 2
+lock_pct = 85
+bias = [1, 4, 1]
+noise = 2
+watches = false
+
+[[node]]
+num = 21
+code = "FO"
+name = "Foundry controller"
+role = "mid"
+corp = 9
+weight = 18
+sec = 2
+lock_pct = 85
+bias = [1, 1, 4]
+noise = 2
+watches = false
+
+[[node]]
+num = 22
+code = "PR"
+name = "Proof range gate"
+role = "mid"
+corp = 9
+weight = 18
+sec = 3
+lock_pct = 90
+bias = [1, 1, 3]
+noise = 3
+watches = false
+
+[[node]]
+num = 23
+code = "AR"
+name = "Armoury locker"
+role = "mid"
+corp = 9
+weight = 18
+sec = 2
+lock_pct = 90
+bias = [2, 1, 3]
+noise = 1
+watches = false
+
+[[node]]
+num = 24
+code = "ED"
+name = "Edit suite"
+role = "mid"
+corp = 10
+weight = 18
+sec = 0
+lock_pct = 25
+bias = [4, 1, 1]
+noise = 1
+watches = false
+
+[[node]]
+num = 25
+code = "BC"
+name = "Broadcast mast"
+role = "mid"
+corp = 10
+weight = 18
+sec = 1
+lock_pct = 45
+bias = [3, 1, 2]
+noise = 3
+watches = false
+
+[[node]]
+num = 26
+code = "GR"
+name = "Green-room kiosk"
+role = "mid"
+corp = 10
+weight = 18
+sec = 1
+lock_pct = 30
+bias = [3, 2, 1]
+noise = 1
+watches = false
+
+[[node]]
+num = 27
+code = "TL"
+name = "Teller cage"
+role = "mid"
+corp = 11
+weight = 18
+sec = 2
+lock_pct = 80
+bias = [1, 3, 1]
+noise = 2
+watches = false
+
+[[node]]
+num = 28
+code = "CV"
+name = "Clearing vault door"
+role = "mid"
+corp = 11
+weight = 18
+sec = 3
+lock_pct = 95
+bias = [1, 2, 3]
+noise = 2
+watches = false
+
+[[node]]
+num = 29
+code = "SW"
+name = "Settlement gateway"
+role = "mid"
+corp = 11
+weight = 18
+sec = 2
+lock_pct = 70
+bias = [1, 1, 3]
 noise = 3
 watches = false

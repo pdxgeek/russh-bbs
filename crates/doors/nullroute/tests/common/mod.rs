@@ -99,6 +99,7 @@ pub fn setup(net: Network, deck: &[u8]) -> RunSetup {
         extra: Vec::new(),
         learned: Vec::new(),
         warden: None,
+        trace_share: 100,
     }
 }
 
@@ -145,7 +146,7 @@ fn exits(screen: &[String]) -> Vec<(usize, String)> {
         .collect()
 }
 
-fn exits_numbered(screen: &[String]) -> Vec<(usize, String)> {
+pub fn exits_numbered(screen: &[String]) -> Vec<(usize, String)> {
     screen
         .iter()
         .filter_map(|l| {

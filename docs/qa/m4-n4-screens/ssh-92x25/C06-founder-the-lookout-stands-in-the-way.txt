@@ -1,0 +1,25 @@
+
+┌─────────────────────────────────────── russh-bbs ────────────────────────────────────────┐
+│Nullroute                                                                                 │
+│                                                                                          │
+│ NULLROUTE // Brackwater Bio T1 // Plant @ AC                                       CY 30 │
+│▶░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ TRACE   1 ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░◀ │
+│╭ COUNTERMEASURE ────────────────╮╭ YOUR DECK ───────────────────────────────────────────╮│
+││Lookout (sentry)                ││    script                       cost damage   state  ││
+││INTEGRITY ██████████████ 8/8    ││[a] ping-sweep                   cy1  ░░░░░ 0         ││
+││armor 0   weak to password locks││[b] dictionary                   cy1  █████ 3         ││
+││                                ││[c] badge-clone                  cy1  ███▍░ 2         ││
+││IT WILL    STRIKE               ││[d] implant                      cy2  ░░░░░ 0         ││
+││          hits hard             ││                                                      ││
+││THEN      ? ? ?                 ││                                                      ││
+││SEEN      nothing yet           ││                                                      ││
+││MOVE      ■ □ □ □ □ □ □ □ 1/8   ││                                                      ││
+││Watch a full cycle of 4 or scan ││                                                      ││
+││it to learn the pattern.        ││                                                      ││
+│╰────────────────────────────────╯╰──────────────────────────────────────────────────────╯│
+│ FIGHT LOG ───────────────────────────────────────────────────────────────────────────────│
+│T+02 > Into FW-4.                                                                         │
+│T+02 . sentry Lookout has you. Its first beat: STRIKE.                                    │
+│[a-f]play  [w]brace  [x]break off                                                         │
+└──────────────────────────────────────────────────────────────────────────────────────────┘
+

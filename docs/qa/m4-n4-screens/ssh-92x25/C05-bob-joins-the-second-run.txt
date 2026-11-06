@@ -1,0 +1,25 @@
+
+┌─────────────────────────────────────── russh-bbs ────────────────────────────────────────┐
+│Nullroute                                                                                 │
+│                                                                                          │
+│╭ CREW ──────────────────────────────────────────────────────────────────────────────────╮│
+││CREW                                                                                    ││
+││NightShift  led by founder  1 job(s) done                                               ││
+││Members: founder, bob                                                                   ││
+││Run: Leave a door ajar at Brackwater Bio (tier 1), gathering                            ││
+││In it: founder, bob  (0 actions so far)                                                 ││
+││The Null Vault stands: a heist built for a crew of three or more (rep 40).              ││
+││You are in. The leader starts the run.                                                  ││
+││                                                                                        ││
+││                                                                                        ││
+││                                                                                        ││
+││                                                                                        ││
+││                                                                                        ││
+││                                                                                        ││
+││                                                                                        ││
+││[n] found  [1-5] accept  [i] invite  [o] open a run  [j] join  [s]                      ││
+││start  [e] enter  [c] collect  [f] finale  [l] leave  [m] invites                       ││
+││on/off  [Esc]                                                                           ││
+│╰────────────────────────────────────────────────────────────────────────────────────────╯│
+└──────────────────────────────────────────────────────────────────────────────────────────┘
+

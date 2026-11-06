@@ -39,7 +39,7 @@ fn the_shipped_content_covers_what_this_slice_promises() {
         c.corps.corp.len() >= 5,
         "five corporations, four+ distinct styles"
     );
-    assert_eq!(c.corps.fixer.len(), 3);
+    assert_eq!(c.corps.fixer.len(), 5);
     assert!(c.scripts.script.len() >= 27);
     assert!(c.contracts.contract.len() >= 11);
     assert_eq!(c.rig.part.len(), 5);

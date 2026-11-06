@@ -28,8 +28,19 @@ fn save_tail(p: &Player) -> usize {
     1 + p.fragments.len() + CODED_MAX * 3
 }
 
-fn v1_of(p: &Player) -> Vec<u8> {
+/// The bytes M4-N4 (version 3) appends to a save whose social layer is empty.
+const TIES_BYTES: usize = 110;
+/// The bytes version 3 appends to a world with no price history and an empty social state.
+const WORLD_V3_TAIL: usize = 52;
+
+/// What the N2 code (version 2) would have written for `p`: the version 3 bytes without the tail.
+fn v2_of(p: &Player) -> Vec<u8> {
     let bytes = encode(p);
+    bytes[..bytes.len() - TIES_BYTES].to_vec()
+}
+
+fn v1_of(p: &Player) -> Vec<u8> {
+    let bytes = v2_of(p);
     bytes[..bytes.len() - save_tail(p)].to_vec()
 }
 
@@ -38,10 +49,10 @@ fn env() -> DoorEnv {
 }
 
 #[test]
-fn the_versions_are_two_and_the_migrations_are_pinned() {
-    assert_eq!((SAVE_VERSION, WORLD_VERSION), (2, 2));
+fn the_versions_are_three_and_the_migrations_are_pinned() {
+    assert_eq!((SAVE_VERSION, WORLD_VERSION), (3, 3));
     let door = Nullroute::new().unwrap();
-    assert_eq!(door.info().save_version, 2);
+    assert_eq!(door.info().save_version, 3);
     // Nothing older than version 1 exists, and nothing is invented for it.
     assert_eq!(
         door.migrate(BlobKind::Save, 0, &[]),
@@ -65,10 +76,15 @@ fn a_version_1_save_is_brought_forward_and_loads_as_the_same_character() {
     // The N1 decoder would have read exactly these bytes; the N2 one refuses them as they are.
     assert!(decode(&v1).is_none());
     let door = Nullroute::new().unwrap();
-    let moved = door.migrate(BlobKind::Save, 1, &v1).unwrap();
-    assert_eq!(moved, encode(&p));
+    let v2 = door.migrate(BlobKind::Save, 1, &v1).unwrap();
+    assert_eq!(v2, v2_of(&p));
+    // And on to version 3: the character is the same, with an empty social layer and the
+    // protection week behind them (they are not new).
+    let moved = door.migrate(BlobKind::Save, 2, &v2).unwrap();
     let back = decode(&moved).unwrap();
+    p.ties = russh_bbs_door_nullroute::player::Ties::grandfathered(p.day);
     assert_eq!(back, p);
+    assert_eq!(moved, encode(&p));
     assert!(back.fragments.is_empty() && back.coded.iter().all(Option::is_none));
     // Bytes that are not a version 1 save are an error, never guessed at.
     assert_eq!(
@@ -89,13 +105,17 @@ fn a_version_1_world_is_brought_forward_with_nothing_learned() {
     let mut w = World::default();
     w.nightly(&c, &mut russh_bbs_door::DoorRng::from_seed(1), DAY);
     w.breaches = 3;
-    let v2 = encode_world(&w);
+    // Version 2 knew no price history.
+    w.hist.clear();
+    let v3 = encode_world(&w);
+    let v2 = &v3[..v3.len() - WORLD_V3_TAIL - w.hist.len()];
     // Version 2 appends a season (4 bytes) and an empty learned list (1 byte).
     let v1 = &v2[..v2.len() - 5];
     assert!(decode_world(v1).is_none());
     let door = Nullroute::new().unwrap();
-    let moved = door.migrate(BlobKind::World, 1, v1).unwrap();
-    assert_eq!(moved, v2);
+    assert_eq!(door.migrate(BlobKind::World, 1, v1).unwrap(), v2);
+    let moved = door.migrate(BlobKind::World, 2, v2).unwrap();
+    assert_eq!(moved, v3);
     let back = decode_world(&moved).unwrap();
     assert_eq!(back, w);
     assert!(back.learned.is_empty() && back.season == 0);
@@ -118,7 +138,8 @@ fn the_version_2_layouts_are_pinned() {
         modifier: 23,
     });
     let bytes = encode(&p);
-    let tail = &bytes[bytes.len() - (1 + 2 + CODED_MAX * 3)..];
+    let v2 = v2_of(&p);
+    let tail = &v2[v2.len() - (1 + 2 + CODED_MAX * 3)..];
     assert_eq!(&tail[..3], [2, 14, 3], "count, then the fragments");
     assert_eq!(&tail[3..6], [1, 14, 23], "slot 0: effect, target, modifier");
     assert!(tail[6..].iter().all(|b| *b == 0), "empty slots are zeros");
@@ -156,7 +177,7 @@ fn the_world_with_learning_stays_small_and_round_trips() {
     assert_eq!(decode_world(&bytes).unwrap(), w);
     // More rows than the cap is not a world.
     let mut bad = bytes;
-    let at = bad.len() - 96 * 4 - 1;
+    let at = bad.len() - WORLD_V3_TAIL - 96 * 4 - 1;
     bad[at] = 97;
     assert!(decode_world(&bad).is_none());
 }
@@ -185,14 +206,14 @@ async fn an_n1_save_and_world_in_the_store_open_in_n2() {
         .unwrap();
     let mut world = World::default();
     world.nightly(&c, &mut russh_bbs_door::DoorRng::from_seed(2), DAY);
-    let v2 = encode_world(&world);
+    let v3 = encode_world(&world);
     store
         .write_world(
             &id,
             &WorldWrite {
                 expected: Revision::NONE,
                 version: 1,
-                bytes: &v2[..v2.len() - 5],
+                bytes: &v3[..v3.len() - WORLD_V3_TAIL - world.hist.len() - 5],
                 tick: None,
             },
         )

@@ -1,0 +1,25 @@
+
+┌─────────────────────────────────────── russh-bbs ────────────────────────────────────────┐
+│Nullroute                                                                                 │
+│                                                                                          │
+│╭ THE STREET ────────────────────────────────────────────────────────────────────────────╮│
+││THE STREET  [1] word  [2] bounties  [3] crews  [4] hall    season 1                     ││
+││day 20764: The crew NightShift finished a tier 1 job.                                   ││
+││day 20763: The crew NightShift finished a tier 1 job.                                   ││
+││This season: 2 jobs (0 deep), 0 wardens down, 2 crew jobs, 0 hacks in, 0 caught, 0 boun~││
+││If the season ended now: A slow season.                                                 ││
+││                                                                                        ││
+││                                                                                        ││
+││                                                                                        ││
+││                                                                                        ││
+││                                                                                        ││
+││                                                                                        ││
+││                                                                                        ││
+││                                                                                        ││
+││                                                                                        ││
+││                                                                                        ││
+││                                                                                        ││
+││[1-4] page   [Esc] back                                                                 ││
+│╰────────────────────────────────────────────────────────────────────────────────────────╯│
+└──────────────────────────────────────────────────────────────────────────────────────────┘
+

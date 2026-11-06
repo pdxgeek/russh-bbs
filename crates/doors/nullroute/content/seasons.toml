@@ -1,0 +1,97 @@
+# Season endings and character epilogues (M4-N4). Tried in file order; the first whose `rule` holds wins and the
+# last has no rule (the default). A season ending reads what the whole board did (`tally.*`); an epilogue reads one
+# character (`rep`, `jobs`, `stat.*`, `arcs_done` ...). Rules use the condition language in `cond.rs`.
+
+[[season_ending]]
+num = 1
+title = "The Null Vault falls"
+text = "A crew cracked the one network nobody had. For a season the city's networks are open books, and every corporation hires twice as many guards."
+rule = "tally.finale>=1"
+
+[[season_ending]]
+num = 2
+title = "Wardens' winter"
+text = "Three corporate wardens went down this season. The corporations did not forget: next season they will learn faster, and so will the freelancers."
+rule = "tally.wardens>=3"
+
+[[season_ending]]
+num = 3
+title = "A hunters' season"
+text = "Freelancers spent the season breaking into each other's hideouts. The fixers grew rich on bounties and the honest work went begging."
+rule = "tally.hacks_in>=25"
+
+[[season_ending]]
+num = 4
+title = "The burn year"
+text = "More rigs were fried this season than in any other. Repair shops did a roaring trade and nobody talked about the networks themselves."
+rule = "tally.burns>=50"
+
+[[season_ending]]
+num = 5
+title = "Crew weather"
+text = "Crews carried the season. Solo work thinned out, and the best contracts were written for five."
+rule = "tally.crew_jobs>=35"
+
+[[season_ending]]
+num = 6
+title = "Quiet money"
+text = "A busy, uneventful season. The jobs got done, the networks held, and the only news was the price of a fence."
+rule = "tally.jobs>=450"
+
+[[season_ending]]
+num = 7
+title = "A slow season"
+text = "Hardly anyone broke anything. The corporations relaxed, which is always a mistake."
+
+[[epilogue]]
+num = 1
+title = "Legend of the Null Vault"
+text = "You were in the crew that cracked the one network nobody had. They will tell it differently each year."
+rule = "stat.finale>=1"
+
+[[epilogue]]
+num = 2
+title = "Warden-breaker"
+text = "You put corporate wardens down, more than once. Corporations learned your handle, which is its own kind of fame."
+rule = "stat.wardens>=2"
+
+[[epilogue]]
+num = 3
+title = "Crew captain"
+text = "You ran jobs with other people and brought them home. Few can say that and mean it."
+rule = "stat.crew_jobs>=3"
+
+[[epilogue]]
+num = 4
+title = "Bounty hunter"
+text = "You collected prices on other freelancers' heads. The work paid, and you will not be welcome at every table."
+rule = "stat.bounties>=2"
+
+[[epilogue]]
+num = 5
+title = "Storyteller"
+text = "You saw fixers' arcs through to the end, and carry what they cost. The streets repeat your choices as parables."
+rule = "arcs_done>=3"
+
+[[epilogue]]
+num = 6
+title = "Burned out"
+text = "You burned more than you finished. The rig is a museum of fried parts, and the handle is a warning."
+rule = "burns>=10 & jobs<10"
+
+[[epilogue]]
+num = 7
+title = "A rising name"
+text = "Your reputation outran your rig. Fixers return your calls, and corporations keep a file."
+rule = "rep>=100"
+
+[[epilogue]]
+num = 8
+title = "A working freelancer"
+text = "You took the work and did it. No legend; a good living and a clean record, which are rarer."
+rule = "jobs>=15"
+
+[[epilogue]]
+num = 9
+title = "Between contracts"
+text = "A quiet season on the board for you. The rig is intact, the handle is unknown, and the next season is all ahead."

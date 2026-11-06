@@ -230,7 +230,7 @@ pub fn assemble(content: &Content, build: Build, num: u8) -> Result<ScriptDef, S
 }
 
 /// How `best_build` ranks a build: a warden tuning, then power (with pierce), then quiet.
-type Score = (bool, u32, std::cmp::Reverse<u32>);
+type Score = (bool, bool, u32, std::cmp::Reverse<u32>);
 
 /// The best build `have` can make that fits the budgets, by a plain rule: it prefers a warden
 /// target, then the most power, then the least noise. `None` if there is no effect fragment.
@@ -266,7 +266,13 @@ pub fn best_build(content: &Content, have: &[u8]) -> Option<Build> {
                 let Ok(def) = assemble(content, build, CODED_BASE) else {
                     continue;
                 };
+                // A script that cannot hurt a machine is no answer to a warden, tuned or not.
+                let hurts = matches!(
+                    def.effect,
+                    Effect::Crack | Effect::Spoof | Effect::Overflow | Effect::Purge
+                );
                 let score = (
+                    hurts,
                     def.target == Some(crate::content::CmKind::Warden),
                     def.power + def.pierce,
                     std::cmp::Reverse(def.noise),
