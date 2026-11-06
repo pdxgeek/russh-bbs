@@ -58,6 +58,8 @@ enum Mode {
 
 pub(crate) struct Session {
     content: Arc<Content>,
+    /// The generated map, without outposts (what a stored world is keyed to).
+    base: Arc<Frontier>,
     frontier: Arc<Frontier>,
     world: World,
     player: Option<Player>,
@@ -137,6 +139,7 @@ fn clip(text: &str, width: usize) -> String {
 impl Session {
     pub(crate) fn new(
         content: Arc<Content>,
+        base: Arc<Frontier>,
         frontier: Arc<Frontier>,
         world: World,
         start: Start,
@@ -157,6 +160,7 @@ impl Session {
         });
         let mut session = Self {
             content,
+            base,
             frontier,
             world,
             player,
@@ -271,18 +275,9 @@ impl Session {
             ctx.request_save(player.encode());
         }
         if !deltas.is_empty() {
-            let (content, frontier) = (Arc::clone(&self.content), Arc::clone(&self.frontier));
+            let (content, base) = (Arc::clone(&self.content), Arc::clone(&self.base));
             ctx.edit_world(move |old| {
-                let mut world = old
-                    .and_then(|bytes| World::decode(bytes, &frontier))
-                    .filter(|w| {
-                        w.season == frontier.season && w.gen_version == crate::frontier::GEN_VERSION
-                    })
-                    .unwrap_or_else(|| World::fresh(&content, &frontier, today));
-                for delta in &deltas {
-                    world.apply(&content, &frontier, delta);
-                }
-                Some(world.encode())
+                Some(World::apply_stored(old, &content, &base, today, &deltas))
             });
         }
         self.player = Some(player);

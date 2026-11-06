@@ -36,7 +36,7 @@ fn an_l1_save_migrates_and_loads_with_everything_it_had() {
     let h = Harness::new(1, 1);
     let door = LongHaul::new().unwrap();
     assert_eq!(SAVE_VERSION, 2);
-    assert_eq!(WORLD_VERSION, 1);
+    assert_eq!(WORLD_VERSION, 2);
     let v1 = unhex(L1_SAVE);
     assert_eq!(v1[0], 1);
     // The raw v1 bytes read directly (the decoder keeps accepting format 1) ...
@@ -76,10 +76,6 @@ fn an_l1_save_migrates_and_loads_with_everything_it_had() {
     assert!(matches!(
         door.migrate(BlobKind::Save, 2, &v2),
         Err(MigrateError::Unsupported(2))
-    ));
-    assert!(matches!(
-        door.migrate(BlobKind::World, 1, &v1),
-        Err(MigrateError::Unsupported(1))
     ));
     assert!(
         door.migrate(BlobKind::Save, 1, &v2).is_err(),

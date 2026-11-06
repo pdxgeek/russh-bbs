@@ -6,13 +6,17 @@ use russh_bbs_door_long_haul::content::{Content, GoodClass, TABLES};
 #[test]
 fn every_embedded_table_loads_and_validates() {
     let content = Content::embedded().unwrap();
-    assert_eq!(TABLES.len(), 11);
+    assert_eq!(TABLES.len(), 12);
     assert_eq!(content.goods.len(), 30);
     assert_eq!(content.economies.len(), 6);
     assert_eq!(content.hulls.len(), 4);
     assert_eq!(content.backgrounds.len(), 4);
-    assert!(content.news.len() >= 12);
-    assert!(content.modules.len() >= 15);
+    // The launch budget (docs/doors/long-haul.md, "Content budget").
+    assert_eq!(content.news.len(), 20);
+    assert_eq!(content.modules.len(), 50);
+    assert_eq!(content.transit.event.len(), 120);
+    assert_eq!(content.derelicts.derelict.len(), 40);
+    assert_eq!(content.enemies.enemy.len(), 15);
     assert!(
         content
             .goods

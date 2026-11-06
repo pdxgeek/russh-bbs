@@ -296,6 +296,42 @@ impl Frontier {
         }
     }
 
+    /// This map plus the stations players have funded: each outpost becomes the next station id
+    /// after the generated ones, with a market that is a pure function of the season, its system
+    /// and its economy. The generated map is untouched (`GEN_VERSION` does not change).
+    #[must_use]
+    pub fn with_outposts(&self, content: &Content, outposts: &[crate::social::Outpost]) -> Self {
+        let mut out = self.clone();
+        for o in outposts {
+            if out.system(o.system).is_none() {
+                continue;
+            }
+            let id = clamp_u16(u32::try_from(out.stations.len()).unwrap_or(u32::MAX));
+            let mut st = Station {
+                id,
+                system: o.system,
+                name: String::new(),
+                economy: o.economy,
+                size: 2,
+                shipyard: o.level >= 3,
+                repair: o.level >= 2,
+                goods: Vec::new(),
+            };
+            let mut rng = DoorRng::from_label(
+                "long-haul/outpost",
+                i64::from(self.season) * 1000 + i64::from(o.system),
+            );
+            finish_stations(content, std::slice::from_mut(&mut st), &mut rng);
+            st.name = o.name.clone();
+            st.size = o.level.clamp(1, 3);
+            if let Some(sys) = out.systems.get_mut(usize::from(o.system)) {
+                sys.stations.push(id);
+            }
+            out.stations.push(st);
+        }
+        out
+    }
+
     /// The stations a new captain may start at: charted, near home, and not a haven or a
     /// military post, in id order. New captains are spread over them (by name) so a busy board
     /// does not begin with everyone bidding for the same stock.

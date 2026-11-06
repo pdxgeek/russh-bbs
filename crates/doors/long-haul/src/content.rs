@@ -18,9 +18,10 @@ const TRANSIT_TOML: &str = include_str!("../content/transit.toml");
 const ENEMIES_TOML: &str = include_str!("../content/enemies.toml");
 const DERELICTS_TOML: &str = include_str!("../content/derelicts.toml");
 const JOBS_TOML: &str = include_str!("../content/jobs.toml");
+const SOCIAL_TOML: &str = include_str!("../content/social.toml");
 
 /// The embedded tables as `(name, text)`, for the schema test.
-pub const TABLES: [(&str, &str); 11] = [
+pub const TABLES: [(&str, &str); 12] = [
     ("goods", GOODS_TOML),
     ("economies", ECONOMIES_TOML),
     ("news", NEWS_TOML),
@@ -32,6 +33,7 @@ pub const TABLES: [(&str, &str); 11] = [
     ("enemies", ENEMIES_TOML),
     ("derelicts", DERELICTS_TOML),
     ("jobs", JOBS_TOML),
+    ("social", SOCIAL_TOML),
 ];
 
 pub(crate) fn ident_ok(id: &str) -> bool {
@@ -874,6 +876,8 @@ pub struct Content {
     pub derelicts: crate::boarding::DerelictTable,
     /// Passenger kinds and client lines.
     pub jobs: crate::contracts::JobTable,
+    /// Convoy names, notes and night events; outpost names.
+    pub social: crate::social::SocialTable,
 }
 
 impl Content {
@@ -893,6 +897,7 @@ impl Content {
         let enemies = content::load("enemies", ENEMIES_TOML)?;
         let derelicts = content::load("derelicts", DERELICTS_TOML)?;
         let jobs = content::load("jobs", JOBS_TOML)?;
+        let social = content::load("social", SOCIAL_TOML)?;
         let all = Self {
             goods: goods.good,
             economies: economies.economy,
@@ -906,6 +911,7 @@ impl Content {
             enemies,
             derelicts,
             jobs,
+            social,
         };
         let problems = all.link_problems();
         if problems.is_empty() {

@@ -30,6 +30,7 @@ pub mod scene;
 mod session;
 pub mod ship;
 pub mod skills;
+pub mod social;
 pub mod trade;
 pub mod transit;
 pub mod world;
@@ -52,7 +53,7 @@ pub const DOOR_ID: &str = "long-haul";
 /// The player save's version (see [`player::SAVE_FORMAT`] for the format byte inside it).
 pub const SAVE_VERSION: u32 = 2;
 /// The shared world's version.
-pub const WORLD_VERSION: u32 = 1;
+pub const WORLD_VERSION: u32 = 2;
 
 /// Why the door could not be built.
 #[derive(Debug)]
@@ -140,13 +141,14 @@ impl Door for LongHaul {
     }
 
     fn open(&self, start: Start<'_>, rng: &mut DoorRng) -> Box<dyn DoorSession> {
-        let frontier = self.frontier(start.season);
+        let base = self.frontier(start.season);
         let today = start.today.as_raw();
         let world = start
             .world
-            .and_then(|bytes| World::decode(bytes, &frontier))
+            .and_then(|bytes| World::decode(bytes, &self.content, &base))
             .filter(|w| w.season == start.season && w.gen_version == GEN_VERSION)
-            .unwrap_or_else(|| World::fresh(&self.content, &frontier, today));
+            .unwrap_or_else(|| World::successor(&self.content, &base, today, start.world));
+        let frontier = Arc::new(world.extended(&self.content, &base));
         let player = match start.save {
             Save::Fresh => session::Start::New,
             // A save from an earlier season is a past captain: this season starts a new one.
@@ -158,6 +160,7 @@ impl Door for LongHaul {
         };
         Box::new(session::Session::new(
             Arc::clone(&self.content),
+            base,
             frontier,
             world,
             player,
@@ -172,6 +175,7 @@ impl Door for LongHaul {
         // and scene sections (D98 (3): saves are forward-only, and these steps stay for good).
         match (kind, from) {
             (BlobKind::Save, 1) => Player::migrate_v1(bytes).ok_or(MigrateError::Unsupported(from)),
+            (BlobKind::World, 1) => World::migrate_v1(bytes).ok_or(MigrateError::Corrupt(from)),
             _ => Err(MigrateError::Unsupported(from)),
         }
     }
@@ -188,7 +192,7 @@ impl Door for LongHaul {
         let frontier = self.frontier(season);
         let mut world = match tick.world() {
             None => World::fresh(&self.content, &frontier, day),
-            Some(bytes) => World::decode(bytes, &frontier)
+            Some(bytes) => World::decode(bytes, &self.content, &frontier)
                 .ok_or_else(|| TickError::Door("the world does not fit this frontier".into()))?,
         };
         world.tick_day(&self.content, &frontier, day, tick.rng());

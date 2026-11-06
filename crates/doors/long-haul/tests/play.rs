@@ -161,7 +161,7 @@ async fn the_nightly_tick_moves_markets_idempotently_and_catches_up_with_a_cap()
     assert_eq!(report.applied.len(), 1, "the first run applies only today");
     let stored = store.load_world(&door.info().id).await.unwrap().unwrap();
     let frontier = door.frontier(1);
-    let world = World::decode(&stored.bytes, &frontier).unwrap();
+    let world = World::decode(&stored.bytes, door.content(), &frontier).unwrap();
     assert_eq!(world.day, DAY);
     // Same day again: nothing to do.
     let again = run_due(&store, door.as_ref(), clock.as_ref(), policy)
@@ -176,7 +176,7 @@ async fn the_nightly_tick_moves_markets_idempotently_and_catches_up_with_a_cap()
     assert_eq!(late.applied.len(), 7);
     assert_eq!(late.skipped, 3);
     let stored2 = store.load_world(&door.info().id).await.unwrap().unwrap();
-    let world2 = World::decode(&stored2.bytes, &frontier).unwrap();
+    let world2 = World::decode(&stored2.bytes, door.content(), &frontier).unwrap();
     assert_eq!(world2.day, DAY + 10);
     assert_ne!(world.stock, world2.stock, "stock moved over the week");
     assert!(stored2.bytes.len() < 256 * 1024, "the world fits its cap");
