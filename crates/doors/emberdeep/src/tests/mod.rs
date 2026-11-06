@@ -26,6 +26,7 @@ mod hero;
 mod legacy;
 mod projects;
 mod saves;
+mod social;
 mod support;
 mod town;
 mod world;
